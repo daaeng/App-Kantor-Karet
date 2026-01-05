@@ -161,6 +161,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Payroll
     Route::get('/payroll/generate', [PayrollController::class, 'generate'])->name('payroll.generate')->middleware("permission:payroll.create");
     Route::resource('/payroll', PayrollController::class)->except(['destroy'])->middleware("permission:payroll.view");
+    Route::get('/payroll/{payroll}/print', [PayrollController::class, 'printSlip'])->name('payroll.print');
+
+    Route::resource('payroll', PayrollController::class);
 
     // Requests (Surat)
     Route::resource('requests', RequestController::class)->middleware("permission:requests.view"); // Resource handle basic CRUD
@@ -202,6 +205,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/inciseds/print-report', [IncisedController::class, 'printReport'])->name('inciseds.printReport');
     Route::get('/inciseds/{incised}/print', [IncisedController::class, 'print'])->name('inciseds.print');
     Route::resource('inciseds', IncisedController::class)->middleware("permission:incised.view");
+
+    Route::post('/inciseds/{id}/settle', [IncisedController::class, 'settle'])->name('inciseds.settle');
 
     // Kasbon
     Route::post('/kasbons/get-incisor-data', [KasbonController::class, 'getIncisorData'])->name('kasbons.getIncisorData')->middleware("permission:kasbons.view");

@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\FinancialTransaction; 
-use App\Models\Product;
+use App\Models\FinancialTransaction;
+// [UBAH] Gunakan Model Baru, Hapus Product lama
+use App\Models\OutgoingStock;
 use App\Models\Kasbon;
 use App\Models\Payroll;
 use App\Models\Nota;
@@ -25,22 +26,27 @@ class AdministrasiController extends Controller
     public function print(Request $request)
     {
         $data = $this->getFinancialData($request);
-        $data['printType'] = $request->input('type', 'all'); 
+        $data['printType'] = $request->input('type', 'all');
         return Inertia::render("Administrasis/print", $data);
     }
 
-    // Fungsi Private untuk Logika Perhitungan (Agar bisa dipakai index & print)
+    // Fungsi Private untuk Logika Perhitungan
     private function getFinancialData(Request $request)
     {
         $perPage = 10;
-        
+
         $selectedMonth = $request->input('month', Carbon::now()->month);
         $selectedYear = $request->input('year', Carbon::now()->year);
-        $timePeriod = $request->input('time_period', 'this-month'); 
+
+        // [BARU] Input untuk Rentang Tahun
+        $startYear = $request->input('start_year', Carbon::now()->year);
+        $endYear = $request->input('end_year', Carbon::now()->year);
+
+        $timePeriod = $request->input('time_period', 'this-month');
 
         // Query Builder Dasar
-        $productQuery = Product::query();
-        $trxQuery = FinancialTransaction::query(); 
+        $outgoingQuery = OutgoingStock::query();
+        $trxQuery = FinancialTransaction::query();
         $kasbonQuery = Kasbon::query();
         $payrollQuery = Payroll::query();
 
@@ -48,139 +54,140 @@ class AdministrasiController extends Controller
         $dateRangeStart = null;
         $dateRangeEnd = null;
 
+        // [MODIFIKASI] Logic Penentuan Tanggal
         if ($timePeriod === 'specific-month') {
             $dateRangeStart = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth();
             $dateRangeEnd = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth();
         } elseif ($timePeriod === 'today') {
             $dateRangeStart = Carbon::today();
             $dateRangeEnd = Carbon::today();
-        } elseif ($timePeriod === 'this-week') {
-            $dateRangeStart = Carbon::now()->startOfWeek();
-            $dateRangeEnd = Carbon::now()->endOfWeek();
         } elseif ($timePeriod === 'this-month') {
             $dateRangeStart = Carbon::now()->startOfMonth();
             $dateRangeEnd = Carbon::now()->endOfMonth();
-        } elseif ($timePeriod === 'last-month') {
-            $dateRangeStart = Carbon::now()->subMonth()->startOfMonth();
-            $dateRangeEnd = Carbon::now()->subMonth()->endOfMonth();
         } elseif ($timePeriod === 'this-year') {
             $dateRangeStart = Carbon::now()->startOfYear();
             $dateRangeEnd = Carbon::now()->endOfYear();
+        } elseif ($timePeriod === 'periodic-years') {
+            // [BARU] Logika Rentang Tahun
+            // Dari Awal Tahun 'startYear' sampai Akhir Tahun 'endYear'
+            $dateRangeStart = Carbon::create($startYear, 1, 1)->startOfYear();
+            $dateRangeEnd = Carbon::create($endYear, 12, 31)->endOfYear();
         }
 
-        // Terapkan Filter
+        // Terapkan Filter ke Query
         if ($dateRangeStart && $dateRangeEnd) {
-            $productQuery->whereBetween('date', [$dateRangeStart, $dateRangeEnd]);
+            $outgoingQuery->whereBetween('date', [$dateRangeStart, $dateRangeEnd]);
             $trxQuery->whereBetween('transaction_date', [$dateRangeStart, $dateRangeEnd]);
-            
-            // Filter Kasbon & Payroll
-            $kasbonQuery->where(function($q) use ($dateRangeStart, $dateRangeEnd) {
-                $q->whereBetween('transaction_date', [$dateRangeStart, $dateRangeEnd]);
-            });
+
+            // Filter Kasbon & Payroll (Gunakan created_at atau tanggal transaksi)
+            $kasbonQuery->whereBetween('created_at', [$dateRangeStart, $dateRangeEnd]);
             $payrollQuery->whereBetween('created_at', [$dateRangeStart, $dateRangeEnd]);
         }
 
         // ==========================================
-        // 1. LAPORAN BANK (PERIODE INI)
+        // 1. LAPORAN BANK (PERIODE TERPILIH)
         // ==========================================
-        // Masuk: Penjualan Karet + Income Bank Manual
-        $bankIn_Auto = $productQuery->clone()->where('product', 'karet')->where('status', 'buyer')->sum('amount_out') ?? 0;
+        $bankIn_Auto = $outgoingQuery->sum('grand_total') ?? 0;
         $bankIn_Manual = $trxQuery->clone()->where('source', 'bank')->where('type', 'income')->sum('amount') ?? 0;
         $totalBankIn = $bankIn_Auto + $bankIn_Manual;
 
-        // Keluar: Gaji + Expense Bank Manual
         $bankOut_Auto = $payrollQuery->clone()->sum('gaji_bersih') ?? 0;
         $bankOut_Manual = $trxQuery->clone()->where('source', 'bank')->where('type', 'expense')->sum('amount') ?? 0;
         $totalBankOut = $bankOut_Auto + $bankOut_Manual;
-        
-        $saldoBankPeriod = $totalBankIn - $totalBankOut; 
+
+        $saldoBankPeriod = $totalBankIn - $totalBankOut;
 
         // ==========================================
-        // 2. LAPORAN KAS (PERIODE INI)
+        // 2. LAPORAN KAS (PERIODE TERPILIH)
         // ==========================================
-        // Masuk: Penarikan Bank + Income Kas Manual
         $kasIn_Transfer = $trxQuery->clone()->where('source', 'bank')->where('category', 'Penarikan Bank')->sum('amount') ?? 0;
         $kasIn_Manual = $trxQuery->clone()->where('source', 'cash')->where('type', 'income')->sum('amount') ?? 0;
         $totalKasIn = $kasIn_Transfer + $kasIn_Manual;
 
-        // Keluar: Kasbon (DIPISAH SECARA STRICT)
-        $kasOut_Pegawai = $kasbonQuery->clone()->where('kasbonable_type', 'like', '%Employee%')->sum('kasbon') ?? 0;
-        $kasOut_Penoreh = $kasbonQuery->clone()->where('kasbonable_type', 'like', '%Incisor%')->sum('kasbon') ?? 0;
+        $kasOut_Pegawai = $kasbonQuery->clone()->where('kasbonable_type', 'App\Models\Employee')->sum('kasbon') ?? 0;
+        $kasOut_Penoreh = $kasbonQuery->clone()->where('kasbonable_type', 'App\Models\Incisor')->sum('kasbon') ?? 0;
         $kasOut_Total_Valid = $kasOut_Pegawai + $kasOut_Penoreh;
 
         $kasOut_Manual = $trxQuery->clone()->where('source', 'cash')->where('type', 'expense')->sum('amount') ?? 0;
         $totalKasOut = $kasOut_Total_Valid + $kasOut_Manual;
-        
-        $saldoKasPeriod = $totalKasIn - $totalKasOut; 
+
+        $saldoKasPeriod = $totalKasIn - $totalKasOut;
 
         // ==========================================
-        // 3. NERACA (AKUMULASI)
+        // 3. NERACA (AKUMULASI TOTAL - SALDO BERJALAN)
         // ==========================================
-        $cutoff = $dateRangeEnd ?? Carbon::now();
-        
-        // A. Akumulasi Bank
-        $accBankIn = Product::where('product', 'karet')->where('status', 'buyer')->where('date', '<=', $cutoff)->sum('amount_out') 
-                   + FinancialTransaction::where('source', 'bank')->where('type', 'income')->where('transaction_date', '<=', $cutoff)->sum('amount');
-        $accBankOut = Payroll::where('created_at', '<=', $cutoff)->sum('gaji_bersih')
-                    + FinancialTransaction::where('source', 'bank')->where('type', 'expense')->where('transaction_date', '<=', $cutoff)->sum('amount');
+        // Neraca tidak terpengaruh filter periode (selalu akumulasi sampai saat ini)
+        // Kecuali Anda ingin melihat "Posisi Neraca per Tanggal X" (tapi biasanya neraca itu snapshot hari ini)
+
+        $accBankIn = OutgoingStock::sum('grand_total') + FinancialTransaction::where('source', 'bank')->where('type', 'income')->sum('amount');
+        $accBankOut = Payroll::sum('gaji_bersih') + FinancialTransaction::where('source', 'bank')->where('type', 'expense')->sum('amount');
         $saldoBankAccumulated = $accBankIn - $accBankOut;
 
-        // B. Akumulasi Kas
-        $accKasIn = FinancialTransaction::where('source', 'bank')->where('category', 'Penarikan Bank')->where('transaction_date', '<=', $cutoff)->sum('amount')
-                  + FinancialTransaction::where('source', 'cash')->where('type', 'income')->where('transaction_date', '<=', $cutoff)->sum('amount');
-        $accKasOut = Kasbon::where('transaction_date', '<=', $cutoff)->sum('kasbon')
-                   + FinancialTransaction::where('source', 'cash')->where('type', 'expense')->where('transaction_date', '<=', $cutoff)->sum('amount');
+        $accKasIn = FinancialTransaction::where('source', 'bank')->where('category', 'Penarikan Bank')->sum('amount') + FinancialTransaction::where('source', 'cash')->where('type', 'income')->sum('amount');
+        $accKasOut = Kasbon::sum('kasbon') + FinancialTransaction::where('source', 'cash')->where('type', 'expense')->sum('amount');
         $saldoKasAccumulated = $accKasIn - $accKasOut;
 
-        // C. Piutang (Status Unpaid)
-        $totalPiutangPegawai = Kasbon::where('payment_status', 'unpaid')->sum('kasbon') ?? 0; 
-        
+        $totalKasbonAll = Kasbon::sum('kasbon');
+        $totalPaymentAll = \App\Models\KasbonPayment::sum('amount');
+        $totalPiutangPegawai = $totalKasbonAll - $totalPaymentAll;
+
         $neraca = [
             'assets' => [
-                'kas_period' => (float) $saldoKasAccumulated, 
-                'bank_period' => (float) $saldoBankAccumulated, 
+                'kas_period' => (float) $saldoKasAccumulated,
+                'bank_period' => (float) $saldoBankAccumulated,
                 'piutang' => (float) $totalPiutangPegawai,
-                'inventory_value' => 0 
+                'inventory_value' => 0
             ],
-            'liabilities' => [
-                'hutang_dagang' => 0 
-            ]
+            'liabilities' => ['hutang_dagang' => 0]
         ];
 
         // ==========================================
         // 4. RUGI LABA
         // ==========================================
-        $revenue = $bankIn_Auto + $bankIn_Manual; 
-        $cogs = $trxQuery->clone()->where('category', 'Pembelian Karet')->sum('amount') ?? 0; 
+        $revenue = $bankIn_Auto + $bankIn_Manual;
+        $cogs = $trxQuery->clone()->where('category', 'Pembelian Karet')->sum('amount') ?? 0;
         $grossProfit = $revenue - $cogs;
-        
+
         $opsExpenseManual = $trxQuery->clone()->where('type', 'expense')->whereNotIn('category', ['Pembelian Karet', 'Penarikan Bank'])->sum('amount') ?? 0;
         $operatingExpenses = $opsExpenseManual + $bankOut_Auto;
         $netProfit = $grossProfit - $operatingExpenses;
 
         // --- Data Chart ---
         $chartData = [];
-        $groupBy = ($timePeriod === 'this-year' || $timePeriod === 'all-years') ? 'month' : 'date';
-        
-        $incAuto = $productQuery->clone()->where('product', 'karet')->where('status', 'buyer')
-            ->selectRaw($groupBy === 'month' ? 'MONTH(date) as label, SUM(amount_out) as total' : 'DATE(date) as label, SUM(amount_out) as total')
+
+        // [MODIFIKASI] Tentukan Grouping Grafik
+        // Jika rentang tahun, kita group by 'YYYY-MM' agar grafik tidak terlalu padat per hari
+        $isLongPeriod = in_array($timePeriod, ['this-year', 'periodic-years']);
+
+        // Format SQL untuk Grouping (MySQL)
+        $sqlDateFormat = $isLongPeriod ? "%Y-%m" : "%Y-%m-%d";
+
+        $incAuto = $outgoingQuery->clone()
+            ->selectRaw("DATE_FORMAT(date, '$sqlDateFormat') as label, SUM(grand_total) as total")
             ->groupBy('label')->pluck('total', 'label');
+
         $incManual = $trxQuery->clone()->where('type', 'income')
-            ->selectRaw($groupBy === 'month' ? 'MONTH(transaction_date) as label, SUM(amount) as total' : 'DATE(transaction_date) as label, SUM(amount) as total')
+            ->selectRaw("DATE_FORMAT(transaction_date, '$sqlDateFormat') as label, SUM(amount) as total")
             ->groupBy('label')->pluck('total', 'label');
+
         $expManual = $trxQuery->clone()->where('type', 'expense')->where('category', '!=', 'Penarikan Bank')
-            ->selectRaw($groupBy === 'month' ? 'MONTH(transaction_date) as label, SUM(amount) as total' : 'DATE(transaction_date) as label, SUM(amount) as total')
+            ->selectRaw("DATE_FORMAT(transaction_date, '$sqlDateFormat') as label, SUM(amount) as total")
             ->groupBy('label')->pluck('total', 'label');
-        
+
         $allLabels = $incAuto->keys()->merge($incManual->keys())->merge($expManual->keys())->unique()->sort();
 
         foreach ($allLabels as $label) {
-            $displayLabel = ($timePeriod === 'this-year' || $timePeriod === 'all-years')
-                ? Carbon::create()->month($label)->locale('id')->isoFormat('MMM') 
-                : Carbon::parse($label)->locale('id')->isoFormat('D MMM');
-            
+            // Format Label Tampilan Chart
+            if ($isLongPeriod) {
+                // Label: "Jan 2024", "Feb 2024"
+                $displayLabel = Carbon::createFromFormat('Y-m', $label)->locale('id')->isoFormat('MMM YYYY');
+            } else {
+                // Label: "01 Jan", "02 Jan"
+                $displayLabel = Carbon::parse($label)->locale('id')->isoFormat('D MMM');
+            }
+
             $totalInc = ($incAuto[$label] ?? 0) + ($incManual[$label] ?? 0);
-            $totalExp = ($expManual[$label] ?? 0); 
+            $totalExp = ($expManual[$label] ?? 0);
             $chartData[] = ['name' => $displayLabel, 'Pemasukan' => (float) $totalInc, 'Pengeluaran' => (float) $totalExp];
         }
 
@@ -192,7 +199,6 @@ class AdministrasiController extends Controller
         $pendingRequests = PpbHeader::where('status', 'belum ACC')->count();
         $pendingNotas = Nota::where('status', 'belum ACC')->count();
 
-        // Details for report view
         $bankOpsDetails = $trxQuery->clone()->where('source', 'bank')->where('type', 'expense')->get();
         $kasOpsDetails = $trxQuery->clone()->where('source', 'cash')->where('type', 'expense')->get();
 
@@ -202,8 +208,8 @@ class AdministrasiController extends Controller
             "summary" => [
                 "totalRequests" => PpbHeader::count(),
                 "totalNotas" => Nota::count(),
-                "pendingRequests" => $pendingRequests, 
-                "pendingNotas" => $pendingNotas,       
+                "pendingRequests" => $pendingRequests,
+                "pendingNotas" => $pendingNotas,
                 "pendingCount" => $pendingRequests + $pendingNotas,
                 "hargaSahamKaret" => $hargaSahamKaret ? (float)$hargaSahamKaret->nilai : 0,
                 "hargaDollar" => $hargaDollar ? (float)$hargaDollar->nilai : 0,
@@ -226,8 +232,8 @@ class AdministrasiController extends Controller
                         "out_kantor" => (float) $kasOpsDetails->where('category', 'Operasional Kantor')->sum('amount'),
                         "out_bpjs" => (float) $kasOpsDetails->where('category', 'BPJS Ketenagakerjaan')->sum('amount'),
                         "out_belikaret" => (float) $kasOpsDetails->where('category', 'Pembelian Karet')->sum('amount'),
-                        "out_kasbon_pegawai" => (float) $kasOut_Pegawai, 
-                        "out_kasbon_penoreh" => (float) $kasOut_Penoreh, 
+                        "out_kasbon_pegawai" => (float) $kasOut_Pegawai,
+                        "out_kasbon_penoreh" => (float) $kasOut_Penoreh,
                         "total_in" => (float) $totalKasIn,
                         "total_out" => (float) $totalKasOut,
                         "balance" => (float) $saldoKasPeriod
@@ -239,26 +245,18 @@ class AdministrasiController extends Controller
                         "opex" => (float) $operatingExpenses,
                         "net_profit" => (float) $netProfit
                     ],
-                    "neraca" => [
-                        'assets' => [
-                            'kas_period' => (float) $saldoKasAccumulated, 
-                            'bank_period' => (float) $saldoBankAccumulated, 
-                            'piutang' => (float) $totalPiutangPegawai,
-                            'inventory_value' => 0 
-                        ],
-                        'liabilities' => [
-                            'hutang_dagang' => 0 
-                        ]
-                    ]
+                    "neraca" => $neraca
                 ],
-                "totalPengeluaran" => $totalBankOut + $totalKasOut, 
+                "totalPengeluaran" => $totalBankOut + $totalKasOut,
                 "labaRugi" => $netProfit,
                 "totalPenjualanKaret" => $revenue,
-                "s_karet" => $productQuery->clone()->where('status', 'buyer')->where('product', 'karet')->sum('qty_out'),
-                "tb_karet" => $productQuery->clone()->where('status', 'gka')->where('product', 'karet')->sum('amount_out'),
+                "s_karet" => $outgoingQuery->sum('qty_out'),
+                "tb_karet" => $outgoingQuery->sum('grand_total'),
             ],
             "chartData" => $chartData,
-            "filter" => $request->only(['time_period', 'month', 'year']),
+
+            // [MODIFIKASI] Return Filter Params
+            "filter" => $request->only(['time_period', 'month', 'year', 'start_year', 'end_year']),
             "currentMonth" => (int)$selectedMonth,
             "currentYear" => (int)$selectedYear,
         ];
@@ -274,12 +272,12 @@ class AdministrasiController extends Controller
 
         $query = FinancialTransaction::query();
         $query->whereYear('transaction_date', $year)->whereMonth('transaction_date', $month);
-        
+
         $paginator = $query->orderBy('transaction_date', 'DESC')->paginate($perPage, ['*'], 'page', $page);
-        
+
         return response()->json([
             'data' => $paginator->items(),
-            'links' => [], 
+            'links' => [],
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'last_page' => $paginator->lastPage(),
@@ -294,10 +292,9 @@ class AdministrasiController extends Controller
         $request->validate([
             'type' => 'required|in:income,expense',
             'source' => 'required|in:cash,bank',
-            'kategori' => 'required|string', 
+            'kategori' => 'required|string',
             'jumlah' => 'required|numeric',
             'tanggal' => 'required|date',
-            // [BARU] Validasi untuk kode dan no transaksi
             'transaction_code' => 'required|string',
             'transaction_number' => 'required|string',
         ]);
@@ -309,7 +306,6 @@ class AdministrasiController extends Controller
             'amount' => $request->jumlah,
             'transaction_date' => $request->tanggal,
             'description' => $request->deskripsi,
-            // [BARU] Simpan Data Baru
             'transaction_code' => $request->transaction_code,
             'transaction_number' => $request->transaction_number,
             'db_cr' => $request->db_cr,
@@ -325,7 +321,7 @@ class AdministrasiController extends Controller
         $request->validate([
             'type' => 'required|in:income,expense',
             'source' => 'required|in:cash,bank',
-            'kategori' => 'required|string', 
+            'kategori' => 'required|string',
             'jumlah' => 'required|numeric',
             'tanggal' => 'required|date',
             'transaction_code' => 'required|string',
@@ -354,7 +350,7 @@ class AdministrasiController extends Controller
         FinancialTransaction::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Transaksi dihapus!');
     }
-    
+
     public function updateHarga(Request $request)
     {
         $request->validate(['jenis' => 'required','nilai' => 'required','tanggal_berlaku' => 'required']);

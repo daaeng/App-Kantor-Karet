@@ -81,7 +81,7 @@ const StatCard: React.FC<{ icon: React.ElementType; title: string; value: string
 
 const OwnerCell: React.FC<{ kasbon: KasbonGroup }> = ({ kasbon }) => {
     const isPegawai = kasbon.kasbon_type === 'Pegawai';
-    
+
     return (
         <div className="flex items-center gap-3">
             <div className={cn(
@@ -100,19 +100,19 @@ const OwnerCell: React.FC<{ kasbon: KasbonGroup }> = ({ kasbon }) => {
 
 const Pagination: React.FC<{ links: PaginationLink[] }> = ({ links }) => {
     if (links.length <= 3) return null;
-    
+
     return (
         <div className="flex items-center justify-center gap-1 mt-4">
             {links.map((link, index) => {
                 const cleanLabel = link.label.replace(/&laquo;|&raquo;/g, '').trim();
                 const icon = cleanLabel === 'Previous' ? <ChevronLeft size={18} /> : cleanLabel === 'Next' ? <ChevronRight size={18} /> : null;
-                
+
                 return (
                     <Link
                         key={index}
                         href={link.url || '#'}
                         preserveScroll
-                        preserveState 
+                        preserveState
                         className={cn(
                             "flex items-center justify-center h-9 min-w-[2.25rem] px-3 text-sm font-medium rounded-md transition-colors",
                             link.active ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-foreground hover:bg-accent",
@@ -134,13 +134,13 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
     // [MODIFIED] Use 'all' as default value instead of empty string ''
     const [type, setType] = useState(filter.type || 'all');
     const [location, setLocation] = useState(filter.location || 'all');
-    
+
     // [NEW] Add loading state for dynamic feedback
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
-    
+
     useEffect(() => {
         if (flash.message) {
             setShowSuccessAlert(true);
@@ -157,8 +157,8 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
     useEffect(() => {
         const handler = setTimeout(() => {
             // [NEW] Set loading true when request starts
-            setIsLoading(true); 
-            
+            setIsLoading(true);
+
             // [MODIFIED] Send all filters with the request
             const params: { search?: string, type?: string, location?: string } = {
                 search: search || undefined,
@@ -181,16 +181,16 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
     const getOwnerTypeSlug = (fullType: string) => {
         return fullType.toLowerCase().includes('employee') ? 'employee' : 'incisor';
     };
-    
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Rekapitulasi Kasbon" />
-            <div className="space-y-6 p-4">
+            <div className="space-y-6 p-4 bg-gray-50/50 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title="Dashboard Rekap Kasbon" description="Total kasbon yang dimiliki oleh setiap orang." />
                      <div className="flex items-center gap-3 flex-wrap">
                         {/* [MODIFIED] Pass all filters to the print route */}
-                        <Link href={route('kasbons.print', { 
+                        <Link href={route('kasbons.print', {
                             search: search || undefined,
                             // [MODIFIED] Send 'undefined' if type is 'all'
                             type: type === 'all' ? undefined : type,
@@ -217,7 +217,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                                 </Button>
                             </Link>
                         )}
-                        
+
                     </div>
                 </div>
 
@@ -257,7 +257,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                                     disabled={isLoading} // [NEW] Disable while loading
                                 />
                             </div>
-                            
+
                             {/* [NEW] Filter Tipe */}
                             <Select value={type} onValueChange={setType} disabled={isLoading}>
                                 {/* [MODIFIED] Changed sm:w-14 to w-full lg:w-1/4 */}

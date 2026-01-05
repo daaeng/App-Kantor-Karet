@@ -6,9 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { type BreadcrumbItem } from '@/types';
+import { Lock, Info } from 'lucide-react';
 
-// Tipe data yang diterima dari controller
+// Tipe data
 interface PayrollEditData {
     id: number;
     status: 'draft' | 'final' | 'paid';
@@ -25,146 +27,180 @@ interface EditPageProps {
     uang_makan_harian: number;
 }
 
-const formatCurrency = (value: number) => 
+const formatCurrency = (value: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
 export default function Edit({ payroll, uang_makan_harian }: EditPageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
-        // { title: 'Dashboard', href: route('dashboard') },
         { title: 'Penggajian', href: route('payroll.index') },
-        { title: 'Edit Rincian Gaji', href: '#' },
+        { title: 'Edit Gaji', href: '#' },
     ];
-    
-    const { data, setData, put, processing} = useForm({
-        status: payroll.status,
-        gaji_pokok: payroll.gaji_pokok,
+
+    const { data, setData, put, processing, errors } = useForm({
         hari_hadir: payroll.hari_hadir,
         insentif: payroll.insentif,
         potongan_kasbon: payroll.potongan_kasbon,
-        uang_makan_harian: uang_makan_harian,
+        status: payroll.status, // [BARU] Field Status
     });
+
+    // Cek apakah gaji sudah lunas
+    const isPaid = payroll.status === 'paid';
+
+    // Kalkulasi Real-time
+    const calculated = useMemo(() => {
+        const uangMakan = (data.hari_hadir || 0) * uang_makan_harian;
+        const totalPendapatan = payroll.gaji_pokok + (data.insentif || 0) + uangMakan;
+        const totalPotongan = (data.potongan_kasbon || 0);
+        const gajiBersih = totalPendapatan - totalPotongan;
+
+        return { uangMakan, totalPendapatan, totalPotongan, gajiBersih };
+    }, [data.hari_hadir, data.insentif, data.potongan_kasbon, payroll.gaji_pokok, uang_makan_harian]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Jika status diubah jadi Paid, beri konfirmasi extra
+        if (data.status === 'paid' && payroll.status !== 'paid') {
+            if (!confirm('PERINGATAN: Mengubah status menjadi LUNAS akan memotong saldo Kasbon pegawai (jika ada). Lanjutkan?')) {
+                return;
+            }
+        }
         put(route('payroll.update', payroll.id));
     };
 
-    // Kalkulasi otomatis untuk tampilan
-    const calculated = useMemo(() => {
-        const subtotalGajiPokok = Number(data.gaji_pokok);
-        const subtotalUangMakan = Number(data.hari_hadir) * Number(data.uang_makan_harian);
-        const subtotalInsentif = Number(data.insentif);
-        const totalPendapatan = subtotalGajiPokok + subtotalUangMakan + subtotalInsentif;
-        const totalPotongan = Number(data.potongan_kasbon);
-        const gajiBersih = totalPendapatan - totalPotongan;
-        return { subtotalGajiPokok, subtotalUangMakan, totalPendapatan, totalPotongan, gajiBersih };
-    }, [data]);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit Gaji - ${payroll.employee_name}`} />
-            <div className="flex justify-center items-start p-4 sm:p-6 lg:p-8">
-                <form onSubmit={handleSubmit} className="w-full max-w-4xl">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Edit Rincian Gaji</CardTitle>
+            <Head title="Edit Gaji" />
+
+            <div className="p-4 md:p-8 max-w-2xl mx-auto">
+
+                {/* Peringatan jika sudah lunas */}
+                {isPaid && (
+                    <Alert className="mb-6 bg-blue-50 border-blue-200 text-blue-800">
+                        <Lock className="h-4 w-4" />
+                        <AlertTitle>Data Terkunci</AlertTitle>
+                        <AlertDescription>
+                            Gaji ini sudah berstatus <b>LUNAS (PAID)</b>. Perubahan data dibatasi untuk menjaga integritas laporan keuangan.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                <form onSubmit={handleSubmit}>
+                    <Card className="shadow-lg">
+                        <CardHeader className="bg-gray-50 border-b border-gray-100">
+                            <CardTitle>Edit Data Gaji</CardTitle>
                             <CardDescription>
-                                Untuk karyawan: <span className="font-semibold">{payroll.employee_name}</span> | 
-                                Periode: <span className="font-semibold">{new Date(payroll.payroll_period + '-02').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</span>
+                                {payroll.employee_name} - Periode {payroll.payroll_period}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Kolom Kiri: Input Form */}
-                            <div className="space-y-6">
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4 border-b pb-2">Komponen Pendapatan</h3>
-                                    <div className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4 items-center">
-                                            <Label htmlFor="gaji_pokok">Gaji Pokok</Label>
-                                            <Input id="gaji_pokok" type="number" value={data.gaji_pokok} onChange={e => setData('gaji_pokok', Number(e.target.value))} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 items-center">
-                                            <Label htmlFor="hari_hadir">Hari Hadir</Label>
-                                            <Input id="hari_hadir" type="number" value={data.hari_hadir} onChange={e => setData('hari_hadir', Number(e.target.value))} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 items-center">
-                                            <Label htmlFor="insentif">Insentif / Bonus</Label>
-                                            <Input id="insentif" type="number" value={data.insentif} onChange={e => setData('insentif', Number(e.target.value))} />
-                                        </div>
-                                    </div>
+                        <CardContent className="space-y-6 pt-6">
+
+                            {/* [BARU] Dropdown Status */}
+                            <div className="space-y-2">
+                                <Label>Status Pembayaran</Label>
+                                <Select
+                                    value={data.status}
+                                    onValueChange={(val: any) => setData('status', val)}
+                                    // Jika sudah paid, disable edit status (kecuali mau dibuka paksa, hapus 'disabled' ini)
+                                    // disabled={isPaid}
+                                >
+                                    <SelectTrigger className={data.status === 'paid' ? 'border-green-500 text-green-700 bg-green-50' : ''}>
+                                        <SelectValue placeholder="Pilih Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="draft">Draft (Konsep)</SelectItem>
+                                        <SelectItem value="final">Final (Siap Bayar)</SelectItem>
+                                        <SelectItem value="paid" className="text-green-600 font-bold">Paid (Lunas / Sudah Transfer)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[10px] text-gray-500">
+                                    *Status 'Paid' akan mencatat tanggal pembayaran hari ini.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Gaji Pokok (Tetap)</Label>
+                                    <Input value={formatCurrency(payroll.gaji_pokok)} disabled className="bg-gray-100" />
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4 border-b pb-2">Komponen Potongan</h3>
-                                    <div className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4 items-center">
-                                            <Label htmlFor="potongan_kasbon">Potongan Kasbon</Label>
-                                            <Input id="potongan_kasbon" type="number" value={data.potongan_kasbon} onChange={e => setData('potongan_kasbon', Number(e.target.value))} />
-                                        </div>
+                                <div className="space-y-2">
+                                    <Label>Hari Hadir</Label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            value={data.hari_hadir}
+                                            onChange={(e) => setData('hari_hadir', Number(e.target.value))}
+                                            disabled={isPaid} // Kunci jika paid
+                                        />
+                                        <span className="absolute right-3 top-2 text-xs text-gray-400">Hari</span>
                                     </div>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-medium mb-4 border-b pb-2">Status Pembayaran</h3>
-                                    <Select value={data.status} onValueChange={(value: 'draft' | 'final' | 'paid') => setData('status', value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="draft">Draft</SelectItem>
-                                            <SelectItem value="final">Final</SelectItem>
-                                            <SelectItem value="paid">Dibayar</SelectItem>
-                                        </SelectContent>
-                                    </Select>
                                 </div>
                             </div>
 
-                            {/* Kolom Kanan: Rincian Kalkulasi */}
-                            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg space-y-4">
-                                <h3 className="text-lg font-medium text-center mb-4">Rincian Gaji</h3>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-300">Subtotal Gaji Pokok</span>
-                                        <span className="font-medium">{formatCurrency(calculated.subtotalGajiPokok)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-300">Subtotal Uang Makan ({data.hari_hadir} hari)</span>
-                                        <span className="font-medium">{formatCurrency(calculated.subtotalUangMakan)}</span>
-                                    </div>
-                                     <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-300">Insentif / Bonus</span>
-                                        <span className="font-medium">{formatCurrency(data.insentif)}</span>
-                                    </div>
-                                    <hr className="my-2" />
-                                    <div className="flex justify-between font-semibold">
-                                        <span>Total Pendapatan</span>
-                                        <span>{formatCurrency(calculated.totalPendapatan)}</span>
-                                    </div>
+                            <div className="space-y-2">
+                                <Label>Insentif / Bonus</Label>
+                                <Input
+                                    type="number"
+                                    value={data.insentif}
+                                    onChange={(e) => setData('insentif', Number(e.target.value))}
+                                    disabled={isPaid}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="flex justify-between text-red-600">
+                                    Potongan Kasbon
+                                </Label>
+                                <Input
+                                    type="number"
+                                    value={data.potongan_kasbon}
+                                    onChange={(e) => setData('potongan_kasbon', Number(e.target.value))}
+                                    className="border-red-200 focus:ring-red-200"
+                                    disabled={isPaid}
+                                />
+                            </div>
+
+                            {/* Ringkasan Kalkulasi */}
+                            <div className="bg-slate-50 p-4 rounded-lg space-y-2 border border-slate-100">
+                                <div className="flex justify-between text-sm">
+                                    <span>Gaji Pokok</span>
+                                    <span>{formatCurrency(payroll.gaji_pokok)}</span>
                                 </div>
-                                <div className="space-y-2 text-sm pt-4">
-                                     <div className="flex justify-between">
-                                        <span className="text-gray-600 dark:text-gray-300">Potongan Kasbon</span>
-                                        <span className="font-medium text-red-600">-{formatCurrency(calculated.totalPotongan)}</span>
-                                    </div>
-                                    <hr className="my-2" />
-                                    <div className="flex justify-between font-semibold">
-                                        <span>Total Potongan</span>
-                                        <span className="text-red-600">-{formatCurrency(calculated.totalPotongan)}</span>
-                                    </div>
+                                <div className="flex justify-between text-sm">
+                                    <span>Uang Makan ({data.hari_hadir} hari)</span>
+                                    <span>{formatCurrency(calculated.uangMakan)}</span>
                                 </div>
-                                <div className="border-t-2 border-dashed pt-4 mt-4">
-                                    <div className="flex justify-between items-center text-xl font-bold">
+                                <div className="flex justify-between text-sm">
+                                    <span>Insentif</span>
+                                    <span>{formatCurrency(data.insentif)}</span>
+                                </div>
+                                <div className="flex justify-between font-semibold text-red-600 text-sm">
+                                    <span>Potongan</span>
+                                    <span>- {formatCurrency(calculated.totalPotongan)}</span>
+                                </div>
+                                <div className="border-t border-dashed border-gray-300 pt-2 mt-2">
+                                    <div className="flex justify-between items-center text-lg font-bold text-indigo-700">
                                         <span>Gaji Bersih</span>
-                                        <span className="text-indigo-600 dark:text-emerald-500">{formatCurrency(calculated.gajiBersih)}</span>
+                                        <span>{formatCurrency(calculated.gajiBersih)}</span>
                                     </div>
                                 </div>
                             </div>
+
                         </CardContent>
-                        <CardFooter className="flex justify-end gap-4 mt-4">
+                        <CardFooter className="flex justify-between bg-gray-50 border-t border-gray-100 p-4">
                             <Link href={route('payroll.index')}>
-                                <Button variant="outline" type="button">Batal</Button>
+                                <Button variant="outline" type="button">Kembali</Button>
                             </Link>
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </Button>
+
+                            {/* Tombol Simpan (Disembunyikan jika sudah Paid, kecuali mau dipaksa muncul) */}
+                            {!isPaid || data.status !== 'paid' ? (
+                                <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700">
+                                    {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                </Button>
+                            ) : (
+                                <span className="text-xs text-gray-400 italic flex items-center">
+                                    <Lock className="w-3 h-3 mr-1"/> Data terkunci karena status Lunas
+                                </span>
+                            )}
                         </CardFooter>
                     </Card>
                 </form>

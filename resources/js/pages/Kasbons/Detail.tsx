@@ -127,7 +127,7 @@ export default function KasbonDetail() {
             },
         });
     };
-    
+
     const handlePrint = () => {
         window.open(route('kasbons.printDetail', { type: kasbon_owner_type, id: kasbon_owner_id }), '_blank');
     };
@@ -151,9 +151,9 @@ export default function KasbonDetail() {
 
         if (confirm(confirmMessage)) {
             const targetRoute = type === 'kasbon' ? route('kasbons.destroy', id) : route('kasbon-payments.destroy', id);
-            
+
             // Gunakan method delete dari instance deleteForm
-            deleteForm.delete(targetRoute, { 
+            deleteForm.delete(targetRoute, {
                 preserveScroll: true,
                 onSuccess: () => {
                     // Opsional: Reset form atau beri notifikasi jika perlu
@@ -161,7 +161,7 @@ export default function KasbonDetail() {
             });
         }
     };
-    
+
     const closeAllDialogs = () => {
         setShowPayDialog(false);
         setShowEditDialog(false);
@@ -174,7 +174,7 @@ export default function KasbonDetail() {
     return (
         <AppLayout breadcrumbs={dynamicBreadcrumbs}>
             <Head title={`Detail Kasbon - ${owner?.name}`} />
-            <div className="space-y-6 p-4">
+            <div className="space-y-6 p-4 bg-gray-50/50 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title={`Riwayat Kasbon: ${owner?.name}`} description={owner?.identifier} />
                     <div className="flex items-center gap-2">
@@ -220,11 +220,11 @@ export default function KasbonDetail() {
                                                 <Button variant="ghost" size="icon" onClick={() => tx.transaction_type === 'kasbon' ? (window.location.href = route('kasbons.edit', tx.transaction_ref.id)) : openEditDialog(tx)}>
                                                     <Edit className="w-4 h-4 text-blue-600"/>
                                                 </Button>
-                                                
+
                                                 {/* Tombol Delete dengan logika yang sudah diperbaiki */}
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onClick={() => handleDelete(tx.transaction_type, tx.transaction_ref.id)}
                                                     // Disable tombol saat sedang proses delete
                                                     disabled={deleteForm.processing}

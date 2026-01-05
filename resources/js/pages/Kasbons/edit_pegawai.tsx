@@ -92,7 +92,7 @@ export default function EditKasbonPegawai() {
         <AppLayout breadcrumbs={dynamicBreadcrumbs}>
             <Head title={`Edit Kasbon Pegawai #${kasbon.id}`} />
 
-            <div className="space-y-6 p-4 md:p-6">
+            <div className="space-y-6 p-4 md:p-6 bg-gray-50/50 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title={`Edit Kasbon Pegawai`} description={`Mengubah data untuk kasbon #${kasbon.id}`} />
                     <Link href={route('kasbons.index')}>
@@ -105,7 +105,7 @@ export default function EditKasbonPegawai() {
 
                 {flash.message && <Alert><Megaphone className='h-4 w-4' /><AlertTitle>Berhasil!</AlertTitle><AlertDescription>{flash.message}</AlertDescription></Alert>}
                 {flash.error && <Alert variant="destructive"><Megaphone className='h-4 w-4' /><AlertTitle>Gagal!</AlertTitle><AlertDescription>{flash.error}</AlertDescription></Alert>}
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
                         <Card>

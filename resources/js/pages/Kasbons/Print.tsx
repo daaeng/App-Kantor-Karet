@@ -35,7 +35,7 @@ const getStatusText = (status: string, paymentStatus: string) => {
 
 // --- KOMPONEN HALAMAN CETAK ---
 export default function Print({ kasbons, printDate }: PrintPageProps) {
-    
+
     const handlePrint = () => {
         window.print();
     };

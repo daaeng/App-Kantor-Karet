@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { CirclePlus, Megaphone, Pencil, Search, Trash, Printer, PackagePlus } from 'lucide-react';
+import { CirclePlus, Megaphone, Pencil, Search, Trash, Printer, PackagePlus, Wallet, CheckCircle2 } from 'lucide-react';
 import { can } from '@/lib/can';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
@@ -35,6 +35,7 @@ interface Incised {
     keping: number;
     kualitas: string;
     incisor_name: string | null;
+    payment_status?: 'unpaid' | 'paid'; // [BARU]
 }
 
 interface PaginationLink {
@@ -43,7 +44,6 @@ interface PaginationLink {
     active: boolean;
 }
 
-// [PERBAIKAN] Sesuaikan Interface dengan struktur Paginator Laravel standar
 interface PageProps {
     flash?: {
         message?: string;
@@ -55,7 +55,7 @@ interface PageProps {
         current_page: number;
         last_page: number;
         per_page: number;
-        total: number; // Langsung di root, tidak di dalam meta
+        total: number;
     };
     filter?: { search?: string; time_period?: string; month?: string; year?: string; per_page?: string; };
     totalKebunA: number;
@@ -65,6 +65,14 @@ interface PageProps {
         total_qty_kg: number;
     };
 }
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(value);
+};
 
 interface StatCardProps {
     icon: React.ElementType;
@@ -78,7 +86,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle,
     <div className={`p-4 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-r ${gradient} text-white`}>
         <div className="flex items-center gap-3">
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
-                <Icon className="text-blue-500 text-xl" />
+                <Icon className="text-blue-600 text-xl" />
             </div>
             <div>
                 <h4 className="text-sm font-medium opacity-90">{title}</h4>
@@ -90,7 +98,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, title, value, subtitle,
 );
 
 export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebunB, mostProductiveIncisor } : PageProps) {
-    const { delete: destroy } = useForm();
+    const { processing, delete: destroy } = useForm();
 
     const [searchValue, setSearchValue] = useState(filter?.search || '');
     const [timePeriod, setTimePeriod] = useState(filter?.time_period || 'this-month');
@@ -100,6 +108,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
     const [specificYear, setSpecificYear] = useState(filter?.year || currentYear.toString());
     const [perPage, setPerPage] = useState(filter?.per_page || '10');
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [showErrorAlert, setShowErrorAlert] = useState(false);
 
     useEffect(() => {
         setSearchValue(filter?.search || '');
@@ -113,6 +122,11 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
         if (flash?.message) {
             setShowSuccessAlert(true);
             const timer = setTimeout(() => setShowSuccessAlert(false), 5000);
+            return () => clearTimeout(timer);
+        }
+        if (flash?.error) {
+            setShowErrorAlert(true);
+            const timer = setTimeout(() => setShowErrorAlert(false), 5000);
             return () => clearTimeout(timer);
         }
     }, [flash]);
@@ -153,6 +167,11 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
         applyFilters({ search: searchValue, time_period: timePeriod, month: specificMonth, year: val, per_page: perPage });
     }
 
+    const handlePerPageChange = (value: string) => {
+        setPerPage(value);
+        applyFilters({ search: searchValue, time_period: timePeriod, month: specificMonth, year: specificYear, per_page: value });
+    };
+
     const performSearch = () => {
         applyFilters({ search: searchValue, time_period: timePeriod, month: specificMonth, year: specificYear, per_page: perPage });
     };
@@ -184,6 +203,13 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                     performSearch();
                 },
             });
+        }
+    };
+
+    // [BARU] Handler Pembayaran
+    const handlePay = (id: number, incisorName: string, amount: number) => {
+        if (confirm(`Proses pembayaran untuk ${incisorName} sebesar ${formatCurrency(amount)}?\n\nSistem akan otomatis memotong Kasbon jika penoreh memiliki hutang.`)) {
+            router.post(route('inciseds.settle', id));
         }
     };
 
@@ -301,13 +327,19 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                 </div>
                             </div>
 
-                            {/* Alert Messages */}
                             <div className="mb-4 space-y-2">
                                 { (showSuccessAlert && flash?.message) && (
                                     <Alert className="bg-emerald-50 text-emerald-800 border-emerald-200">
                                         <Megaphone className="h-4 w-4" />
                                         <AlertTitle>Sukses</AlertTitle>
                                         <AlertDescription>{flash.message}</AlertDescription>
+                                    </Alert>
+                                )}
+                                { (showErrorAlert && flash?.error) && (
+                                    <Alert variant="destructive">
+                                        <Megaphone className="h-4 w-4" />
+                                        <AlertTitle>Error</AlertTitle>
+                                        <AlertDescription>{flash.error}</AlertDescription>
                                     </Alert>
                                 )}
                             </div>
@@ -322,7 +354,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                 <TableHead className="font-semibold">Lokasi Kebun</TableHead>
                                                 <TableHead className="text-right font-semibold">Hasil (Kg)</TableHead>
                                                 <TableHead className="text-right font-semibold">Keping</TableHead>
-                                                <TableHead className="text-center font-semibold">Aksi</TableHead>
+                                                <TableHead className="text-center font-semibold">Status / Aksi</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -352,7 +384,48 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                     <TableCell className="text-right">{incised.keping}</TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center justify-center gap-1">
-                                                            {/* [FITUR BARU] Tombol Setor ke Gudang */}
+
+                                                            {/* [BARU] LOGIK TOMBOL BAYAR / STATUS */}
+                                                            {incised.payment_status === 'paid' ? (
+                                                                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100 cursor-default px-3 py-1">
+                                                                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Lunas
+                                                                </Badge>
+                                                            ) : (
+                                                                // Tombol Bayar (Hanya muncul jika belum lunas)
+                                                                can('incised.edit') && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        className="h-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm mr-2"
+                                                                        onClick={() => handlePay(incised.id, incised.incisor_name || 'Penoreh', incised.amount)}
+                                                                        title="Bayar & Potong Kasbon"
+                                                                    >
+                                                                        <Wallet className="w-3.5 h-3.5 mr-1" /> Bayar
+                                                                    </Button>
+                                                                )
+                                                            )}
+
+                                                            {/* Tombol Aksi (Edit/Hapus) - Sembunyikan jika sudah lunas agar data aman */}
+                                                            {incised.payment_status !== 'paid' && (
+                                                                <>
+                                                                    {can('incised.edit') && (
+                                                                        <Link href={route('inciseds.edit', incised.id)}>
+                                                                            <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-orange-50 hover:text-orange-600"><Pencil className="h-4 w-4" /></Button>
+                                                                        </Link>
+                                                                    )}
+                                                                    {can('incised.delete') && (
+                                                                        <Button
+                                                                            size="icon"
+                                                                            variant="ghost"
+                                                                            className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                                                                            onClick={() => handleDelete(incised.id, incised.product)}
+                                                                        >
+                                                                            <Trash className="h-4 w-4" />
+                                                                        </Button>
+                                                                    )}
+                                                                </>
+                                                            )}
+
+                                                            {/* Tombol Setor ke Gudang (Tetap ada) */}
                                                             {can('products.create') && (
                                                                 <Link
                                                                     href={route('incoming.create')}
@@ -365,27 +438,10 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                                         prefill_ref: `TOREH-${incised.no_invoice}`
                                                                     }}
                                                                 >
-                                                                    <Button size="sm" variant="outline" className="h-8 bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100 mr-2" title="Setor ke Stok Masuk (Gudang)">
-                                                                        <PackagePlus className="h-3.5 w-3.5 mr-1" />
-                                                                        Setor
+                                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:bg-blue-50" title="Setor ke Stok Masuk (Gudang)">
+                                                                        <PackagePlus className="h-4 w-4" />
                                                                     </Button>
                                                                 </Link>
-                                                            )}
-
-                                                            {can('incised.edit') && (
-                                                                <Link href={route('inciseds.edit', incised.id)}>
-                                                                    <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-orange-50 hover:text-orange-600"><Pencil className="h-4 w-4" /></Button>
-                                                                </Link>
-                                                            )}
-                                                            {can('incised.delete') && (
-                                                                <Button
-                                                                    size="icon"
-                                                                    variant="ghost"
-                                                                    className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                                                                    onClick={() => handleDelete(incised.id, incised.product)}
-                                                                >
-                                                                    <Trash className="h-4 w-4" />
-                                                                </Button>
                                                             )}
                                                         </div>
                                                     </TableCell>
@@ -403,7 +459,6 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
 
                             <div className="flex justify-between items-center mt-4">
                                 <span className="text-xs text-gray-500">
-                                    {/* [PERBAIKAN] Akses langsung inciseds.total tanpa .meta */}
                                     Total Data: {inciseds.total}
                                 </span>
                                 {inciseds.data.length > 0 && renderPagination(inciseds.links)}

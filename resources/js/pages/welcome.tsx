@@ -15,14 +15,14 @@ export default function Welcome() {
 
         const headElements = [
             { type: 'meta', name: 'description', content: 'PT. Garuda Karya Amanat bergerak dalam bidang perdagangan, konstruksi, dan perkebunan di Kabupaten Natuna.' },
-            { type: 'link', rel: 'icon', href: '/storage/assets/gka_title.png' },
+            { type: 'link', rel: 'icon', href: '/assets/GKA_no_Tag.png' },
             { type: 'link', rel: 'preconnect', href: 'https://fonts.googleapis.com' },
             { type: 'link', rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'true' },
             { type: 'link', rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap' },
             { type: 'link', rel: 'stylesheet', href: 'https://unpkg.com/aos@2.3.1/dist/aos.css' },
             { type: 'script', src: 'https://cdn.tailwindcss.com' },
             { type: 'script', src: 'https://unpkg.com/aos@2.3.1/dist/aos.js' },
-            { type: 'style', content: `body { font-family: 'Poppins', sans-serif; } .hero-bg { background-image: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)), url('/storage/assets/hero-bg.jpg'); }` }
+            { type: 'style', content: `body { font-family: 'Poppins', sans-serif; } .hero-bg { background-image: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)), url('/assets/bghero.jpg'); }` }
         ];
 
         headElements.forEach(item => {
@@ -69,9 +69,9 @@ export default function Welcome() {
     ];
 
     const products = [
-        { name: 'Rubber', image: '/storage/assets/karet.jpeg' },
-        { name: 'Coconut Fiber', image: '/storage/assets/sabut.jpeg' },
-        { name: 'White Copra', image: '/storage/assets/kop_putih.jpeg' }
+        { name: 'Rubber', image: '/assets/karet.jpeg' },
+        { name: 'Coconut Fiber', image: '/assets/sabut.jpeg' },
+        { name: 'White Copra', image: '/assets/kop_putih.jpeg' }
     ];
 
     return (
@@ -84,7 +84,7 @@ export default function Welcome() {
             <header id="header" className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 text-white">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center">
-                        <img src="/storage/assets/gka_logo.png" alt="GKA Logo" className="h-10 w-auto" />
+                        <img src="/assets/GKA_no_Tag.png" alt="GKA Logo" className="h-10 w-auto" />
                         <span className="ml-3 font-bold text-xl tracking-wider">GKA</span>
                     </div>
                     <nav className="hidden md:flex items-center space-x-8">
@@ -131,7 +131,7 @@ export default function Welcome() {
                         </div>
                         <div className="flex flex-col md:flex-row items-center gap-12">
                             <div className="md:w-1/2" data-aos="fade-right">
-                                <img src="/storage/assets/bg_dpan.jpg" alt="Tentang GKA" className="rounded-lg shadow-2xl w-full" />
+                                <img src="/assets/bghero.jpg" alt="Tentang GKA" className="rounded-lg shadow-2xl w-full" />
                             </div>
                             <div className="md:w-1/2" data-aos="fade-left">
                                 <p className="mb-6">
@@ -159,17 +159,17 @@ export default function Welcome() {
                         </div>
                         <div className="grid md:grid-cols-3 gap-8 text-center">
                             <div className="bg-white p-8 rounded-lg shadow-lg" data-aos="zoom-in">
-                                <img src="/storage/assets/pickup.jpg" alt="Small Truck" className="h-20 mx-auto mb-4"/>
+                                <img src="/assets/pickup.jpg" alt="Small Truck" className="h-20 mx-auto mb-4"/>
                                 <h3 className="text-xl font-bold mb-2">Small Truck</h3>
                                 <p>Kapasitas angkut hingga 1 Ton, fleksibel untuk pengiriman skala kecil.</p>
                             </div>
                             <div className="bg-white p-8 rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="200">
-                                <img src="/storage/assets/truck.jpeg" alt="Truck" className="h-20 mx-auto mb-4"/>
+                                <img src="/assets/truck.jpg" alt="Truck" className="h-20 mx-auto mb-4"/>
                                 <h3 className="text-xl font-bold mb-2">Truck</h3>
                                 <p>Kapasitas angkut hingga 14 Ton, solusi untuk kebutuhan logistik menengah.</p>
                             </div>
                             <div className="bg-white p-8 rounded-lg shadow-lg" data-aos="zoom-in" data-aos-delay="400">
-                                <img src="/storage/assets/pelni.png" alt="Container" className="h-20 mx-auto mb-4"/>
+                                <img src="/assets/pelni.png" alt="Container" className="h-20 mx-auto mb-4"/>
                                 <h3 className="text-xl font-bold mb-2">Container</h3>
                                 <p>Kapasitas angkut hingga 24 Ton, ideal untuk pengiriman skala besar dan ekspor.</p>
                             </div>
@@ -226,7 +226,7 @@ export default function Welcome() {
             {/* === Footer === */}
             <footer className="bg-gray-900 text-gray-400 py-10">
                 <div className="container mx-auto px-6 text-center">
-                    <img src="/storage/assets/GKA_no_TAG.png" alt="GKA Logo" className="h-12 mx-auto mb-4"/>
+                    <img src="/assets/GKA_no_TAG.png" alt="GKA Logo" className="h-12 mx-auto mb-4"/>
                     <p>&copy; {new Date().getFullYear()} PT. Garuda Karya Amanat. All Rights Reserved.</p>
                 </div>
             </footer>

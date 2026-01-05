@@ -68,7 +68,7 @@ class KasbonController extends Controller
                 $kasbonBaseQuery->where('kasbonable_type', Incisor::class);
             }
         }
-        
+
         // [MODIFIED] Buat query untuk tabel (grup) DARI query dasar
         // Kita clone() agar grouping tidak mempengaruhi query stats
         $query = $kasbonBaseQuery->clone()
@@ -89,7 +89,7 @@ class KasbonController extends Controller
             $kasbonIds = $kasbonsForGroup->clone()->pluck('id');
 
             $totalPaid = KasbonPayment::whereIn('kasbon_id', $kasbonIds)->sum('amount');
-            
+
             $owner = $group->kasbonable;
             $ownerName = 'N/A';
             $ownerIdentifier = 'N/A';
@@ -105,7 +105,7 @@ class KasbonController extends Controller
                     $kasbonType = 'Penoreh';
                 }
             }
-            
+
             $remaining = $totalKasbon - $totalPaid;
 
             return [
@@ -131,10 +131,10 @@ class KasbonController extends Controller
         ]);
 
         // [MODIFIED] Hitung STAT CARDS menggunakan query dasar yang sudah terfilter
-        
+
         // Stat 1: Total Pending (Sesuai Filter)
         $totalPendingKasbon = $kasbonBaseQuery->clone()->where('status', 'Pending')->count();
-        
+
         // Stat 2: Total Perlu Dibayar (Sesuai Filter)
         $totalApprovedKasbon = $kasbonBaseQuery->clone()
             ->where('status', 'Approved')
@@ -145,7 +145,7 @@ class KasbonController extends Controller
         $approvedKasbons = $kasbonBaseQuery->clone()
             ->where('status', 'Approved')
             ->get(['id', 'kasbon']);
-            
+
         $totalApprovedPaid = KasbonPayment::whereIn('kasbon_id', $approvedKasbons->pluck('id'))->sum('amount');
         $sumRemainingAmount = $approvedKasbons->sum('kasbon') - $totalApprovedPaid;
 
@@ -159,12 +159,12 @@ class KasbonController extends Controller
             'sumApprovedKasbonAmount' => $sumRemainingAmount, // <-- Sudah terfilter
         ]);
     }
-    
+
     public function showByUser($type, $id)
     {
         $modelType = ($type === 'employee') ? Employee::class : Incisor::class;
         $owner = $modelType::findOrFail($id);
-        
+
         $ownerData = [];
         if ($modelType === Employee::class) {
             $ownerData = ['name' => $owner->name, 'identifier' => 'NIP: ' . $owner->employee_id];
@@ -202,15 +202,15 @@ class KasbonController extends Controller
                 'transaction_ref' => $payment,
             ]);
         }
-        
+
         $sortedTransactions = $transactions->sortBy('date')->values();
-        
+
         $runningBalance = 0;
         $balanceMap = [];
-        
+
         foreach ($sortedTransactions as $tx) {
-            $kasbonStatus = $tx['transaction_type'] === 'kasbon' 
-                ? $tx['transaction_ref']['status'] 
+            $kasbonStatus = $tx['transaction_type'] === 'kasbon'
+                ? $tx['transaction_ref']['status']
                 : ($tx['transaction_ref']['kasbon']['status'] ?? 'Approved');
 
             if ($kasbonStatus === 'Approved') {
@@ -252,7 +252,7 @@ class KasbonController extends Controller
             'payment_date' => 'required|date',
             'notes' => 'nullable|string|max:255',
         ]);
-        
+
         DB::beginTransaction();
         try {
             $kasbon = Kasbon::with('payments')->findOrFail($validated['kasbon_id']);
@@ -264,21 +264,21 @@ class KasbonController extends Controller
             $totalPaid = $kasbon->payments->sum('amount');
             $remaining = $kasbon->kasbon - $totalPaid;
 
-            if ($validated['amount'] > ($remaining + 0.001)) { 
+            if ($validated['amount'] > ($remaining + 0.001)) {
                  return back()->withErrors(['amount' => 'Jumlah pembayaran melebihi sisa utang.'])->withInput();
             }
-            
+
             $kasbon->payments()->create($validated);
-            
+
             $this->updateKasbonPaymentStatus($kasbon);
 
             DB::commit();
 
             return redirect()->route('kasbons.showByUser', [
-                'type' => $request->input('owner_type'), 
+                'type' => $request->input('owner_type'),
                 'id' => $request->input('owner_id')
             ])->with('message', 'Pembayaran berhasil dicatat.');
-    
+
         } catch (Throwable $e) {
             DB::rollBack();
             Log::error("Gagal memproses pembayaran kasbon.", ['error' => $e->getMessage()]);
@@ -297,15 +297,15 @@ class KasbonController extends Controller
         DB::beginTransaction();
         try {
             $kasbon = $payment->kasbon()->with('payments')->firstOrFail();
-            
+
             $otherPaymentsTotal = $kasbon->payments->where('id', '!=', $payment->id)->sum('amount');
             $remaining = $kasbon->kasbon - $otherPaymentsTotal;
             if ($validated['amount'] > ($remaining + 0.001)) {
                 return back()->withErrors(['amount' => 'Jumlah pembayaran melebihi sisa utang.'])->withInput();
             }
-            
+
             $payment->update($validated);
-            
+
             $this->updateKasbonPaymentStatus($kasbon);
 
             DB::commit();
@@ -350,7 +350,7 @@ class KasbonController extends Controller
         }
         $kasbon->save();
     }
-    
+
     public function createPegawai()
     {
         $employees = Employee::select('id', 'name', 'salary', 'employee_id')->get()->map(fn ($e) => [
@@ -374,19 +374,19 @@ class KasbonController extends Controller
             'reason'      => 'nullable|string',
             'transaction_date' => 'required|date',
         ]);
-        
+
         $employee = Employee::findOrFail($validated['employee_id']);
 
         if ($validated['status'] === 'Approved' && $validated['kasbon'] > $employee->salary) {
             return back()->withErrors(['kasbon' => 'Jumlah kasbon tidak boleh melebihi gaji pegawai.'])->withInput();
         }
-        
+
         $dataToCreate = $validated;
         $dataToCreate['kasbonable_type'] = Employee::class;
         $dataToCreate['kasbonable_id'] = $validated['employee_id'];
         $dataToCreate['month'] = Carbon::parse($validated['transaction_date'])->month;
         $dataToCreate['year'] = Carbon::parse($validated['transaction_date'])->year;
-        
+
         Kasbon::create($dataToCreate);
 
         return redirect()->route('kasbons.index')->with('message', 'Kasbon pegawai berhasil dibuat.');
@@ -420,7 +420,7 @@ class KasbonController extends Controller
             'reason' => 'nullable|string',
             'transaction_date' => 'required|date',
         ]);
-        
+
         $incisor = Incisor::findOrFail($validated['incisor_id']);
         $totalAmount = Incised::where('no_invoice', $incisor->no_invoice)
             ->whereMonth('date', $validated['month'])
@@ -450,7 +450,7 @@ class KasbonController extends Controller
     {
         $kasbon->load('kasbonable');
         $isEmployee = $kasbon->kasbonable_type === Employee::class;
-        
+
         $props = [
             'kasbon' => [
                 'id' => $kasbon->id,
@@ -476,9 +476,9 @@ class KasbonController extends Controller
             ]);
             return Inertia::render('Kasbons/edit_pegawai', $props);
         }
-        
+
         $props['incisors'] = Incisor::select('id', 'no_invoice', 'name')->get()->map(fn ($i) => [
-            'id' => $i->id, 
+            'id' => $i->id,
             'label' => "{$i->no_invoice} - {$i->name}"
         ]);
         $props['monthsYears'] = Incised::select(DB::raw('YEAR(date) as year, MONTH(date) as month'))
@@ -487,7 +487,7 @@ class KasbonController extends Controller
                 $monthName = Carbon::createFromDate($item->year, $item->month, 1)->translatedFormat('F');
                 return ['year' => $item->year, 'month' => $item->month, 'label' => "{$monthName} {$item->year}"];
             });
-        
+
         return Inertia::render('Kasbons/edit', $props);
     }
 
@@ -510,7 +510,7 @@ class KasbonController extends Controller
                 if ($validated['status'] === 'Approved' && $validated['kasbon'] > $employee->salary) {
                      return back()->withErrors(['kasbon' => 'Jumlah kasbon tidak boleh melebihi gaji pegawai.'])->withInput();
                 }
-                
+
                 $dataToUpdate = $validated;
                 $dataToUpdate['kasbonable_id'] = $validated['employee_id'];
                 $dataToUpdate['kasbonable_type'] = Employee::class;
@@ -528,23 +528,23 @@ class KasbonController extends Controller
                     'reason'     => 'nullable|string|max:255',
                     'transaction_date' => 'required|date',
                 ]);
-                
+
                 $incisor = Incisor::findOrFail($validated['incisor_id']);
                 $totalAmount = Incised::where('no_invoice', $incisor->no_invoice)
                     ->whereMonth('date', $validated['month'])
                     ->whereYear('date', $validated['year'])
                     ->sum('amount');
                 $gaji = $totalAmount;
-                
+
                 // if ($validated['status'] === 'Approved' && $validated['kasbon'] > $gaji) {
                 //      return back()->withErrors(['kasbon' => 'Jumlah kasbon tidak boleh melebihi total gaji penoreh pada periode ini.'])->withInput();
                 // }
-                
+
                 $dataToUpdate = $validated;
                 $dataToUpdate['kasbonable_id'] = $validated['incisor_id'];
                 $dataToUpdate['kasbonable_type'] = Incisor::class;
                 $dataToUpdate['gaji'] = $gaji;
-                
+
                 $kasbon->update($dataToUpdate);
             }
 
@@ -555,7 +555,7 @@ class KasbonController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan server saat mengupdate data.')->withInput();
         }
     }
-    
+
     public function destroy(Kasbon $kasbon)
     {
         $kasbon->delete();
@@ -590,7 +590,7 @@ class KasbonController extends Controller
             'max_kasbon_amount' => $gaji,
         ]);
     }
-    
+
     public function print(Request $request)
     {
         // [MODIFIED] Ambil semua filter dari request
@@ -635,7 +635,7 @@ class KasbonController extends Controller
         $query = $kasbonBaseQuery->clone()
             ->select('kasbonable_id', 'kasbonable_type')
             ->groupBy('kasbonable_id', 'kasbonable_type');
-        
+
         $allGroups = $query->get();
 
         $processedGroups = $allGroups->map(function ($group) {
@@ -649,7 +649,7 @@ class KasbonController extends Controller
             $kasbonIds = $kasbonsForGroup->clone()->pluck('id');
 
             $totalPaid = KasbonPayment::whereIn('kasbon_id', $kasbonIds)->sum('amount');
-            
+
             $owner = $group->kasbonable;
             $ownerName = 'N/A';
             $location = '-';
@@ -662,9 +662,9 @@ class KasbonController extends Controller
                     $location = $owner->lok_toreh ?? '-';
                 }
             }
-            
+
             $remaining = $totalKasbon - $totalPaid;
-            
+
             $status = 'Lunas';
             if ($remaining > 0) {
                 $status = 'Belum Lunas';
@@ -693,7 +693,7 @@ class KasbonController extends Controller
     {
         $modelType = ($type === 'employee') ? Employee::class : Incisor::class;
         $owner = $modelType::findOrFail($id);
-        
+
         $ownerData = [];
         if ($modelType === Employee::class) {
             $ownerData = ['name' => $owner->name, 'identifier' => 'NIP: ' . $owner->employee_id];
@@ -731,15 +731,15 @@ class KasbonController extends Controller
                 'transaction_ref' => $payment,
             ]);
         }
-        
+
         $sortedTransactions = $transactions->sortBy('date')->values();
-        
+
         $runningBalance = 0;
         $balanceMap = [];
-        
+
         foreach ($sortedTransactions as $tx) {
-            $kasbonStatus = $tx['transaction_type'] === 'kasbon' 
-                ? $tx['transaction_ref']['status'] 
+            $kasbonStatus = $tx['transaction_type'] === 'kasbon'
+                ? $tx['transaction_ref']['status']
                 : ($tx['transaction_ref']['kasbon']['status'] ?? 'Approved');
 
             if ($kasbonStatus === 'Approved') {

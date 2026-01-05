@@ -126,7 +126,7 @@ export default function EditKasbon() {
     return (
         <AppLayout breadcrumbs={dynamicBreadcrumbs}>
             <Head title={`Edit Kasbon - ${kasbon.owner.name}`} />
-            <div className="space-y-6 p-4 md:p-6">
+            <div className="space-y-6 p-4 md:p-6 bg-gray-50/50 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title="Edit Kasbon Penoreh" description={`Perbarui data untuk kasbon #${kasbon.id}`} />
                     <Link href={route('kasbons.index')}><Button variant="outline" className="flex items-center gap-2"><Undo2 className="h-4 w-4" /> Kembali</Button></Link>
@@ -139,7 +139,7 @@ export default function EditKasbon() {
                         <AlertDescription>{flash.message || flash.error || fetchError}</AlertDescription>
                     </Alert>
                 )}
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     <div className="lg:col-span-2">
                         <Card>

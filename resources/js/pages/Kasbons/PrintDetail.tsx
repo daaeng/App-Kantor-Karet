@@ -40,7 +40,7 @@ export default function PrintDetail({ owner, history, printDate } : PageProps ) 
         <>
             <Head title={`Cetak Rincian Kasbon - ${owner.name}`} />
             <div className="p-8 font-sans bg-white text-gray-800">
-                
+
                 {/* --- KOP SURAT / HEADER --- */}
                 <header className="mb-8 text-center border-b-2 border-gray-800 pb-4">
                     {/* [PERBAIKAN] Menggunakan mx-auto untuk menengahkan logo */}
@@ -66,7 +66,7 @@ export default function PrintDetail({ owner, history, printDate } : PageProps ) 
                         </div>
                     </div>
                 </section>
-                
+
                 {/* --- TABEL TRANSAKSI --- */}
                 <main>
                     <table className="w-full text-sm border-collapse border border-gray-400">

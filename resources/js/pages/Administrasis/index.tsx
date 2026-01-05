@@ -7,11 +7,11 @@ import Tag from '@/components/ui/tag';
 import AppLayout from '@/layouts/app-layout';
 import { can } from '@/lib/can';
 import { Head, Link, router } from '@inertiajs/react';
-import { 
-    Eye, Pencil, PlusCircle, Trash2, 
-    Wallet, Filter, 
+import {
+    Eye, Pencil, PlusCircle, Trash2,
+    Wallet, Filter,
     Building2, Scale, TrendingUp, Banknote, Loader2, Landmark, Printer,
-    Hash, ArrowRightLeft, UserCircle 
+    Hash, ArrowRightLeft, UserCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -35,15 +35,15 @@ interface FinancialReport {
         in_penjualan: number; in_lainnya: number; out_gaji: number; out_kapal: number; out_truck: number; out_hutang: number; out_penarikan: number; total_in: number; total_out: number; balance: number;
     };
     kas: {
-        in_penarikan: number; 
-        out_lapangan: number; 
-        out_kantor: number; 
-        out_bpjs: number; 
-        out_belikaret: number; 
-        out_kasbon_pegawai: number; 
-        out_kasbon_penoreh: number; 
-        total_in: number; 
-        total_out: number; 
+        in_penarikan: number;
+        out_lapangan: number;
+        out_kantor: number;
+        out_bpjs: number;
+        out_belikaret: number;
+        out_kasbon_pegawai: number;
+        out_kasbon_penoreh: number;
+        total_in: number;
+        total_out: number;
         balance: number;
     };
     profit_loss: { revenue: number; cogs: number; gross_profit: number; opex: number; net_profit: number; };
@@ -51,21 +51,20 @@ interface FinancialReport {
 }
 
 interface SummaryData {
-    totalRequests: number; totalNotas: number; pendingRequests: number; pendingNotas: number; pendingCount: number; hargaSahamKaret: number; hargaDollar: number; totalPengeluaran: number; lapaRugi: number; totalPenjualanKaret: number; s_karet: number; tb_karet: number; reports: FinancialReport;
-    labaRugi: number; 
+    totalRequests: number; totalNotas: number; pendingRequests: number; pendingNotas: number; pendingCount: number; hargaSahamKaret: number; hargaDollar: number; totalPengeluaran: number; labaRugi: number; totalPenjualanKaret: number; s_karet: number; tb_karet: number; reports: FinancialReport;
 }
 
 interface ChartDataPoint { name: string; Pemasukan: number; Pengeluaran: number; }
 
 interface TransactionData {
-    id: number; 
-    type: 'income' | 'expense'; 
-    source: 'cash' | 'bank'; 
-    category: string; 
-    description: string | null; 
-    amount: number; 
+    id: number;
+    type: 'income' | 'expense';
+    source: 'cash' | 'bank';
+    category: string;
+    description: string | null;
+    amount: number;
     transaction_date: string;
-    transaction_code: string; 
+    transaction_code: string;
     transaction_number: string;
     db_cr: 'debit' | 'credit';
     counterparty: string;
@@ -73,8 +72,21 @@ interface TransactionData {
 
 interface PaginatedData<T> { data: T[]; links: any[]; meta: { current_page: number; last_page: number; per_page: number; total: number; }; }
 
+// [UPDATE] Menambahkan start_year dan end_year ke Interface Filter
 interface PageProps {
-    requests: PaginatedData<any>; notas: PaginatedData<any>; summary: SummaryData; chartData: ChartDataPoint[]; filter?: { time_period?: string; month?: string; year?: string }; currentMonth: number; currentYear: number;
+    requests: PaginatedData<any>;
+    notas: PaginatedData<any>;
+    summary: SummaryData;
+    chartData: ChartDataPoint[];
+    filter?: {
+        time_period?: string;
+        month?: string;
+        year?: string;
+        start_year?: string; // [BARU]
+        end_year?: string;   // [BARU]
+    };
+    currentMonth: number;
+    currentYear: number;
 }
 
 // --- Helpers ---
@@ -104,12 +116,16 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     const [activeTab, setActiveTab] = useState("reports");
     const [isHargaModalOpen, setIsHargaModalOpen] = useState(false);
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-    const [editingTransactionId, setEditingTransactionId] = useState<number | null>(null); // State Edit ID
-    
-    // Filter State
+    const [editingTransactionId, setEditingTransactionId] = useState<number | null>(null);
+
+    // --- Filter State ---
     const [timePeriod, setTimePeriod] = useState(filter?.time_period || 'this-month');
-    const [selectedMonth, setSelectedMonth] = useState<string>(String(currentMonth));
-    const [selectedYear, setSelectedYear] = useState<string>(String(currentYear));
+    const [selectedMonth, setSelectedMonth] = useState<string>(filter?.month || String(currentMonth));
+    const [selectedYear, setSelectedYear] = useState<string>(filter?.year || String(currentYear));
+
+    // [BARU] State untuk Rentang Tahun
+    const [startYear, setStartYear] = useState<string>(filter?.start_year || String(currentYear));
+    const [endYear, setEndYear] = useState<string>(filter?.end_year || String(currentYear));
 
     // Table State
     const [trxData, setTrxData] = useState<PaginatedData<TransactionData>>({ data: [], links: [], meta: { current_page: 1, last_page: 1, per_page: 10, total: 0 } });
@@ -118,8 +134,8 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
     // Form Transaksi
     const [uiSource, setUiSource] = useState<UiSourceType>('kas_out');
-    
-    const trxForm = useForm({ 
+
+    const trxForm = useForm({
         type: '', source: '', kategori: '', deskripsi: '', jumlah: '', tanggal: new Date().toISOString().split('T')[0],
         transaction_code: '', transaction_number: '', db_cr: 'debit', counterparty: ''
     });
@@ -129,47 +145,88 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     // Fetch Transaksi
     useEffect(() => {
         if (activeTab === 'expenses') fetchTransactions();
-    }, [activeTab, trxPage, selectedMonth, selectedYear]);
+    }, [activeTab, trxPage, selectedMonth, selectedYear, startYear, endYear, timePeriod]); // Trigger ulang saat filter berubah
 
     const fetchTransactions = async () => {
         setIsTrxLoading(true);
         try {
-            const response = await fetch(route('administrasis.getTransactions', { month: selectedMonth, year: selectedYear, page: trxPage }));
+            // Kita kirim juga parameter filter ke API agar tabel transaksi sinkron
+            const queryParams = new URLSearchParams({
+                page: String(trxPage),
+                time_period: timePeriod,
+                month: selectedMonth,
+                year: selectedYear,
+                start_year: startYear,
+                end_year: endYear
+            });
+            const response = await fetch(route('administrasis.getTransactions') + `?${queryParams.toString()}`);
             if (response.ok) {
                 const data = await response.json();
                 setTrxData(data);
             }
-        } catch (error) { console.error("Error fetching transactions:", error); } 
+        } catch (error) { console.error("Error fetching transactions:", error); }
         finally { setIsTrxLoading(false); }
     };
 
-    // Handlers
-    const handleTimePeriodChange = (value: string) => { setTimePeriod(value); const params: any = { time_period: value }; if (value === 'specific-month') { params.month = String(new Date().getMonth() + 1); params.year = String(new Date().getFullYear()); setSelectedMonth(params.month); setSelectedYear(params.year); } router.get(route('administrasis.index'), params, { preserveState: true, replace: true, only: ['summary', 'requests', 'notas', 'chartData', 'filter'] }); };
-    const handleMonthChange = (v: string) => { setSelectedMonth(v); router.get(route('administrasis.index'), { time_period: timePeriod, month: v, year: selectedYear }, { preserveState: true, replace: true, only: ['summary', 'requests', 'notas', 'chartData'] }); };
-    const handleYearChange = (v: string) => { setSelectedYear(v); router.get(route('administrasis.index'), { time_period: timePeriod, month: selectedMonth, year: v }, { preserveState: true, replace: true, only: ['summary', 'requests', 'notas', 'chartData'] }); };
-    
+    // --- HANDLERS FILTER ---
+    // Fungsi Centralized Filter Application
+    const applyFilter = (period: string, month: string, year: string, sYear: string, eYear: string) => {
+        router.get(route('administrasis.index'), {
+            time_period: period,
+            month: month,
+            year: year,
+            start_year: sYear,
+            end_year: eYear
+        }, {
+            preserveState: true,
+            replace: true,
+            only: ['summary', 'requests', 'notas', 'chartData', 'filter']
+        });
+    };
+
+    const handleTimePeriodChange = (value: string) => {
+        setTimePeriod(value);
+        if (value === 'specific-month') {
+            applyFilter(value, String(new Date().getMonth() + 1), String(new Date().getFullYear()), startYear, endYear);
+        } else if (value === 'periodic-years') {
+            // Default rentang tahun: Tahun ini s/d Tahun ini
+            const currYear = String(new Date().getFullYear());
+            setStartYear(currYear);
+            setEndYear(currYear);
+            applyFilter(value, selectedMonth, selectedYear, currYear, currYear);
+        } else {
+            applyFilter(value, selectedMonth, selectedYear, startYear, endYear);
+        }
+    };
+
+    const handleMonthChange = (v: string) => { setSelectedMonth(v); applyFilter(timePeriod, v, selectedYear, startYear, endYear); };
+    const handleYearChange = (v: string) => { setSelectedYear(v); applyFilter(timePeriod, selectedMonth, v, startYear, endYear); };
+
+    // [BARU] Handler Start/End Year
+    const handleStartYearChange = (v: string) => { setStartYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, v, endYear); };
+    const handleEndYearChange = (v: string) => { setEndYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, v); };
+
     const handlePrint = (type: string) => {
         const url = route('administrasis.print', {
             type: type,
             time_period: timePeriod,
             month: selectedMonth,
-            year: selectedYear
+            year: selectedYear,
+            start_year: startYear,
+            end_year: endYear
         });
         window.open(url, '_blank');
     };
 
-    const openTransactionModal = () => { 
-        trxForm.reset(); 
-        setEditingTransactionId(null); // Reset Edit ID
-        setUiSource('kas_out'); 
-        setIsTransactionModalOpen(true); 
+    const openTransactionModal = () => {
+        trxForm.reset();
+        setEditingTransactionId(null);
+        setUiSource('kas_out');
+        setIsTransactionModalOpen(true);
     };
 
-    // [BARU] Handler Edit Transaksi - Mengisi form dengan data yang ada
     const handleEditTransaction = (item: TransactionData) => {
         setEditingTransactionId(item.id);
-        
-        // Tentukan UI Source berdasarkan data
         let source: any = 'kas_out';
         if (item.source === 'cash' && item.type === 'expense') source = 'kas_out';
         else if (item.source === 'bank' && item.type === 'expense') source = 'bank_out';
@@ -177,93 +234,47 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
         else if (item.source === 'cash' && item.type === 'income') source = 'kas_in';
         setUiSource(source);
 
-        // Isi Form
         trxForm.setData({
-            type: item.type,
-            source: item.source,
-            kategori: item.category,
-            deskripsi: item.description || '',
-            jumlah: String(item.amount),
-            tanggal: item.transaction_date,
-            transaction_code: item.transaction_code || '',
-            transaction_number: item.transaction_number || '',
-            db_cr: item.db_cr || 'debit',
-            counterparty: item.counterparty || ''
+            type: item.type, source: item.source, kategori: item.category,
+            deskripsi: item.description || '', jumlah: String(item.amount), tanggal: item.transaction_date,
+            transaction_code: item.transaction_code || '', transaction_number: item.transaction_number || '',
+            db_cr: item.db_cr || 'debit', counterparty: item.counterparty || ''
         });
-
         setIsTransactionModalOpen(true);
     };
 
     const openHargaModal = (type: string, val: number) => { hargaForm.setData({ ...hargaForm.data, jenis: type, nilai: val.toString() }); setIsHargaModalOpen(true); };
 
-    // Submit Transaksi
     const submitTransaction = (e: React.FormEvent) => {
         e.preventDefault();
-        
-        let type = 'expense';
-        let source = 'cash';
-
+        let type = 'expense'; let source = 'cash';
         if (uiSource === 'kas_out') { type = 'expense'; source = 'cash'; }
         else if (uiSource === 'bank_out') { type = 'expense'; source = 'bank'; }
         else if (uiSource === 'bank_in') { type = 'income'; source = 'bank'; }
         else if (uiSource === 'kas_in') { type = 'income'; source = 'cash'; }
 
-        // Payload data
-        const payload: any = {
-            ...trxForm.data,
-            type: type,
-            source: source,
-            kategori: trxForm.data.kategori, // Gunakan data dari form jika ada
-            jumlah: trxForm.data.jumlah,
-            tanggal: trxForm.data.tanggal,
-            deskripsi: trxForm.data.deskripsi,
-            transaction_code: trxForm.data.transaction_code,
-            transaction_number: trxForm.data.transaction_number,
-            db_cr: trxForm.data.db_cr,
-            counterparty: trxForm.data.counterparty
-        };
+        const payload: any = { ...trxForm.data, type, source, kategori: trxForm.data.kategori };
 
-        // Jika Edit -> PUT, Jika Baru -> POST
         if (editingTransactionId) {
-             // Pastikan route 'administrasis.updateTransaction' sudah didefinisikan di web.php
-            // Route::put('/administrasis/transactions/{id}', [AdministrasiController::class, 'updateTransaction']);
-            
-            // Menggunakan Inertia router manual untuk PUT
             router.put(route('administrasis.updateTransaction', editingTransactionId), payload, {
-                 onSuccess: () => {
-                    setIsTransactionModalOpen(false);
-                    if (activeTab === 'expenses') fetchTransactions();
-                    router.reload({ only: ['summary', 'chartData'] });
-                }
+                onSuccess: () => { setIsTransactionModalOpen(false); if (activeTab === 'expenses') fetchTransactions(); router.reload({ only: ['summary', 'chartData'] }); }
             });
-
         } else {
             trxForm.transform(() => payload);
             trxForm.post(route('administrasis.storeTransaction'), {
-                onSuccess: () => {
-                    setIsTransactionModalOpen(false);
-                    if (activeTab === 'expenses') fetchTransactions();
-                    router.reload({ only: ['summary', 'chartData'] });
-                }
+                onSuccess: () => { setIsTransactionModalOpen(false); if (activeTab === 'expenses') fetchTransactions(); router.reload({ only: ['summary', 'chartData'] }); }
             });
         }
     };
 
-    const deleteTransaction = (id: number) => { if(confirm('Hapus transaksi ini?')) router.delete(route('administrasis.destroyTransaction', id), { onSuccess: () => { if (activeTab === 'expenses') fetchTransactions(); router.reload({ only: ['summary', 'chartData'] }); } }); };
+    const deleteTransaction = (id: number) => { if (confirm('Hapus transaksi ini?')) router.delete(route('administrasis.destroyTransaction', id), { onSuccess: () => { if (activeTab === 'expenses') fetchTransactions(); router.reload({ only: ['summary', 'chartData'] }); } }); };
     const submitHarga = (e: React.FormEvent) => { e.preventDefault(); hargaForm.post(route('administrasis.updateHarga'), { onSuccess: () => setIsHargaModalOpen(false) }); };
 
     const months = Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: new Date(0, i).toLocaleString('id-ID', { month: 'long' }) }));
     const years = Array.from({ length: 7 }, (_, i) => ({ value: String(new Date().getFullYear() - 5 + i), label: String(new Date().getFullYear() - 5 + i) }));
 
-    // Helper Component for Source Selection Button
     const SourceButton = ({ value, label, icon: Icon, colorClass }: { value: UiSourceType, label: string, icon: any, colorClass: string }) => (
-        <div 
-            onClick={() => { setUiSource(value); trxForm.setData('kategori', ''); }}
-            className={`p-3 border rounded-xl cursor-pointer text-center text-xs flex flex-col items-center justify-center gap-2 h-24 transition-all duration-200 
-                ${uiSource === value 
-                    ? `bg-${colorClass}-50 border-${colorClass}-500 ring-2 ring-${colorClass}-200 text-${colorClass}-700 font-bold shadow-sm` 
-                    : 'hover:bg-gray-50 border-gray-200 text-gray-600'}`}
-        >
+        <div onClick={() => { setUiSource(value); trxForm.setData('kategori', ''); }} className={`p-3 border rounded-xl cursor-pointer text-center text-xs flex flex-col items-center justify-center gap-2 h-24 transition-all duration-200 ${uiSource === value ? `bg-${colorClass}-50 border-${colorClass}-500 ring-2 ring-${colorClass}-200 text-${colorClass}-700 font-bold shadow-sm` : 'hover:bg-gray-50 border-gray-200 text-gray-600'}`}>
             <Icon className={`w-6 h-6 ${uiSource === value ? '' : 'text-gray-400'}`} />
             <span>{label}</span>
         </div>
@@ -272,20 +283,62 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Keuangan & Administrasi" />
-            
+
             <div className="flex flex-col space-y-6 p-2 md:p-4 bg-gray-50/50 dark:bg-black min-h-screen">
+
                 {/* Header & Filter */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div><Heading title="Keuangan & Administrasi" /><p className="text-muted-foreground text-sm">Pusat kontrol arus kas, laporan, dan arsip dokumen.</p></div>
+                    <div>
+                        <Heading title="Keuangan & Administrasi" />
+                        <p className="text-muted-foreground text-sm">Pusat kontrol arus kas, laporan, dan arsip dokumen.</p>
+                    </div>
                     <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-lg border shadow-sm">
                         <Filter className="w-4 h-4 text-gray-500 ml-2" />
                         <Select value={timePeriod} onValueChange={handleTimePeriodChange}>
                             <SelectTrigger className="w-[160px] border-none shadow-none h-8 bg-transparent focus:ring-0"><SelectValue placeholder="Periode" /></SelectTrigger>
-                            <SelectContent><SelectItem value="this-month">Bulan Ini</SelectItem><SelectItem value="last-month">Bulan Lalu</SelectItem><SelectItem value="this-year">Tahun Ini</SelectItem><SelectItem value="specific-month">Pilih Spesifik</SelectItem></SelectContent>
+                            <SelectContent>
+                                <SelectItem value="this-month">Bulan Ini</SelectItem>
+                                <SelectItem value="last-month">Bulan Lalu</SelectItem>
+                                <SelectItem value="this-year">Tahun Ini</SelectItem>
+                                <SelectItem value="specific-month">Pilih Bulan Spesifik</SelectItem>
+                                {/* [BARU] Opsi Rentang Tahun */}
+                                <SelectItem value="periodic-years">Rentang Tahun</SelectItem>
+                            </SelectContent>
                         </Select>
-                        {timePeriod === 'specific-month' && ( <> <div className="h-4 w-[1px] bg-gray-200 mx-1" /> <Select value={selectedMonth} onValueChange={handleMonthChange}><SelectTrigger className="w-[120px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger><SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent></Select> <Select value={selectedYear} onValueChange={handleYearChange}><SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger><SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent></Select> </> )}
-                        
-                        {/* PRINT DROPDOWN */}
+
+                        {/* Filter Bulan Spesifik */}
+                        {timePeriod === 'specific-month' && (
+                            <>
+                                <div className="h-4 w-[1px] bg-gray-200 mx-1" />
+                                <Select value={selectedMonth} onValueChange={handleMonthChange}>
+                                    <SelectTrigger className="w-[120px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Select value={selectedYear} onValueChange={handleYearChange}>
+                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </>
+                        )}
+
+                        {/* [BARU] Filter Rentang Tahun */}
+                        {timePeriod === 'periodic-years' && (
+                            <>
+                                <div className="h-4 w-[1px] bg-gray-200 mx-1" />
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mr-1">Dari</div>
+                                <Select value={startYear} onValueChange={handleStartYearChange}>
+                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <div className="text-gray-400">-</div>
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mr-1">Sampai</div>
+                                <Select value={endYear} onValueChange={handleEndYearChange}>
+                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </>
+                        )}
+
                         <div className="h-4 w-[1px] bg-gray-200 mx-1" />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -325,7 +378,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                         <Button size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shadow-md" onClick={openTransactionModal}><PlusCircle className="w-4 h-4 mr-2" /> Catat Transaksi</Button>
                     </div>
 
-                    {/* ... (Tab Reports & Overview tetap sama) ... */}
                     <TabsContent value="reports" className="space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* LAPORAN BANK */}
@@ -339,7 +391,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     <ReportRow label="Operasional Kantor" value={summary.reports.kas.out_kantor} isMinus />
                                     <ReportRow label="BPJS Ketenagakerjaan" value={summary.reports.kas.out_bpjs} isMinus />
                                     <ReportRow label="Pembelian Karet (Tunai)" value={summary.reports.kas.out_belikaret} isMinus />
-                                    {/* Kasbon dipisah */}
                                     <ReportRow label="Kasbon Pegawai Kantor" value={summary.reports.kas.out_kasbon_pegawai} isMinus />
                                     <ReportRow label="Kasbon Penoreh" value={summary.reports.kas.out_kasbon_penoreh} isMinus />
                                 </div>
@@ -352,7 +403,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                     </TabsContent>
 
                     <TabsContent value="overview">
-                        <Card className="shadow-sm"><CardHeader><CardTitle className="text-base">Grafik Arus Kas</CardTitle><CardDescription>Perbandingan Pemasukan vs Pengeluaran.</CardDescription></CardHeader><CardContent className="h-[400px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}><defs><linearGradient id="gradInc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient><linearGradient id="gradExp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8}/><stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" /><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6b7280'}} dy={10} /><YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `${val/1000}k`} tick={{fontSize: 12, fill: '#6b7280'}} /><Tooltip formatter={(val: number) => formatCurrency(val)} contentStyle={{borderRadius: '8px', border:'none', boxShadow:'0 4px 12px rgba(0,0,0,0.1)'}} /><Legend /><Bar dataKey="Pemasukan" fill="url(#gradInc)" radius={[4,4,0,0]} name="Pemasukan" barSize={30} /><Bar dataKey="Pengeluaran" fill="url(#gradExp)" radius={[4,4,0,0]} name="Pengeluaran" barSize={30} /></BarChart></ResponsiveContainer></CardContent></Card>
+                        <Card className="shadow-sm"><CardHeader><CardTitle className="text-base">Grafik Arus Kas</CardTitle><CardDescription>Perbandingan Pemasukan vs Pengeluaran.</CardDescription></CardHeader><CardContent className="h-[400px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}><defs><linearGradient id="gradInc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient><linearGradient id="gradExp" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8} /><stop offset="95%" stopColor="#f43f5e" stopOpacity={0} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" /><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} /><YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `${val / 1000}k`} tick={{ fontSize: 12, fill: '#6b7280' }} /><Tooltip formatter={(val: number) => formatCurrency(val)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} /><Legend /><Bar dataKey="Pemasukan" fill="url(#gradInc)" radius={[4, 4, 0, 0]} name="Pemasukan" barSize={30} /><Bar dataKey="Pengeluaran" fill="url(#gradExp)" radius={[4, 4, 0, 0]} name="Pengeluaran" barSize={30} /></BarChart></ResponsiveContainer></CardContent></Card>
                     </TabsContent>
 
                     <TabsContent value="expenses">
@@ -364,15 +415,11 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                         <TableRow>
                                             <TableHead>Tanggal</TableHead>
                                             <TableHead>Sumber</TableHead>
-                                            {/* [BARU] Header Kode & No */}
                                             <TableHead>Kode & No.</TableHead>
                                             <TableHead>Kategori</TableHead>
                                             <TableHead>Deskripsi</TableHead>
-                                            
-                                            {/* [BARU] Header Debit/Kredit & Pihak */}
                                             <TableHead className="w-24">Posisi</TableHead>
                                             <TableHead>Pihak Terkait</TableHead>
-                                            
                                             <TableHead className="text-right">Jumlah</TableHead>
                                             <TableHead className="text-center">Aksi</TableHead>
                                         </TableRow>
@@ -383,35 +430,26 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                 <TableRow key={item.id}>
                                                     <TableCell>{formatDate(item.transaction_date)}</TableCell>
                                                     <TableCell>{item.source === 'bank' ? <Badge variant="default" className="bg-blue-600">Bank</Badge> : <Badge variant="outline" className="border-amber-500 text-amber-600">Kas</Badge>}</TableCell>
-                                                    
-                                                    {/* [BARU] Tampilkan Kode & Nomor */}
                                                     <TableCell>
                                                         <div className="flex flex-col">
                                                             <span className="font-mono text-xs font-bold text-gray-700 dark:text-gray-300">{item.transaction_code || '-'}</span>
                                                             <span className="text-[10px] text-gray-500">{item.transaction_number || '-'}</span>
                                                         </div>
                                                     </TableCell>
-                                                    
                                                     <TableCell><span className={`text-xs font-semibold ${item.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>{item.type === 'income' ? '(+) ' : '(-) '} {item.category}</span></TableCell>
                                                     <TableCell className="max-w-[150px] truncate text-xs text-muted-foreground" title={item.description || ''}>{item.description || '-'}</TableCell>
-                                                    
-                                                    {/* [BARU] Tampilkan Debit/Kredit */}
                                                     <TableCell>
                                                         <Badge variant="outline" className={`capitalize text-[10px] ${item.db_cr === 'debit' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
                                                             {item.db_cr}
                                                         </Badge>
                                                     </TableCell>
-
-                                                    {/* [BARU] Tampilkan Pihak Terkait */}
                                                     <TableCell>
                                                         <span className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
                                                             <UserCircle className="w-3 h-3" /> {item.counterparty || '-'}
                                                         </span>
                                                     </TableCell>
-                                                    
                                                     <TableCell className={`text-right font-medium text-sm ${item.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(item.amount)}</TableCell>
                                                     <TableCell className="text-center gap-2 flex justify-center">
-                                                        {/* [BARU] Tombol Edit */}
                                                         <Button variant="ghost" size="icon" onClick={() => handleEditTransaction(item)}>
                                                             <Pencil className="w-4 h-4 text-blue-500" />
                                                         </Button>
@@ -442,7 +480,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                     <DialogContent>
                         <DialogHeader><DialogTitle>{editingTransactionId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}</DialogTitle><CardDescription>Kelola data keuangan harian.</CardDescription></DialogHeader>
                         <form onSubmit={submitTransaction} className="space-y-4 pt-2">
-                            {/* [UPDATED] Grid untuk 4 Tombol Sumber */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 <SourceButton value="kas_out" label="Kas (Keluar)" icon={Banknote} colorClass="rose" />
                                 <SourceButton value="bank_out" label="Bank (Keluar)" icon={Building2} colorClass="blue" />
@@ -450,7 +487,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 <SourceButton value="kas_in" label="Kas (Masuk)" icon={Banknote} colorClass="emerald" />
                             </div>
 
-                            {/* [BARU] Input Kode & No Transaksi */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Kode Transaksi</Label>
@@ -472,21 +508,14 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 </div>
                             </div>
 
-                            {/* [BARU] Input Debit/Kredit & Pihak Terkait */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Posisi Akun</Label>
                                     <Select value={trxForm.data.db_cr} onValueChange={(val) => trxForm.setData('db_cr', val as 'debit' | 'credit')}>
                                         <SelectTrigger>
-                                            <div className="flex items-center gap-2">
-                                                <ArrowRightLeft className="w-4 h-4" />
-                                                <SelectValue placeholder="Pilih Posisi" />
-                                            </div>
+                                            <div className="flex items-center gap-2"><ArrowRightLeft className="w-4 h-4" /><SelectValue placeholder="Pilih Posisi" /></div>
                                         </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="debit">Debit (Masuk)</SelectItem>
-                                            <SelectItem value="credit">Kredit (Keluar)</SelectItem>
-                                        </SelectContent>
+                                        <SelectContent><SelectItem value="debit">Debit (Masuk)</SelectItem><SelectItem value="credit">Kredit (Keluar)</SelectItem></SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
@@ -498,11 +527,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                             <div className="space-y-2"><Label>Kategori Transaksi</Label>
                                 <Select value={trxForm.data.kategori} onValueChange={(val) => trxForm.setData('kategori', val)} required>
                                     <SelectTrigger><SelectValue placeholder={`Pilih Kategori ${uiSource.replace('_', ' ')}...`} /></SelectTrigger>
-                                    <SelectContent>
-                                        {CATEGORY_OPTIONS[uiSource]?.map((cat) => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
-                                    </SelectContent>
+                                    <SelectContent>{CATEGORY_OPTIONS[uiSource]?.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}</SelectContent>
                                 </Select>
                                 {trxForm.errors.kategori && <p className="text-red-500 text-xs mt-1">{trxForm.errors.kategori}</p>}
                             </div>
@@ -515,7 +540,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                         </form>
                     </DialogContent>
                 </Dialog>
-                
+
                 {/* Modal Harga */}
                 <Dialog open={isHargaModalOpen} onOpenChange={setIsHargaModalOpen}><DialogContent><DialogHeader><DialogTitle>Update Harga Pasar</DialogTitle></DialogHeader><form onSubmit={submitHarga} className="space-y-4 pt-4"><div className="space-y-2"><Label>Nilai Baru</Label><Input type="number" step="0.01" value={hargaForm.data.nilai} onChange={e => hargaForm.setData('nilai', e.target.value)} placeholder="0.00" /></div><div className="space-y-2"><Label>Tanggal Berlaku</Label><Input type="date" value={hargaForm.data.tanggal_berlaku} onChange={e => hargaForm.setData('tanggal_berlaku', e.target.value)} /></div><DialogFooter><Button type="submit" disabled={hargaForm.processing}>Simpan Perubahan</Button></DialogFooter></form></DialogContent></Dialog>
             </div>

@@ -2,7 +2,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types'; 
+import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { Undo2, User, HardHat, FileText, Wallet, CalendarDays, Pencil, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,7 +31,7 @@ interface PageProps {
 // --- HELPER FUNCTIONS ---
 const formatCurrency = (value: number) => {
     if (isNaN(value) || value === null || value === undefined) {
-        return "Rp 0"; 
+        return "Rp 0";
     }
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -108,7 +108,7 @@ export default function ShowKasbon({ kasbon } : PageProps) {
         <AppLayout breadcrumbs={dynamicBreadcrumbs}>
             <Head title={`Detail Kasbon - ${kasbon.owner.name}`} />
 
-            <div className="space-y-6 p-4 md:p-6">
+            <div className="space-y-6 p-4 md:p-6 bg-gray-50/50 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title={`Detail Kasbon ${kasbon.owner_type}`} description={`Informasi lengkap untuk kasbon #${kasbon.id}`} />
                     <Link href={route('kasbons.index')}>
@@ -131,14 +131,14 @@ export default function ShowKasbon({ kasbon } : PageProps) {
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
                                 <InfoItem icon={ownerIcon} label={`Nama ${kasbon.owner_type}`} value={kasbon.owner.name} iconBgClass={ownerIconBg} />
                                 <InfoItem icon={FileText} label={kasbon.owner.identifier_label} value={kasbon.owner.identifier_value} iconBgClass="bg-sky-100 dark:bg-sky-900/50" />
-                                <InfoItem 
-                                    icon={Wallet} 
+                                <InfoItem
+                                    icon={Wallet}
                                     label={kasbon.owner_type === 'Penoreh' ? 'Pendapatan Penoreh' : 'Gaji Pokok'}
-                                    value={formatCurrency(kasbon.gaji)} 
+                                    value={formatCurrency(kasbon.gaji)}
                                     iconBgClass="bg-rose-100 dark:bg-rose-900/50"
                                 />
-                                <InfoItem 
-                                    icon={Wallet} 
+                                <InfoItem
+                                    icon={Wallet}
                                     label="Jumlah Kasbon Diajukan"
                                     value={<span className="text-green-600 dark:text-green-400">{formatCurrency(kasbon.kasbon)}</span>}
                                     iconBgClass="bg-green-100 dark:bg-green-900/50"

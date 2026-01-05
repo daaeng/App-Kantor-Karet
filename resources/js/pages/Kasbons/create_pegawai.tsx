@@ -1,248 +1,167 @@
-import React, { useState, useEffect } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Undo2, Loader2, FileSignature, Info, AlertCircle } from 'lucide-react';
-import Heading from '../../components/heading';
-import { Button } from '../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Textarea } from '../../components/ui/textarea';
-import AppLayout from '../../layouts/app-layout';
-import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert';
-import { cn } from '../../lib/utils';
-import { type BreadcrumbItem } from '../../types';
+import React, { useState } from 'react';
+import { Head, useForm, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Wallet, Save, ArrowLeft, Info, Banknote } from 'lucide-react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Kasbon', href: route('kasbons.index') },
-    { title: 'Tambah Kasbon Pegawai', href: route('kasbons.create_pegawai') },
-];
+const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
 
-interface EmployeeOption {
-    id: number;
-    label: string;
-    salary: number;
-}
-
-interface PageProps {
-    employees: EmployeeOption[];
-    statuses: string[];
-    flash: {
-        message?: string;
-        error?: string;
-    };
-    errors: Partial<Record<'employee_id' | 'gaji' | 'kasbon' | 'status' | 'reason' | 'transaction_date', string>>; // Tambahkan transaction_date
-}
-
-const formatCurrency = (value: number | null | undefined) => {
-    if (value === null || value === undefined) return 'Rp 0';
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(value);
-};
-
-const SummaryRow: React.FC<{ label: string; value: string; isLoading: boolean; className?: string }> = ({ label, value, isLoading, className }) => (
-    <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-400">{label}</p>
-        {isLoading ? (
-            <div className="h-6 w-32 bg-slate-700 rounded-md animate-pulse"></div>
-        ) : (
-            <p className={cn("font-bold text-xl text-white", className)}>{value}</p>
-        )}
-    </div>
-);
-
-export default function CreateKasbonPegawai({ employees, statuses, flash, errors: pageErrors }: PageProps) {
-    const { data, setData, post, processing, errors, reset, wasSuccessful } = useForm({
+export default function CreatePegawai({ employees }: any) {
+    const { data, setData, post, processing, errors } = useForm({
         employee_id: '',
-        gaji: 0,
-        kasbon: 0,
-        status: 'Pending',
-        reason: '',
-        // [MODIFIKASI] Tambahkan transaction_date ke state form, default hari ini
+        kasbon: '',
         transaction_date: new Date().toISOString().split('T')[0],
+        reason: '',
+        status: 'Approved', // Default langsung approved agar saldo langsung update
     });
 
-    const [selectedEmployee, setSelectedEmployee] = useState<EmployeeOption | null>(null);
+    // Cari data pegawai terpilih untuk menampilkan gaji
+    const selectedEmployee = employees.find((e: any) => e.id.toString() === data.employee_id);
+    const gajiPokok = selectedEmployee ? selectedEmployee.salary : 0;
+    const kasbonAmount = Number(data.kasbon) || 0;
 
-    useEffect(() => {
-        if (wasSuccessful && flash.message) {
-            reset();
-            setSelectedEmployee(null);
-        }
-    }, [wasSuccessful, flash.message]);
-
-    const handleEmployeeChange = (employeeId: string) => {
-        const employee = employees.find(e => String(e.id) === employeeId) || null;
-        setSelectedEmployee(employee);
-        setData(prevData => ({
-            ...prevData,
-            employee_id: employeeId,
-            gaji: employee?.salary || 0,
-            kasbon: 0
-        }));
-    };
+    // Validasi visual: Peringatan jika kasbon > 50% gaji
+    const isHighRisk = kasbonAmount > (gajiPokok * 0.5);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('kasbons.store_pegawai'), {
-            preserveScroll: true,
-        });
+        post(route('kasbons.store_pegawai'));
     };
 
-    const allErrors = { ...errors, ...pageErrors };
-    const hasErrors = Object.keys(allErrors).length > 0 || flash.error;
-
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Tambah Kasbon Pegawai" />
-            <div className="max-w-4xl mx-auto space-y-6 p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <Heading title="Buat Kasbon Pegawai" description="Isi formulir untuk membuat pengajuan kasbon baru." />
-                    <Link href={route('kasbons.index')}>
-                        <Button variant="outline">
-                            <Undo2 className="w-4 h-4 mr-2" />
-                            Kembali
-                        </Button>
-                    </Link>
-                </div>
+        <AppLayout breadcrumbs={[{ title: 'Kasbon', href: route('kasbons.index') }, { title: 'Input Baru', href: '#' }]}>
+            <Head title="Input Kasbon Pegawai" />
 
-                {hasErrors && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Terjadi Kesalahan</AlertTitle>
-                        <AlertDescription>
-                            {flash.error || "Harap periksa kembali isian formulir Anda."}
-                            <ul className="list-disc pl-5 mt-2">
-                                {Object.values(allErrors).map((error, i) => <li key={i}>{error}</li>)}
-                            </ul>
-                        </AlertDescription>
-                    </Alert>
-                )}
+            <div className="p-4 md:p-8 max-w-5xl mx-auto">
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {flash.message && !hasErrors && (
-                    <Alert variant="default" className="bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-500/30 dark:text-green-200">
-                        <Info className="h-4 w-4" />
-                        <AlertTitle>Berhasil</AlertTitle>
-                        <AlertDescription>{flash.message}</AlertDescription>
-                    </Alert>
-                )}
-
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2 space-y-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Detail Pengajuan</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div>
-                                    <Label htmlFor="employee_id">Pilih Pegawai</Label>
-                                    <Select onValueChange={handleEmployeeChange} value={data.employee_id} disabled={processing}>
-                                        <SelectTrigger id="employee_id"><SelectValue placeholder="Pilih Pegawai..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {employees.map((employee) => (
-                                                <SelectItem key={employee.id} value={String(employee.id)}>{employee.label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.employee_id && <p className="text-sm text-destructive mt-1">{errors.employee_id}</p>}
-                                </div>
-
-                                {/* [MODIFIKASI] Tambahkan input tanggal transaksi */}
-                                <div>
-                                    <Label htmlFor="transaction_date">Tanggal Transaksi</Label>
-                                    <Input
-                                        id="transaction_date"
-                                        type="date"
-                                        name="transaction_date"
-                                        value={data.transaction_date}
-                                        onChange={(e) => setData('transaction_date', e.target.value)}
-                                        required
-                                        disabled={processing}
-                                    />
-                                    {errors.transaction_date && <p className="text-sm text-destructive mt-1">{errors.transaction_date}</p>}
-                                </div>
-
-                                {/* <div className={cn(!data.employee_id && "opacity-50 pointer-events-none")}>
-                                    <Label htmlFor="gaji">Gaji</Label>
-                                    <Input
-                                        id="gaji"
-                                        type="number"
-                                        name="gaji"
-                                        value={data.gaji}
-                                        onChange={(e) => setData('gaji', parseFloat(e.target.value) || 0)}
-                                        required
-                                        disabled={processing}
-                                        readOnly // Gaji seharusnya tidak bisa diubah manual
-                                    />
-                                    {errors.gaji && <p className="text-sm text-destructive mt-1">{errors.gaji}</p>}
-                                </div> */}
-
-                                <div className={cn(!data.employee_id && "opacity-50 pointer-events-none")}>
-                                    <Label htmlFor="kasbon">Jumlah Kasbon (IDR)</Label>
-                                    <Input
-                                        id="kasbon"
-                                        type="number"
-                                        placeholder="0"
-                                        value={data.kasbon}
-                                        onChange={(e) => setData('kasbon', parseFloat(e.target.value) || 0)}
-                                        disabled={!data.employee_id || processing}
-                                        className="text-2xl font-bold h-14"
-                                    />
-                                    {errors.kasbon && <p className="text-sm text-destructive mt-1">{errors.kasbon}</p>}
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="status">Status</Label>
-                                    <Select onValueChange={(value) => setData('status', value)} value={data.status} disabled={processing}>
-                                        <SelectTrigger id="status"><SelectValue placeholder="Pilih Status..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {statuses.map((status) => (
-                                                <SelectItem key={status} value={status}>{status}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.status && <p className="text-sm text-destructive mt-1">{errors.status}</p>}
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="reason">Alasan (Opsional)</Label>
-                                    <Textarea
-                                        id="reason"
-                                        placeholder="Contoh: Untuk kebutuhan mendesak..."
-                                        value={data.reason || ''}
-                                        onChange={(e) => setData('reason', e.target.value)}
-                                        disabled={processing}
-                                    />
-                                    {errors.reason && <p className="text-sm text-destructive mt-1">{errors.reason}</p>}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-4">
-                            <Card className="bg-slate-800 text-white dark:bg-slate-900">
+                        {/* KOLOM KIRI: FORM INPUT */}
+                        <div className="lg:col-span-2 space-y-6">
+                            <Card>
                                 <CardHeader>
-                                    <CardTitle className="text-white">Informasi Gaji</CardTitle>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                                            <Wallet size={20} />
+                                        </div>
+                                        <div>
+                                            <CardTitle>Form Pengajuan Kasbon</CardTitle>
+                                            <CardDescription>Buat catatan hutang baru untuk pegawai.</CardDescription>
+                                        </div>
+                                    </div>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="space-y-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div className="space-y-2">
+                                            <Label>Pilih Pegawai <span className="text-red-500">*</span></Label>
+                                            <Select value={data.employee_id} onValueChange={(val) => setData('employee_id', val)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="-- Pilih Nama --" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {employees.map((emp: any) => (
+                                                        <SelectItem key={emp.id} value={emp.id.toString()}>
+                                                            {emp.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.employee_id && <p className="text-red-500 text-xs">{errors.employee_id}</p>}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>Tanggal Transaksi</Label>
+                                            <Input
+                                                type="date"
+                                                value={data.transaction_date}
+                                                onChange={(e) => setData('transaction_date', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
-                                        <p className="text-sm text-slate-400">Gaji Pokok</p>
-                                        <p className="text-3xl font-bold">
-                                            {formatCurrency(selectedEmployee?.salary)}
-                                        </p>
-                                        <p className="text-xs text-slate-400">Ini adalah batas maksimal kasbon.</p>
-                                        <SummaryRow label="Kasbon Diambil" value={formatCurrency(data.kasbon)} className="text-yellow-400" />
+                                        <Label>Nominal Kasbon (Rp) <span className="text-red-500">*</span></Label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-2.5 text-gray-500 font-bold">Rp</span>
+                                            <Input
+                                                type="number"
+                                                className="pl-10 text-lg font-bold"
+                                                placeholder="0"
+                                                value={data.kasbon}
+                                                onChange={(e) => setData('kasbon', e.target.value)}
+                                            />
+                                        </div>
+                                        {errors.kasbon && <p className="text-red-500 text-xs">{errors.kasbon}</p>}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Keterangan / Alasan</Label>
+                                        <Textarea
+                                            placeholder="Contoh: Keperluan mendadak, sakit, dll."
+                                            className="resize-none"
+                                            rows={3}
+                                            value={data.reason}
+                                            onChange={(e) => setData('reason', e.target.value)}
+                                        />
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Button type="submit" disabled={processing || !data.employee_id} className="w-full text-lg py-6">
-                                {processing ? <Loader2 className="animate-spin mr-2" /> : <FileSignature className="mr-2" />}
-                                {processing ? 'Menyimpan...' : 'Ajukan Kasbon'}
-                            </Button>
+                        </div>
+
+                        {/* KOLOM KANAN: SIMULASI / INFO */}
+                        <div className="lg:col-span-1 space-y-6">
+
+                            {/* Kartu Info Gaji */}
+                            <Card className={`border-l-4 ${selectedEmployee ? 'border-l-emerald-500' : 'border-l-gray-300'}`}>
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base text-gray-600">Info Keuangan</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-500">Gaji Pokok:</span>
+                                        <span className="font-bold">{formatCurrency(gajiPokok)}</span>
+                                    </div>
+                                    <div className="border-t border-dashed border-gray-200 my-2"></div>
+
+                                    <div className="bg-gray-50 p-3 rounded-lg text-center">
+                                        <p className="text-xs text-gray-500 mb-1">Nominal Diajukan</p>
+                                        <p className="text-xl font-bold text-indigo-600">{formatCurrency(kasbonAmount)}</p>
+                                    </div>
+
+                                    {isHighRisk && (
+                                        <Alert variant="destructive" className="bg-red-50 text-red-800 border-red-200 mt-2">
+                                            <Info className="h-4 w-4" />
+                                            <AlertDescription className="text-xs">
+                                                Perhatian: Jumlah kasbon melebihi 50% dari gaji pokok pegawai.
+                                            </AlertDescription>
+                                        </Alert>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            <div className="flex flex-col gap-3">
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 shadow-lg h-12 text-base"
+                                >
+                                    <Save className="w-4 h-4 mr-2" />
+                                    {processing ? 'Menyimpan...' : 'Simpan Data'}
+                                </Button>
+                                <Link href={route('kasbons.index')}>
+                                    <Button variant="outline" className="w-full h-12 border-gray-300">
+                                        Batal
+                                    </Button>
+                                </Link>
+                            </div>
+
                         </div>
                     </div>
                 </form>

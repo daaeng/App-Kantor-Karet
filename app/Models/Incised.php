@@ -7,19 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Incised extends Model
 {
     protected $fillable = [
-        'product', 
-        'date', 
-        'no_invoice', 
-        'lok_kebun', 
+        'product',
+        'date',
+        'no_invoice',
+        'lok_kebun',
         'j_brg',
         'desk',
-        
-        'qty_kg', 
-        'price_qty', 
-        'amount', 
-        'keping', 
+
+        'qty_kg',
+        'price_qty',
+        'amount',
+        'keping',
         'kualitas',
-    
+
+        'payment_status',
+        'paid_at'
+
     ];
 
     public function incisor()

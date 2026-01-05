@@ -1,50 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Wallet, Calendar, Calculator, Save, AlertCircle, Utensils } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Wallet, Calendar, Utensils, Gift, MinusCircle } from 'lucide-react';
-import { BreadcrumbItem } from '@/types';
-
-interface EmployeePayrollData {
-    employee_id: number;
-    name: string;
-    gaji_pokok: number;
-    hari_hadir: number;
-    insentif: number;
-    potongan_kasbon: number;
-}
-
-interface PageProps {
-    payrollData: EmployeePayrollData[];
-    period: string;
-    period_string: string;
-    uang_makan_harian: number;
-}
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Penggajian', href: route('payroll.index') },
-    { title: 'Generate', href: route('payroll.index') },
-];
-
-export default function Generate({ payrollData, period, period_string, uang_makan_harian }: PageProps) {
-    const { data, setData, post, processing } = useForm({
+export default function Generate({ payrollData, period, period_string, uang_makan_harian }: any) {
+    const { data, setData, post, processing, errors } = useForm({
         payrolls: payrollData,
-        period_string: period_string,
         uang_makan_harian: uang_makan_harian,
+        period_string: period_string
     });
 
-    const handleInputChange = (index: number, field: keyof EmployeePayrollData, value: string) => {
-        const numericValue = parseInt(value) || 0;
-        setData('payrolls', data.payrolls.map((payroll, i) => 
-            i === index ? { ...payroll, [field]: numericValue } : payroll
-        ));
+    const [grandTotal, setGrandTotal] = useState(0);
+
+    // Hitung ulang Total yang harus disiapkan perusahaan setiap kali angka berubah
+    useEffect(() => {
+        let total = 0;
+        data.payrolls.forEach((emp: any) => {
+            const uangMakan = (parseInt(emp.hari_hadir) || 0) * data.uang_makan_harian;
+            const gajiBersih = (parseInt(emp.gaji_pokok) || 0) + (parseInt(emp.insentif) || 0) + uangMakan - (parseInt(emp.potongan_kasbon) || 0);
+            total += gajiBersih;
+        });
+        setGrandTotal(total);
+    }, [data.payrolls]);
+
+    const handleInputChange = (index: number, field: string, value: string) => {
+        const newPayrolls = [...data.payrolls];
+        newPayrolls[index][field] = parseInt(value) || 0;
+        setData('payrolls', newPayrolls);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -53,93 +43,142 @@ export default function Generate({ payrollData, period, period_string, uang_maka
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Generate Gaji Periode ${period}`} />
-            <div className="container mx-auto p-4">
-                <Heading title={`Generate Gaji Periode ${period}`} description="Periksa dan sesuaikan detail penggajian untuk setiap pegawai sebelum disimpan." />
+        <AppLayout breadcrumbs={[{ title: 'Penggajian', href: route('payroll.index') }, { title: 'Generate', href: '#' }]}>
+            <Head title="Generate Gaji" />
 
-                <form onSubmit={handleSubmit}>
-                    <Card className="my-6">
-                        <CardHeader>
-                            <CardTitle>Pengaturan Umum Periode Ini</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="max-w-xs">
-                                <Label htmlFor="uang_makan_harian">Tarif Uang Makan Harian (Rp)</Label>
-                                <div className="relative mt-1">
-                                    <Utensils className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        id="uang_makan_harian"
-                                        type="number"
-                                        value={data.uang_makan_harian + ''}
-                                        onChange={(e) => setData('uang_makan_harian', parseInt(e.target.value) || 0)}
-                                        className="pl-10"
-                                    />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+            <div className="pb-24"> {/* Padding bottom extra agar konten tidak tertutup footer */}
+                <div className="p-4 md:p-8 max-w-7xl mx-auto">
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.payrolls.map((emp, index) => {
-                            const uangMakan = emp.hari_hadir * data.uang_makan_harian;
-                            const totalPendapatan = emp.gaji_pokok + uangMakan + emp.insentif;
-                            const totalPotongan = emp.potongan_kasbon;
-                            const totalGaji = totalPendapatan - totalPotongan;
-
-                            return (
-                                <Card key={emp.employee_id} className="flex flex-col">
-                                    <CardHeader>
-                                        <CardTitle>{emp.name}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow space-y-4">
-                                        {/* Input Pendapatan */}
-                                        <div className="space-y-2">
-                                            <Label>Komponen Pendapatan</Label>
-                                            <div className="flex items-center gap-2">
-                                                <Wallet className="h-4 w-4 text-gray-500 flex-shrink-0"/>
-                                                <Input type="number" placeholder="Gaji Pokok" value={emp.gaji_pokok} onChange={(e) => handleInputChange(index, 'gaji_pokok', e.target.value)} />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0"/>
-                                                <Input type="number" placeholder="Hari Hadir" value={emp.hari_hadir} onChange={(e) => handleInputChange(index, 'hari_hadir', e.target.value)} />
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Gift className="h-4 w-4 text-gray-500 flex-shrink-0"/>
-                                                <Input type="number" placeholder="Insentif/Bonus" value={emp.insentif} onChange={(e) => handleInputChange(index, 'insentif', e.target.value)} />
-                                            </div>
-                                        </div>
-                                        {/* Input Potongan */}
-                                        <div className="space-y-2">
-                                            <Label>Komponen Potongan</Label>
-                                             <div className="flex items-center gap-2">
-                                                <MinusCircle className="h-4 w-4 text-gray-500 flex-shrink-0"/>
-                                                <Input type="number" placeholder="Potongan Kasbon" value={emp.potongan_kasbon} onChange={(e) => handleInputChange(index, 'potongan_kasbon', e.target.value)} />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="bg-gray-50 dark:bg-gray-800 mt-4 p-4">
-                                        <div className="w-full space-y-2">
-                                            <div className="flex justify-between text-sm"><span className="text-gray-500">Subtotal Gaji Pokok</span><span className="font-medium">{formatCurrency(emp.gaji_pokok)}</span></div>
-                                            <div className="flex justify-between text-sm"><span className="text-gray-500">Subtotal Uang Makan</span><span className="font-medium">{formatCurrency(uangMakan)}</span></div>
-                                            <div className="flex justify-between text-sm text-red-600"><span >Total Potongan</span><span className="font-medium">{formatCurrency(totalPotongan)}</span></div>
-                                            <Separator className="my-2" />
-                                            <div className="flex justify-between font-bold text-lg"><span>Gaji Bersih</span><span>{formatCurrency(totalGaji)}</span></div>
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                            );
-                        })}
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="p-3 bg-indigo-100 rounded-lg text-indigo-600">
+                            <Calculator className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Proses Hitung Gaji</h1>
+                            <p className="text-gray-500">Periode: <span className="font-semibold text-indigo-600">{period}</span></p>
+                        </div>
                     </div>
-                     <div className="mt-8 flex justify-end gap-4">
-                        <Link href={route('payroll.create')}>
-                            <Button type="button" variant="outline">Batal</Button>
+
+                    <div className="max-w-xs mb-5">
+                        <Label htmlFor="uang_makan_harian">Tarif Uang Makan Harian (Rp)</Label>
+                        <div className="relative mt-1">
+                            <Utensils className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                id="uang_makan_harian"
+                                type="number"
+                                value={data.uang_makan_harian + ''}
+                                onChange={(e) => setData('uang_makan_harian', parseInt(e.target.value) || 0)}
+                                className="pl-10"
+                            />
+                        </div>
+                    </div>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {data.payrolls.map((emp: any, index: number) => {
+                                const uangMakan = (parseInt(emp.hari_hadir) || 0) * data.uang_makan_harian;
+                                const totalPendapatan = (parseInt(emp.gaji_pokok) || 0) + (parseInt(emp.insentif) || 0) + uangMakan;
+                                const totalGaji = totalPendapatan - (parseInt(emp.potongan_kasbon) || 0);
+
+                                return (
+                                    <Card key={emp.employee_id} className="border border-gray-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all">
+                                        <CardContent className="p-5">
+                                            {/* Header Kartu */}
+                                            <div className="flex justify-between items-start mb-4 border-b border-gray-100 pb-3">
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-gray-800 dark:text-gray-200">{emp.name}</h3>
+                                                    <p className="text-xs text-gray-500">ID: {emp.employee_id}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-semibold text-gray-400 uppercase">Gaji Pokok</span>
+                                                    <div className="font-bold text-gray-700">{formatCurrency(emp.gaji_pokok)}</div>
+                                                </div>
+                                            </div>
+
+                                            {/* Input Area */}
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <Label className="text-xs text-gray-500">Hari Hadir</Label>
+                                                        <div className="relative">
+                                                            <Input
+                                                                type="number"
+                                                                value={emp.hari_hadir}
+                                                                onChange={(e) => handleInputChange(index, 'hari_hadir', e.target.value)}
+                                                                className="pr-8 h-9 text-sm"
+                                                            />
+                                                            <span className="absolute right-2 top-2 text-xs text-gray-400">Hari</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-xs text-gray-500">Uang Makan</Label>
+                                                        <div className="h-9 flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 rounded border border-gray-200">
+                                                            {formatCurrency(uangMakan)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <Label className="text-xs text-gray-500">Insentif / Bonus</Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={emp.insentif}
+                                                        onChange={(e) => handleInputChange(index, 'insentif', e.target.value)}
+                                                        className="h-9 text-sm"
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Label className="text-xs text-red-500 flex justify-between">
+                                                        <span>Potongan Kasbon</span>
+                                                        <span className="italic opacity-70">Sisa Hutang: ?</span>
+                                                        {/* Note: Jika ingin menampilkan sisa hutang, perlu dikirim dari controller ke payrollData */}
+                                                    </Label>
+                                                    <Input
+                                                        type="number"
+                                                        value={emp.potongan_kasbon}
+                                                        onChange={(e) => handleInputChange(index, 'potongan_kasbon', e.target.value)}
+                                                        className="h-9 text-sm border-red-200 text-red-600 focus:ring-red-500"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <Separator className="my-4" />
+
+                                            {/* Footer Kartu (Total) */}
+                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-zinc-800 p-3 rounded-lg">
+                                                <span className="text-sm font-semibold text-gray-600">Gaji Bersih</span>
+                                                <span className="text-lg font-bold text-indigo-600">{formatCurrency(totalGaji)}</span>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {/* STICKY FOOTER ACTION BAR */}
+            <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-black border-t border-gray-200 dark:border-zinc-800 p-4 shadow-lg z-50">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="text-center md:text-left">
+                        <p className="text-xs text-gray-500 uppercase font-semibold">Total Dana yang Harus Disiapkan:</p>
+                        <p className="text-2xl font-bold text-indigo-600">{formatCurrency(grandTotal)}</p>
+                    </div>
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <Link href={route('payroll.create')} className="w-full md:w-auto">
+                            <Button variant="outline" className="w-full h-11 border-gray-300">Batal</Button>
                         </Link>
-                        <Button type="submit" disabled={processing} size="lg">
-                            {processing ? 'Menyimpan...' : 'Simpan Semua & Selesaikan'}
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={processing}
+                            className="w-full md:w-auto h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 shadow-md"
+                        >
+                            {processing ? 'Menyimpan...' : 'Simpan & Finalisasi'} <Save className="w-4 h-4 ml-2"/>
                         </Button>
                     </div>
-                </form>
+                </div>
             </div>
         </AppLayout>
     );

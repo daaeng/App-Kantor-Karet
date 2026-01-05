@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Incised;
 use App\Models\Incisor;
 use App\Models\MasterProduct;
+use App\Models\Kasbon; // [BARU]
+use App\Models\KasbonPayment;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -270,6 +272,100 @@ class IncisedController extends Controller
 
         $incised->update($request->all());
         return redirect()->route('inciseds.index')->with('message', 'Data Berhasil Diupdate');
+    }
+
+    public function settle($id)
+    {
+        DB::beginTransaction();
+        try {
+            $incised = Incised::with('incisor')->findOrFail($id);
+
+            if ($incised->payment_status === 'paid') {
+                return redirect()->back()->with('error', 'Transaksi ini sudah dibayarkan sebelumnya.');
+            }
+
+            // 1. Identifikasi Penoreh & Pendapatan
+            $incisor = $incised->incisor;
+            $pendapatan = $incised->amount; // Total uang hasil toreh
+
+            if (!$incisor) {
+                // Jika data lama tidak ada relasi incisor, update status saja tanpa potong kasbon
+                $incised->update(['payment_status' => 'paid', 'paid_at' => now()]);
+                DB::commit();
+                return redirect()->back()->with('message', 'Pembayaran berhasil (Tanpa cek kasbon karena data penoreh tidak valid).');
+            }
+
+            // 2. Cek Hutang Kasbon (Hanya yang belum lunas)
+            // Mengambil semua kasbon milik penoreh ini yang statusnya approved dan belum lunas
+            $activeKasbons = Kasbon::where('kasbonable_type', 'App\Models\Incisor')
+                ->where('kasbonable_id', $incisor->id)
+                ->where('status', 'Approved') // Hanya kasbon yang disetujui
+                ->whereIn('payment_status', ['unpaid', 'partial'])
+                ->orderBy('transaction_date', 'asc') // Bayar hutang terlama dulu (FIFO)
+                ->get();
+
+            $sisaUang = $pendapatan;
+            $totalPotongan = 0;
+
+            // 3. Loop Kasbon untuk Pemotongan
+            foreach ($activeKasbons as $kasbon) {
+                if ($sisaUang <= 0) break; // Uang habis, stop bayar hutang
+
+                // Hitung sisa hutang per nota kasbon
+                $sudahDibayar = $kasbon->payments()->sum('amount');
+                $sisaHutangIni = $kasbon->kasbon - $sudahDibayar;
+
+                if ($sisaHutangIni <= 0) {
+                    $kasbon->update(['payment_status' => 'paid']);
+                    continue;
+                }
+
+                // Tentukan berapa yang akan dibayar untuk nota ini
+                // Bayar full hutang ini ATAU habiskan sisa uang gaji
+                $bayar = min($sisaUang, $sisaHutangIni);
+
+                // Buat Record Pembayaran Kasbon
+                KasbonPayment::create([
+                    'kasbon_id' => $kasbon->id,
+                    'amount' => $bayar,
+                    'payment_date' => now(),
+                    'notes' => "Potong otomatis dari Hasil Toreh Tgl " . Carbon::parse($incised->date)->format('d/m/Y') . " (Inv: $incised->no_invoice)"
+                ]);
+
+                // Update Status Kasbon Induk
+                $newTotalPaid = $sudahDibayar + $bayar;
+                if ($newTotalPaid >= $kasbon->kasbon) {
+                    $kasbon->update(['payment_status' => 'paid', 'paid_at' => now()]);
+                } else {
+                    $kasbon->update(['payment_status' => 'partial']);
+                }
+
+                // Kurangi sisa uang di tangan
+                $sisaUang -= $bayar;
+                $totalPotongan += $bayar;
+            }
+
+            // 4. Update Status Transaksi Toreh jadi PAID
+            $incised->update([
+                'payment_status' => 'paid',
+                'paid_at' => now()
+            ]);
+
+            DB::commit();
+
+            $msg = "Pembayaran Berhasil. Pendapatan: Rp " . number_format($pendapatan,0,',','.');
+            if ($totalPotongan > 0) {
+                $msg .= ". Dipotong Kasbon: Rp " . number_format($totalPotongan,0,',','.') . ". Sisa Diterima: Rp " . number_format($sisaUang,0,',','.');
+            } else {
+                $msg .= ". Tidak ada potongan kasbon.";
+            }
+
+            return redirect()->back()->with('message', $msg);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran: ' . $e->getMessage());
+        }
     }
 
     public function show(Incised $incised)
