@@ -23,7 +23,8 @@ class IncisedController extends Controller
     public function index(Request $request)
     {
         // ... (Kode Index SAMA PERSIS seperti sebelumnya) ...
-        $perPage = $request->input('per_page', 20);
+        // $perPage = $request->input('per_page', 20);
+        $perPage = 15;
         $searchTerm = $request->input('search');
         $timePeriod = $request->input('time_period', 'this-month');
         $specificMonth = $request->input('month');
