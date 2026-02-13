@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\OutgoingStock;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -200,53 +201,96 @@ class ProductController extends Controller
     {
         $searchTerm = $request->input('search');
         $timePeriod = $request->input('time_period', 'all-time');
-        $selectedMonth = $request->input('month', Carbon::now()->month);
-        $selectedYear = $request->input('year', Carbon::now()->year);
+        $selectedMonth = $request->input('month', \Carbon\Carbon::now()->month);
+        $selectedYear = $request->input('year', \Carbon\Carbon::now()->year);
         $productType = $request->input('product_type', 'all');
 
-        // Query Dasar: Cari yang statusnya 'buyer' (Penjualan)
-        $query = Product::query()->where('status', 'buyer');
+        // Load relasi customer & product
+        $query = OutgoingStock::query()->with(['customer', 'product'])->where('status', 'buyer');
 
-        // 1. Filter Pencarian
+        // Filter Pencarian
         $query->when($searchTerm, function ($q, $search) {
             $q->where(function ($sub) use ($search) {
-                $sub->where('nm_supplier', 'like', "%{$search}%")
-                    ->orWhere('no_invoice', 'like', "%{$search}%")
-                    ->orWhere('j_brg', 'like', "%{$search}%");
+                $sub->where('no_invoice', 'like', "%{$search}%")
+                    ->orWhere('no_po', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($c) use ($search) {
+                        $c->where('name', 'like', "%{$search}%");
+                    });
             });
         });
 
-        // 2. Filter Waktu
+        // Filter Waktu
         if ($timePeriod === 'specific-month') {
             $query->whereMonth('date', $selectedMonth)->whereYear('date', $selectedYear);
         } elseif ($timePeriod !== 'all-time') {
             switch ($timePeriod) {
-                case 'today': $query->whereDate('date', Carbon::today()); break;
-                case 'this-week': $query->whereBetween('date', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]); break;
-                case 'this-month': $query->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year); break;
-                case 'last-month':
-                    $lastMonth = Carbon::now()->subMonth();
-                    $query->whereMonth('date', $lastMonth->month)->whereYear('date', $lastMonth->year);
-                    break;
-                case 'this-year': $query->whereYear('date', Carbon::now()->year); break;
+                case 'today': $query->whereDate('date', \Carbon\Carbon::today()); break;
+                case 'this-week': $query->whereBetween('date', [\Carbon\Carbon::now()->startOfWeek(), \Carbon\Carbon::now()->endOfWeek()]); break;
+                case 'this-month': $query->whereMonth('date', \Carbon\Carbon::now()->month)->whereYear('date', \Carbon\Carbon::now()->year); break;
+                case 'last-month': $query->whereMonth('date', \Carbon\Carbon::now()->subMonth()->month)->whereYear('date', \Carbon\Carbon::now()->subMonth()->year); break;
+                case 'this-year': $query->whereYear('date', \Carbon\Carbon::now()->year); break;
             }
         }
 
-        // 3. Filter Tipe Produk
         if ($productType !== 'all') {
             $query->where('product', $productType);
         }
 
-        // Ambil Data (Tanpa Pagination untuk Laporan)
-        $products = $query->orderBy('date', 'asc')->get();
+        $products = $query->orderByRaw('COALESCE(tgl_kirim, date) ASC')->get();
 
-        // Hitung Total untuk Footer Laporan
-        $totalQty = $products->sum('qty_out');
-        $totalAmount = $products->sum('amount_out');
-        $totalQtySampai = $products->sum('qty_sampai');
+        // Variabel Total Footer
+        $totalQtyOut = 0; $totalQtySampai = 0; $totalGross = 0;
+        $totalDeductions = 0; $totalNet = 0; $totalKeping = 0;
+
+        // [FIX UTAMA] Mapping Data Secara Manual
+        $processedData = $products->map(function ($item) use (&$totalQtyOut, &$totalQtySampai, &$totalGross, &$totalDeductions, &$totalNet, &$totalKeping) {
+
+            $usedQty = ($item->qty_sampai > 0) ? $item->qty_sampai : $item->qty_out;
+            $price = $item->selling_price ?? 0;
+
+            $gross = $usedQty * $price;
+            $deduction = ($item->pph_value ?? 0) + ($item->ob_cost ?? 0) + ($item->extra_cost ?? 0);
+            $net = $gross - $deduction;
+            $keping = ($item->keping_out > 0) ? $item->keping_out : $item->keping;
+
+            // Akumulasi Total
+            $totalQtyOut += $item->qty_out;
+            $totalQtySampai += $item->qty_sampai;
+            $totalGross += $gross;
+            $totalDeductions += $deduction;
+            $totalNet += $net;
+            $totalKeping += $keping;
+
+            // Susun Array Manual (Menjamin no_po masuk)
+            return [
+                'id' => $item->id,
+                'no_po' => $item->no_po,
+                'date' => $item->date,
+                'tgl_kirim' => $item->tgl_kirim,
+                'tgl_sampai' => $item->tgl_sampai,
+                'shipping_method' => $item->shipping_method,
+
+                // Data Relasi (Fixed Name)
+                'fixed_customer_name' => $item->customer ? $item->customer->name : ($item->nm_supplier ?? '-'),
+                'fixed_product_name' => $item->product ? $item->product->name : ($item->j_brg ?? '-'),
+                'fixed_price' => $price,
+
+                // Data Fisik
+                'j_brg' => $item->j_brg,
+                'kualitas_out' => $item->kualitas_out,
+                'qty_out' => $item->qty_out,
+                'qty_sampai' => $item->qty_sampai,
+                'final_keping' => $keping,
+
+                // Data Hitungan
+                'calculated_gross' => $gross,
+                'calculated_deduction' => $deduction,
+                'calculated_net' => $net,
+            ];
+        });
 
         return Inertia::render('Products/Report', [
-            'data' => $products,
+            'data' => $processedData,
             'filters' => [
                 'period' => $timePeriod,
                 'month' => $selectedMonth,
@@ -254,12 +298,12 @@ class ProductController extends Controller
                 'type' => $productType,
             ],
             'totals' => [
-                'qty' => $totalQty,
-                'amount' => $totalAmount,
+                'qty' => $totalQtyOut,
                 'qty_sampai' => $totalQtySampai,
-                'pph_value' => $products->sum('pph_value'),
-                'ob_cost' => $products->sum('ob_cost'),
-                'extra_cost' => $products->sum('extra_cost')
+                'gross' => $totalGross,
+                'deductions' => $totalDeductions,
+                'amount' => $totalNet,
+                'keping' => $totalKeping,
             ]
         ]);
     }

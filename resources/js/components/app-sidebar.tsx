@@ -1,21 +1,52 @@
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { NavFooter } from '@/components/nav-footer';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarGroupContent,
+    SidebarRail,
+} from '@/components/ui/sidebar';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, ChartArea, UserCog2, PackageIcon, ReceiptText, Notebook, HandCoins, UsersRound, PackageOpen, BookUser, Banknote, Archive, Clock, BookUp2, Users } from 'lucide-react'; // [BARU] Import Users icon
+import {
+    LayoutDashboard,
+    ChartArea,
+    UserCog2,
+    PackageIcon,
+    ReceiptText,
+    Notebook,
+    HandCoins,
+    UsersRound,
+    PackageOpen,
+    BookUser,
+    Banknote,
+    Archive,
+    Clock,
+    BookUp2,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
-// 1. Definisikan tipe NavItem dengan field tambahan 'permission'
+// 1. Definisikan tipe untuk Item dan Group
 interface NavItem {
     title: string;
     href: string;
     icon: any;
-    permission?: string; // Optional: jika kosong berarti menu tampil untuk semua
+    permission?: string;
 }
 
-// 2. Definisikan tipe Props dari Inertia agar TypeScript mengenali auth.permissions
-// Ini sesuai dengan data yang dikirim dari HandleInertiaRequests.php Anda
+interface NavGroup {
+    label: string;
+    items: NavItem[];
+}
+
+// 2. Interface Props
 interface PageProps {
     auth: {
         user: any;
@@ -24,135 +55,124 @@ interface PageProps {
     [key: string]: any;
 }
 
-// 3. Konfigurasi Menu Utama (Mapping sesuai web.php)
-const mainNavItems: NavItem[] = [
+// 3. Konfigurasi Menu (DIKELOMPOKKAN & DIURUTKAN ULANG)
+const groupedNavItems: NavGroup[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-        // Tidak ada permission = Tampil untuk semua user
+        label: "Platform",
+        items: [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutDashboard,
+            },
+        ]
     },
-
+    // [PINDAH KE ATAS] SDM & Manajemen User
     {
-        title: 'Role Management',
-        href: '/roles',
-        icon: Notebook,
-        permission: 'roles.view', //
+        label: "SDM & Manajemen User",
+        items: [
+            {
+                title: 'Data Pegawai',
+                href: '/pegawai',
+                icon: BookUser,
+                permission: 'pegawai.view',
+            },
+            {
+                title: 'Absensi',
+                href: '/attendances',
+                icon: Clock,
+            },
+            {
+                title: 'Customer / Client',
+                href: '/customers',
+                icon: Users,
+                permission: 'products.view',
+            },
+            {
+                title: 'User Management',
+                href: '/usermanagements',
+                icon: UserCog2,
+                permission: 'usermanagements.view',
+            },
+            {
+                title: 'Role & Permission',
+                href: '/roles',
+                icon: Notebook,
+                permission: 'roles.view',
+            },
+        ]
     },
-
     {
-        title: 'User Management',
-        href: '/usermanagements',
-        icon: UserCog2,
-        permission: 'usermanagements.view', //
+        label: "Operasional & Produksi",
+        items: [
+            {
+                title: 'Product / Barang',
+                href: '/products',
+                icon: PackageIcon,
+                permission: 'products.view',
+            },
+            {
+                title: 'Inventory / Gudang',
+                href: '/inventories',
+                icon: Archive,
+                // permission: 'inventories.view',
+            },
+            {
+                title: 'Penoreh (Incisor)',
+                href: '/incisors',
+                icon: UsersRound,
+                permission: 'incisor.view',
+            },
+            {
+                title: 'Hasil Toreh',
+                href: '/inciseds',
+                icon: PackageOpen,
+                permission: 'incised.view',
+            },
+            {
+                title: 'Permintaan Barang (PPB)',
+                href: '/ppb',
+                icon: BookUp2 ,
+                permission: 'requests.view',
+            },
+        ]
     },
-
     {
-        title: 'Employee',
-        href: '/pegawai',
-        icon: BookUser,
-        permission: 'pegawai.view', //
-    },
-
-    // [BARU] Tambahkan menu Customer
-    {
-        title: 'Customer / Client',
-        href: '/customers',
-        icon: Users,
-        permission: 'products.view', // Sementara gunakan permission yang ada agar aman
-    },
-
-    {
-        title: 'Incisor',
-        href: '/incisors',
-        icon: UsersRound,
-        permission: 'incisor.view', // (Perhatikan: Singular 'incisor')
-    },
-
-    {
-        title: 'Incised Data',
-        href: '/inciseds',
-        icon: PackageOpen,
-        permission: 'incised.view', // (Perhatikan: Singular 'incised')
-    },
-
-    {
-        title: 'Product',
-        href: '/products',
-        icon: PackageIcon,
-        permission: 'products.view', // (Plural 'products')
-    },
-
-    {
-        title: 'Inventory',
-        href: '/inventories',
-        icon: Archive,
-        // permission: 'inventories.view',
-        // NOTE: Di web.php Anda, route 'inventories' belum ada middleware permission.
-        // Jadi saya biarkan kosong agar tetap muncul.
-    },
-
-    {
-        title: 'PPB',
-        href: '/ppb',
-        icon: BookUp2 ,
-        permission: 'requests.view', // (Route PPB menggunakan middleware requests.*)
-    },
-
-    {
-        title: 'Invoice',
-        href: '/notas',
-        icon: ReceiptText ,
-        permission: 'notas.view', //
-    },
-
-    {
-        title: 'Cash Receipt',
-        href: '/kasbons',
-        icon: HandCoins,
-        permission: 'kasbons.view', //
-    },
-
-    {
-        title: 'Administration',
-        href: '/administrasis',
-        icon: ChartArea,
-        permission: 'administrasis.view', //
-    },
-
-    {
-        title: 'Payroll',
-        href: '/payroll',
-        icon: Banknote,
-        permission: 'payroll.view',
-        // NOTE: Di web.php Anda, route 'payroll' belum ada middleware permission.
-    },
-
-    {
-        title: 'Absensi',
-        href: '/attendances',
-        icon: Clock,
-        // NOTE: Di web.php Anda, route 'attendances' belum ada middleware permission.
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    // ... your footer items
+        label: "Keuangan & Administrasi",
+        items: [
+            {
+                title: 'Invoice / Nota',
+                href: '/notas',
+                icon: ReceiptText ,
+                permission: 'notas.view',
+            },
+            {
+                title: 'Kasbon & Piutang',
+                href: '/kasbons',
+                icon: HandCoins,
+                permission: 'kasbons.view',
+            },
+            {
+                title: 'Administrasi Umum',
+                href: '/administrasis',
+                icon: ChartArea,
+                permission: 'administrasis.view',
+            },
+            {
+                title: 'Payroll / Penggajian',
+                href: '/payroll',
+                icon: Banknote,
+                permission: 'payroll.view',
+            },
+        ]
+    }
 ];
 
 export function AppSidebar() {
-    // 4. Ambil Permissions User dari Shared Props Inertia
+    // 4. Ambil Permissions User
     const { props } = usePage<PageProps>();
-    const userPermissions = props.auth.permissions || []; // Mengambil dari HandleInertiaRequests.php
-
-    // 5. Logic Filtering: Hanya tampilkan menu jika user punya permission atau menu bersifat public
-    const filteredNavItems = mainNavItems.filter((item) => {
-        // Jika menu tidak butuh permission (misal: Dashboard, Payroll, Inventory), tampilkan.
-        if (!item.permission) return true;
-
-        // Cek apakah user memiliki permission yang dibutuhkan
-        return userPermissions.includes(item.permission);
-    });
+    const userPermissions = props.auth.permissions || [];
+    const currentUrl = window.location.pathname; // Untuk state aktif
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -168,15 +188,51 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent>
-                {/* 6. Render menu yang sudah difilter */}
-                <NavMain items={filteredNavItems} />
+            <SidebarContent className="custom-scrollbar">
+                {groupedNavItems.map((group, groupIndex) => {
+                    // Filter item dalam grup berdasarkan permission
+                    const visibleItems = group.items.filter(item =>
+                        !item.permission || userPermissions.includes(item.permission)
+                    );
+
+                    // Jika grup kosong setelah difilter, jangan tampilkan grup ini
+                    if (visibleItems.length === 0) return null;
+
+                    return (
+                        <SidebarGroup key={groupIndex}>
+                            {/* Label Kategori */}
+                            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                    {visibleItems.map((item) => {
+                                        const isActive = currentUrl.startsWith(item.href);
+                                        return (
+                                            <SidebarMenuItem key={item.title}>
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActive}
+                                                    tooltip={item.title}
+                                                    className={`transition-all duration-200 ${isActive ? 'font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                                                >
+                                                    <Link href={item.href}>
+                                                        <item.icon className={isActive ? "text-indigo-600" : ""} />
+                                                        <span>{item.title}</span>
+                                                    </Link>
+                                                </SidebarMenuButton>
+                                            </SidebarMenuItem>
+                                        );
+                                    })}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    );
+                })}
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
+            <SidebarRail />
         </Sidebar>
     );
 }

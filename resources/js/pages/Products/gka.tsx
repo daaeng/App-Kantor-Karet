@@ -4,8 +4,8 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Building2, Eye, Package, Pencil, Search, Sprout, Trash, Undo2,
-    CalendarDays, Filter, Printer, TrendingUp, Coins, Leaf
+    Building2, Eye, Package, Pencil, Search, Trash, Undo2,
+    Printer, TrendingUp, Coins,
 } from 'lucide-react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -23,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Gka({
-    products, products2, filter, currentMonth, currentYear,
+    products2, filter, currentMonth, currentYear,
     tm_sin, tm_slou, tm_sampai, dataSusut,
     s_ready, p_ready, klp_ready,
     chartData
