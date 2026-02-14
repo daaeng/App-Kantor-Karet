@@ -338,6 +338,7 @@ class OutgoingStockController extends Controller
                 'id' => $item->id,
                 'date' => $item->date,
                 'no_invoice' => $item->no_invoice,
+                'no_po' => $item->no_po ?? '-',
                 // nm_supplier untuk outgoing biasanya internal/gudang, atau kosong
                 'nm_supplier' => 'Gudang Utama',
                 'product' => $item->product ? $item->product->name : '-',

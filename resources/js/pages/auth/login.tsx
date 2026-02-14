@@ -104,7 +104,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 <Input
                                     id="email"
                                     type="email"
-                                    className="pl-10 h-11 bg-slate-50 border-slate-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                                    className="pl-10 h-11 bg-slate-50 dark:bg-accent border-slate-200focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
                                     placeholder="nama@garudakarya.com"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
@@ -129,7 +129,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 <Input
                                     id="password"
                                     type="password"
-                                    className="pl-10 h-11 bg-slate-50 border-slate-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                                    className="pl-10 h-11 bg-slate-50 dark:bg-accent border-slate-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
                                     placeholder="••••••••"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}

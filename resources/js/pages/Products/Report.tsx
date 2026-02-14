@@ -1,4 +1,4 @@
-// import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Printer, ArrowLeft } from 'lucide-react';
@@ -38,12 +38,17 @@ export default function Report({ data = [], filters, totals }: ReportProps) {
     const handlePrint = () => window.print();
     const handleBack = () => window.history.back();
 
+    useEffect(() => {
+        console.log('Data:', data);
+        console.log('No PO Report Data:', data.map((item) => item.no_po ));
+    }, [data]);
+
     return (
         <div className="min-h-screen bg-white text-black font-sans text-xs p-4 md:p-8 print:p-0">
             <Head title="Laporan Penjualan" />
 
             <div className="flex justify-between items-center mb-6 print:hidden">
-                <Button variant="outline" onClick={handleBack} className="gap-2"><ArrowLeft size={16} /> Kembali</Button>
+                <Button variant="outline" onClick={handleBack} className="gap-2 dark:text-white"><ArrowLeft size={16} /> Kembali</Button>
                 <div className="flex gap-2">
                      <div className="text-right mr-4 text-sm text-gray-500">
                         <p>Total Data: {data.length}</p>
@@ -83,7 +88,7 @@ export default function Report({ data = [], filters, totals }: ReportProps) {
                     </thead>
                     <tbody>
                         {data.length > 0 ? (
-                            data.map((item, index) => {
+                            data.map((item : any, index : number) => {
                                 const susut = (item.qty_out || 0) - (item.qty_sampai || 0);
                                 const hasSusut = item.qty_sampai > 0 && susut > 0;
 
@@ -93,7 +98,7 @@ export default function Report({ data = [], filters, totals }: ReportProps) {
 
                                         {/* BAGIAN NO PO */}
                                         <td className="border border-black px-1 py-0.5 text-left pl-2 font-mono font-bold whitespace-nowrap">
-                                            {item.no_po ? item.no_po : '-'}
+                                            {item.no_po ? item.no_po : 'Data Tidak Lengkap'}
                                         </td>
 
                                         <td className="border border-black px-1 py-0.5 text-center font-mono">{formatDate(item.tgl_kirim)}</td>
