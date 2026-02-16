@@ -335,7 +335,7 @@ export default function CreateIncised({ noInvoicesWithNames, masterProducts }: {
                                             <p className="text-3xl font-black text-emerald-700 dark:text-emerald-300 tracking-tight">
                                                 {formatRupiah(data.amount)}
                                             </p>
-                                            <Input type="hidden" value={data.amount} name="amount" />
+                                            {/* <Input type="hidden" value={data.amount} name="amount" /> */}
                                         </div>
                                     </div>
 
