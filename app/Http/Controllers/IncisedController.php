@@ -16,31 +16,37 @@ use App\Models\FinancialTransaction;
 
 class IncisedController extends Controller
 {
-    // ... [BAGIAN INDEX, CREATE, STORE, EDIT, UPDATE, SHOW, PRINT, DESTROY TIDAK BERUBAH] ...
-    // Agar hemat karakter, saya fokuskan pada bagian yang BERUBAH (Settle & BulkSettle)
-    // Silakan paste bagian atas file Anda yang lama, lalu TIMPA mulai dari method 'bulkSettle' ke bawah.
-
     public function index(Request $request)
     {
-        // ... (Kode Index SAMA PERSIS seperti sebelumnya) ...
-        // $perPage = $request->input('per_page', 20);
-        $perPage = 14;
+        // $perPage = $request->input('per_page', 20); // Default kembalikan ke 20 atau sesuai selera
+        $perPage = 15;
         $searchTerm = $request->input('search');
         $timePeriod = $request->input('time_period', 'this-month');
         $specificMonth = $request->input('month');
         $specificYear = $request->input('year');
 
+        // [BARU] Ambil input range tanggal
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
         if ($perPage === 'all') $perPage = 999999;
         else $perPage = intval($perPage);
 
-        $applyTimeFilter = function ($query, $period, $month, $year) {
-            switch ($period) {
+        // Helper filter query
+        $applyTimeFilter = function ($query) use ($timePeriod, $specificMonth, $specificYear, $startDate, $endDate) {
+            switch ($timePeriod) {
                 case 'today': $query->whereDate('date', Carbon::today()); break;
                 case 'this-week': $query->whereBetween('date', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]); break;
                 case 'this-month': $query->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year); break;
                 case 'last-month': $query->whereMonth('date', Carbon::now()->subMonth()->month)->whereYear('date', Carbon::now()->subMonth()->year); break;
                 case 'this-year': $query->whereYear('date', Carbon::now()->year); break;
-                case 'specific-month': if ($month && $year) $query->whereMonth('date', $month)->whereYear('date', $year); break;
+                case 'specific-month': if ($specificMonth && $specificYear) $query->whereMonth('date', $specificMonth)->whereYear('date', $specificYear); break;
+                // [BARU] Logic Custom Range
+                case 'custom':
+                    if ($startDate && $endDate) {
+                        $query->whereBetween('date', [$startDate, $endDate]);
+                    }
+                    break;
             }
         };
 
@@ -59,11 +65,11 @@ class IncisedController extends Controller
 
         $incisedsQuery = Incised::query()->with('incisor');
         $applySearch($incisedsQuery, $searchTerm);
-        $applyTimeFilter($incisedsQuery, $timePeriod, $specificMonth, $specificYear);
+        $applyTimeFilter($incisedsQuery); // Panggil filter tanpa parameter karena sudah use di atas
 
         $baseStatQuery = Incised::query();
         $applySearch($baseStatQuery, $searchTerm);
-        $applyTimeFilter($baseStatQuery, $timePeriod, $specificMonth, $specificYear);
+        $applyTimeFilter($baseStatQuery);
 
         $totalKebunA = (clone $baseStatQuery)->where('lok_kebun', 'Temadu')->sum('qty_kg');
         $totalKebunB = (clone $baseStatQuery)->where('lok_kebun', 'Sebayar A')->sum('qty_kg');
@@ -76,7 +82,8 @@ class IncisedController extends Controller
             ->select('incisors.name', DB::raw('SUM(inciseds.qty_kg) as total_qty_kg'))
             ->join('incisors', 'inciseds.no_invoice', '=', 'incisors.no_invoice');
         $applySearch($mostProductiveIncisorQuery, $searchTerm);
-        $applyTimeFilter($mostProductiveIncisorQuery, $timePeriod, $specificMonth, $specificYear);
+        $applyTimeFilter($mostProductiveIncisorQuery);
+
         $mostProductiveIncisor = $mostProductiveIncisorQuery->groupBy('incisors.name')->orderByDesc('total_qty_kg')->first();
 
         $inciseds = $incisedsQuery->orderBy('date', 'DESC')->paginate($perPage)->through(function ($incised) {
@@ -101,7 +108,8 @@ class IncisedController extends Controller
 
         return Inertia::render("Inciseds/index", [
             "inciseds" => $inciseds,
-            "filter" => $request->only(['search', 'time_period', 'month', 'year', 'per_page']),
+            // [BARU] Kirim balik filter ke frontend
+            "filter" => $request->only(['search', 'time_period', 'month', 'year', 'per_page', 'start_date', 'end_date']),
             'totalKebunA' => (float)$totalKebunA,
             'totalKebunB' => (float)$totalKebunB + (float)$totalKebunB2 + (float)$totalKebunB3 + (float)$totalKebunB4,
             'totalPendapatan' => (float)$totalPendapatan,
@@ -172,7 +180,13 @@ class IncisedController extends Controller
         $specificMonth = $request->input('month');
         $specificYear = $request->input('year');
 
+        // Input Custom Date
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Eager load relasi 'incisor'
         $query = Incised::query()->with('incisor');
+
         if ($searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('product', 'like', "%{$searchTerm}%")
@@ -183,17 +197,48 @@ class IncisedController extends Controller
                   });
             });
         }
-        // Logic filter waktu sama seperti index...
+
+        // Logic Filter Waktu
         if ($timePeriod == 'specific-month') { $query->whereMonth('date', $specificMonth)->whereYear('date', $specificYear); }
         elseif ($timePeriod == 'today') { $query->whereDate('date', Carbon::today()); }
         elseif ($timePeriod == 'this-month') { $query->whereMonth('date', Carbon::now()->month)->whereYear('date', Carbon::now()->year); }
-        // ... dst
+        elseif ($timePeriod == 'custom' && $startDate && $endDate) { $query->whereBetween('date', [$startDate, $endDate]); }
 
-        $inciseds = $query->orderBy('date', 'ASC')->get();
+        // Ambil Data Mentah
+        $rawInciseds = $query->orderBy('date', 'ASC')->get();
+
+        // [PERBAIKAN DISINI] Mapping Data untuk menampilkan Nama Penoreh
+        $inciseds = $rawInciseds->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'date' => $item->date,
+                'no_invoice' => $item->no_invoice,
+                'lok_kebun' => $item->lok_kebun,
+                'product' => $item->product,
+                'qty_kg' => $item->qty_kg,
+                'price_qty' => $item->price_qty,
+                'amount' => $item->amount,
+                'keping' => $item->keping,
+                'net_received' => $item->net_received,
+                // Ambil Nama dari Relasi Incisor
+                'incisor_name' => $item->incisor ? $item->incisor->name : 'Tanpa Nama',
+            ];
+        });
+
         return Inertia::render('Inciseds/PrintReport', [
-            'inciseds' => $inciseds,
-            'totals' => ['qty' => $inciseds->sum('qty_kg'), 'amount' => $inciseds->sum('amount')],
-            'filter' => ['time_period' => $timePeriod, 'month' => $specificMonth, 'year' => $specificYear]
+            'inciseds' => $inciseds, // Data yang sudah ada namanya
+            'totals' => [
+                'qty' => $rawInciseds->sum('qty_kg'),
+                'amount' => $rawInciseds->sum('amount'),
+                'net_received' => $rawInciseds->sum('net_received')
+            ],
+            'filter' => [
+                'time_period' => $timePeriod,
+                'month' => $specificMonth,
+                'year' => $specificYear,
+                'start_date' => $startDate,
+                'end_date' => $endDate
+            ]
         ]);
     }
 

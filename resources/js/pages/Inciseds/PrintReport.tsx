@@ -11,6 +11,7 @@ interface IncisedReportItem {
     price_qty: number;
     amount: number;
     keping: number;
+    net_received: number;
 }
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
     totals: {
         qty: number;
         amount: number;
+        net_received: number;
     };
     filter: {
         time_period: string;
@@ -63,9 +65,9 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
             {/* KOP SURAT */}
             <div className="text-center border-b-2 border-black pb-4 mb-6">
                 {/* [UPDATED] Menambahkan mx-auto agar logo berada di tengah */}
-                <img 
-                    src="/assets/GKA_no_Tag.png" 
-                    className="h-20 w-auto mx-auto mb-2 object-contain" 
+                <img
+                    src="/assets/GKA_no_Tag.png"
+                    className="h-20 w-auto mx-auto mb-2 object-contain"
                     alt="Logo GKA"
                 />
                 <h1 className="text-2xl font-bold uppercase tracking-widest">Garuda Karya Amanat</h1>
@@ -102,7 +104,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                                     <td className="border border-black p-1 text-center">{item.keping}</td>
                                     <td className="border border-black p-1 text-right">{item.qty_kg}</td>
                                     <td className="border border-black p-1 text-right">{formatCurrency(item.price_qty)}</td>
-                                    <td className="border border-black p-1 text-right font-bold">{formatCurrency(item.amount)}</td>
+                                    <td className="border border-black p-1 text-right font-bold">{formatCurrency(item.net_received)}</td>
                                 </tr>
                             ))
                         ) : (
@@ -117,7 +119,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                             <td colSpan={5} className="border border-black p-2 text-right">GRAND TOTAL</td>
                             <td className="border border-black p-2 text-right">{totals.qty} Kg</td>
                             <td className="border border-black p-2 bg-gray-300"></td>
-                            <td className="border border-black p-2 text-right">{formatCurrency(totals.amount)}</td>
+                            <td className="border border-black p-2 text-right">{formatCurrency(totals.net_received)}</td>
                         </tr>
                     </tfoot>
                 </table>
