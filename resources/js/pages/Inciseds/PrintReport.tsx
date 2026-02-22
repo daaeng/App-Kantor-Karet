@@ -90,6 +90,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                             <th className="border border-black p-2 text-right">Total (Rp)</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {inciseds.length > 0 ? (
                             inciseds.map((item, index) => (
