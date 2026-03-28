@@ -185,7 +185,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Rekapitulasi Kasbon" />
-            <div className="space-y-6 p-4 bg-gray-50/50 min-h-screen sm:p-8">
+            <div className="space-y-6 p-4 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title="Dashboard Rekap Kasbon" description="Total kasbon yang dimiliki oleh setiap orang." />
                      <div className="flex items-center gap-3 flex-wrap">
@@ -247,7 +247,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                          {/* [MODIFIED] Changed sm:flex-row to lg:flex-row for better responsiveness */}
                          <div className="flex flex-col lg:flex-row gap-3">
                             {/* [MODIFIED] Changed sm:w-1/2 to lg:w-1/2 */}
-                            <div className='relative w-full lg:w-1/2'>
+                            <div className='relative w-full lg:w-1/2 dark:bg-neutral-800 rounded-lg'>
                                 <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                                 <Input
                                     placeholder="Cari nama, NIP, atau No. Invoice..."
@@ -259,9 +259,9 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                             </div>
 
                             {/* [NEW] Filter Tipe */}
-                            <Select value={type} onValueChange={setType} disabled={isLoading}>
+                            <Select value={type} onValueChange={setType} disabled={isLoading}  >
                                 {/* [MODIFIED] Changed sm:w-14 to w-full lg:w-1/4 */}
-                                <SelectTrigger className="w-full lg:w-1/4">
+                                <SelectTrigger className="w-full lg:w-1/4 dark:bg-neutral-800">
                                     <SelectValue placeholder="Semua Tipe" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -275,7 +275,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                             {/* [NEW] Filter Lokasi */}
                             <Select value={location} onValueChange={setLocation} disabled={isLoading}>
                                 {/* [MODIFIED] Changed sm:w-14 to w-full lg:w-1/4 */}
-                                <SelectTrigger className="w-full lg:w-1/4">
+                                <SelectTrigger className="w-full lg:w-1/4 dark:bg-neutral-800">
                                     <SelectValue placeholder="Semua Lokasi" />
                                 </SelectTrigger>
                                 <SelectContent>

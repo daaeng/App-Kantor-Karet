@@ -178,7 +178,7 @@ export default function Generate({ payrollData, period, period_string }: any) {
                                                                 type="number"
                                                                 value={emp.hari_hadir}
                                                                 onChange={(e) => handleInputChange(index, 'hari_hadir', e.target.value)}
-                                                                className="h-8 text-xs bg-white"
+                                                                className="h-8 text-xs bg-white text-accent"
                                                                 disabled={!includeMakan}
                                                             />
                                                         </div>
@@ -188,7 +188,7 @@ export default function Generate({ payrollData, period, period_string }: any) {
                                                                 type="number"
                                                                 value={emp.uang_makan_rate}
                                                                 onChange={(e) => handleInputChange(index, 'uang_makan_rate', e.target.value)}
-                                                                className="h-8 text-xs bg-white border-amber-200 focus:ring-amber-500"
+                                                                className="h-8 text-xs bg-white border-amber-200 focus:ring-amber-500 text-accent"
                                                                 disabled={!includeMakan}
                                                             />
                                                         </div>

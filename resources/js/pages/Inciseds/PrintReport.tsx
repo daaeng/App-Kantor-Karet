@@ -87,7 +87,8 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                             <th className="border border-black p-2 text-center">Keping</th>
                             <th className="border border-black p-2 text-right">Berat (Kg)</th>
                             <th className="border border-black p-2 text-right">Harga Satuan</th>
-                            <th className="border border-black p-2 text-right">Total (Rp)</th>
+                            <th className="border border-black p-2 text-right">Hasil Karet (Rp)</th>
+                            <th className="border border-black p-2 text-right">Terima (Rp)</th>
                         </tr>
                     </thead>
 
@@ -105,6 +106,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                                     <td className="border border-black p-1 text-center">{item.keping}</td>
                                     <td className="border border-black p-1 text-right">{item.qty_kg}</td>
                                     <td className="border border-black p-1 text-right">{formatCurrency(item.price_qty)}</td>
+                                    <td className="border border-black p-1 text-right font-bold">{formatCurrency(item.amount)}</td>
                                     <td className="border border-black p-1 text-right font-bold">{formatCurrency(item.net_received)}</td>
                                 </tr>
                             ))
@@ -119,7 +121,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                         <tr className="bg-gray-200 font-bold">
                             <td colSpan={5} className="border border-black p-2 text-right">GRAND TOTAL</td>
                             <td className="border border-black p-2 text-right">{totals.qty} Kg</td>
-                            <td className="border border-black p-2 bg-gray-300"></td>
+                            <td colSpan={2} className="border border-black p-2 bg-gray-300"></td>
                             <td className="border border-black p-2 text-right">{formatCurrency(totals.net_received)}</td>
                         </tr>
                     </tfoot>

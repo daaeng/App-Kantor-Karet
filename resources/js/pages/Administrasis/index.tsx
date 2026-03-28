@@ -24,6 +24,16 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Administrasi & Keuangan', href: '/administrasis' },
@@ -42,11 +52,25 @@ interface FinancialReport {
         out_belikaret: number;
         out_kasbon_pegawai: number;
         out_kasbon_penoreh: number;
+        out_bayar_penoreh: number;
         total_in: number;
         total_out: number;
         balance: number;
     };
-    profit_loss: { revenue: number; cogs: number; gross_profit: number; opex: number; net_profit: number; };
+    profit_loss: {
+        revenue_karet: number;
+        revenue_lain: number;
+        cogs: number;
+        gross_profit: number;
+        opex_gaji: number;
+        opex_lapangan: number;
+        opex_kantor: number;
+        opex_bpjs: number;
+        opex_kapal_truck: number;
+        opex_lainnya: number;
+        opex_total: number;
+        net_profit: number;
+    };
     neraca: { assets: { kas_period: number; bank_period: number; piutang: number; inventory_value: number; }; liabilities: { hutang_dagang: number; } }
 }
 
@@ -72,7 +96,6 @@ interface TransactionData {
 
 interface PaginatedData<T> { data: T[]; links: any[]; meta: { current_page: number; last_page: number; per_page: number; total: number; }; }
 
-// [UPDATE] Menambahkan start_year dan end_year ke Interface Filter
 interface PageProps {
     requests: PaginatedData<any>;
     notas: PaginatedData<any>;
@@ -82,8 +105,8 @@ interface PageProps {
         time_period?: string;
         month?: string;
         year?: string;
-        start_year?: string; // [BARU]
-        end_year?: string;   // [BARU]
+        start_year?: string;
+        end_year?: string;
     };
     currentMonth: number;
     currentYear: number;
@@ -106,10 +129,10 @@ type UiSourceType = 'bank_out' | 'kas_out' | 'bank_in' | 'kas_in';
 
 // --- Configuration Constants ---
 const CATEGORY_OPTIONS: Record<UiSourceType, string[]> = {
-    'kas_out': ["Operasional Lapangan", "Operasional Kantor", "BPJS Ketenagakerjaan", "Pembelian Karet"],
+    'kas_out': ["Operasional Lapangan", "Operasional Kantor", "BPJS Ketenagakerjaan", "Pembelian Karet", "Pembayaran Penoreh"],
     'bank_out': ["Penarikan Bank", "Pembayaran Kapal", "Pembayaran Truck", "Bayar Hutang"],
     'bank_in': ["Setor Modal", "Dana Investasi", "Pendapatan Lain (Bank)"],
-    'kas_in': ["Dana Bank"]
+    'kas_in': ["Penarikan Tunai dari Bank"]
 };
 
 export default function AdminPage({ requests, notas, summary, chartData, filter, currentMonth, currentYear }: PageProps) {
@@ -118,12 +141,13 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [editingTransactionId, setEditingTransactionId] = useState<number | null>(null);
 
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+    const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
+
     // --- Filter State ---
     const [timePeriod, setTimePeriod] = useState(filter?.time_period || 'this-month');
     const [selectedMonth, setSelectedMonth] = useState<string>(filter?.month || String(currentMonth));
     const [selectedYear, setSelectedYear] = useState<string>(filter?.year || String(currentYear));
-
-    // [BARU] State untuk Rentang Tahun
     const [startYear, setStartYear] = useState<string>(filter?.start_year || String(currentYear));
     const [endYear, setEndYear] = useState<string>(filter?.end_year || String(currentYear));
 
@@ -142,15 +166,13 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
     const hargaForm = useForm({ nilai: '', tanggal_berlaku: new Date().toISOString().split('T')[0], jenis: '' });
 
-    // Fetch Transaksi
     useEffect(() => {
         if (activeTab === 'expenses') fetchTransactions();
-    }, [activeTab, trxPage, selectedMonth, selectedYear, startYear, endYear, timePeriod]); // Trigger ulang saat filter berubah
+    }, [activeTab, trxPage, selectedMonth, selectedYear, startYear, endYear, timePeriod]);
 
     const fetchTransactions = async () => {
         setIsTrxLoading(true);
         try {
-            // Kita kirim juga parameter filter ke API agar tabel transaksi sinkron
             const queryParams = new URLSearchParams({
                 page: String(trxPage),
                 time_period: timePeriod,
@@ -168,8 +190,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
         finally { setIsTrxLoading(false); }
     };
 
-    // --- HANDLERS FILTER ---
-    // Fungsi Centralized Filter Application
     const applyFilter = (period: string, month: string, year: string, sYear: string, eYear: string) => {
         router.get(route('administrasis.index'), {
             time_period: period,
@@ -189,7 +209,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
         if (value === 'specific-month') {
             applyFilter(value, String(new Date().getMonth() + 1), String(new Date().getFullYear()), startYear, endYear);
         } else if (value === 'periodic-years') {
-            // Default rentang tahun: Tahun ini s/d Tahun ini
             const currYear = String(new Date().getFullYear());
             setStartYear(currYear);
             setEndYear(currYear);
@@ -201,8 +220,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
     const handleMonthChange = (v: string) => { setSelectedMonth(v); applyFilter(timePeriod, v, selectedYear, startYear, endYear); };
     const handleYearChange = (v: string) => { setSelectedYear(v); applyFilter(timePeriod, selectedMonth, v, startYear, endYear); };
-
-    // [BARU] Handler Start/End Year
     const handleStartYearChange = (v: string) => { setStartYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, v, endYear); };
     const handleEndYearChange = (v: string) => { setEndYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, v); };
 
@@ -267,7 +284,24 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
         }
     };
 
-    const deleteTransaction = (id: number) => { if (confirm('Hapus transaksi ini?')) router.delete(route('administrasis.destroyTransaction', id), { onSuccess: () => { if (activeTab === 'expenses') fetchTransactions(); router.reload({ only: ['summary', 'chartData'] }); } }); };
+    const promptDeleteTransaction = (id: number) => {
+        setTransactionToDelete(id);
+        setIsDeleteAlertOpen(true);
+    };
+
+    const executeDeleteTransaction = () => {
+        if (transactionToDelete) {
+            router.delete(route('administrasis.destroyTransaction', transactionToDelete), {
+                onSuccess: () => {
+                    if (activeTab === 'expenses') fetchTransactions();
+                    router.reload({ only: ['summary', 'chartData'] });
+                    setIsDeleteAlertOpen(false);
+                    setTransactionToDelete(null);
+                }
+            });
+        }
+    };
+
     const submitHarga = (e: React.FormEvent) => { e.preventDefault(); hargaForm.post(route('administrasis.updateHarga'), { onSuccess: () => setIsHargaModalOpen(false) }); };
 
     const months = Array.from({ length: 12 }, (_, i) => ({ value: String(i + 1), label: new Date(0, i).toLocaleString('id-ID', { month: 'long' }) }));
@@ -301,12 +335,10 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 <SelectItem value="last-month">Bulan Lalu</SelectItem>
                                 <SelectItem value="this-year">Tahun Ini</SelectItem>
                                 <SelectItem value="specific-month">Pilih Bulan Spesifik</SelectItem>
-                                {/* [BARU] Opsi Rentang Tahun */}
                                 <SelectItem value="periodic-years">Rentang Tahun</SelectItem>
                             </SelectContent>
                         </Select>
 
-                        {/* Filter Bulan Spesifik */}
                         {timePeriod === 'specific-month' && (
                             <>
                                 <div className="h-4 w-[1px] bg-gray-200 mx-1" />
@@ -321,7 +353,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                             </>
                         )}
 
-                        {/* [BARU] Filter Rentang Tahun */}
                         {timePeriod === 'periodic-years' && (
                             <>
                                 <div className="h-4 w-[1px] bg-gray-200 mx-1" />
@@ -387,9 +418,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 <div><p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Pemasukan (Sumber Kas)</p><ReportRow label="Penarikan dari Bank" value={summary.reports.kas.in_penarikan} /></div>
                                 <div>
                                     <p className="text-xs font-semibold uppercase text-muted-foreground mb-2 mt-4">Pengeluaran (Operasional)</p>
-                                    {/* [BARU] Tampilkan Pembayaran Penoreh Paling Atas */}
                                     <ReportRow label="Pembayaran Karet dari Penoreh" value={summary.reports.kas.out_bayar_penoreh} isMinus isBold />
-
                                     <ReportRow label="Operasional Lapangan" value={summary.reports.kas.out_lapangan} isMinus />
                                     <ReportRow label="Operasional Kantor" value={summary.reports.kas.out_kantor} isMinus />
                                     <ReportRow label="BPJS Ketenagakerjaan" value={summary.reports.kas.out_bpjs} isMinus />
@@ -400,8 +429,55 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 <div className="pt-4 border-t border-gray-200 dark:border-zinc-700"><ReportRow label="Sisa Kas Periode Ini" value={summary.reports.kas.balance} isBold /></div></CardContent></Card>
                             {/* NERACA */}
                             <Card className="shadow-sm border-t-4 border-t-slate-500"><CardHeader className="bg-slate-50/50 dark:bg-slate-900/10 pb-4"><CardTitle className="flex items-center gap-2 text-slate-700 dark:text-slate-400"><Scale className="w-5 h-5" /> Neraca (Posisi Keuangan)</CardTitle><CardDescription>Estimasi posisi aset saat ini</CardDescription></CardHeader><CardContent className="pt-4 space-y-4"><div><p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Aset (Harta)</p><ReportRow label="Mutasi Kas Periode Ini" value={summary.reports.neraca.assets.kas_period} /><ReportRow label="Mutasi Bank Periode Ini" value={summary.reports.neraca.assets.bank_period} /><ReportRow label="Total Piutang Pegawai (Belum Lunas)" value={summary.reports.neraca.assets.piutang} /></div></CardContent></Card>
+
                             {/* RUGI LABA */}
-                            <Card className="shadow-sm border-t-4 border-t-emerald-600"><CardHeader className="bg-emerald-50/50 dark:bg-emerald-900/10 pb-4"><CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400"><TrendingUp className="w-5 h-5" /> Laporan Rugi Laba</CardTitle><CardDescription>Performa profitabilitas perusahaan</CardDescription></CardHeader><CardContent className="pt-4 space-y-4"><ReportRow label="Pendapatan (Penjualan Karet)" value={summary.reports.profit_loss.revenue} /><ReportRow label="HPP (Pembelian Karet)" value={summary.reports.profit_loss.cogs} isMinus /><div className="border-t border-dashed my-2"></div><ReportRow label="Laba Kotor" value={summary.reports.profit_loss.gross_profit} isBold /><div className="mt-4"><p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Biaya Operasional (OpEx)</p><ReportRow label="Total Biaya Operasional" value={summary.reports.profit_loss.opex} isMinus /></div><div className="pt-4 border-t-2 border-gray-800 dark:border-white mt-2"><div className="flex justify-between items-center text-lg font-bold"><span>Laba Bersih</span><span className={summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}>{formatCurrency(summary.reports.profit_loss.net_profit)}</span></div></div></CardContent></Card>
+                            <Card className="shadow-sm border-t-4 border-t-emerald-600">
+                                <CardHeader className="bg-emerald-50/50 dark:bg-emerald-900/10 pb-4">
+                                    <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                                        <TrendingUp className="w-5 h-5" /> Laporan Rugi Laba
+                                    </CardTitle>
+                                    <CardDescription>Performa profitabilitas perusahaan secara detail</CardDescription>
+                                </CardHeader>
+                                <CardContent className="pt-4 space-y-4">
+                                    <div>
+                                        <p className="text-xs font-bold uppercase text-muted-foreground mb-2">Pendapatan</p>
+                                        <ReportRow label="Penjualan Karet" value={summary.reports.profit_loss.revenue_karet} />
+                                        {summary.reports.profit_loss.revenue_lain > 0 && (
+                                            <ReportRow label="Pendapatan Lainnya" value={summary.reports.profit_loss.revenue_lain} />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold uppercase text-muted-foreground mb-2 mt-4">Harga Pokok Penjualan</p>
+                                        <ReportRow label="HPP (Total Pembelian Karet)" value={summary.reports.profit_loss.cogs} isMinus />
+                                    </div>
+                                    <div className="border-t border-dashed my-2"></div>
+                                    <ReportRow label="Laba Kotor" value={summary.reports.profit_loss.gross_profit} isBold />
+
+                                    <div className="mt-4">
+                                        <p className="text-xs font-bold uppercase text-muted-foreground mb-2">Biaya Operasional (OpEx)</p>
+                                        <ReportRow label="Gaji & Upah Pegawai" value={summary.reports.profit_loss.opex_gaji} isMinus />
+                                        <ReportRow label="Operasional Lapangan" value={summary.reports.profit_loss.opex_lapangan} isMinus />
+                                        <ReportRow label="Operasional Kantor" value={summary.reports.profit_loss.opex_kantor} isMinus />
+                                        <ReportRow label="Biaya Ekspedisi (Kapal & Truck)" value={summary.reports.profit_loss.opex_kapal_truck} isMinus />
+                                        <ReportRow label="BPJS Ketenagakerjaan" value={summary.reports.profit_loss.opex_bpjs} isMinus />
+                                        {summary.reports.profit_loss.opex_lainnya > 0 && (
+                                            <ReportRow label="Biaya Lainnya" value={summary.reports.profit_loss.opex_lainnya} isMinus />
+                                        )}
+                                    </div>
+                                    <div className="border-t border-gray-200 dark:border-zinc-700 my-2 pt-2">
+                                        <ReportRow label="Total Biaya Operasional" value={summary.reports.profit_loss.opex_total} isMinus isBold />
+                                    </div>
+
+                                    <div className="pt-4 border-t-2 border-gray-800 dark:border-white mt-2">
+                                        <div className="flex justify-between items-center text-lg font-bold">
+                                            <span>Laba Bersih</span>
+                                            <span className={summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                                                {formatCurrency(summary.reports.profit_loss.net_profit)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     </TabsContent>
 
@@ -456,7 +532,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         <Button variant="ghost" size="icon" onClick={() => handleEditTransaction(item)}>
                                                             <Pencil className="w-4 h-4 text-blue-500" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" onClick={() => deleteTransaction(item.id)}>
+                                                        <Button variant="ghost" size="icon" onClick={() => promptDeleteTransaction(item.id)}>
                                                             <Trash2 className="w-4 h-4 text-red-500" />
                                                         </Button>
                                                     </TableCell>
@@ -546,6 +622,25 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                 {/* Modal Harga */}
                 <Dialog open={isHargaModalOpen} onOpenChange={setIsHargaModalOpen}><DialogContent><DialogHeader><DialogTitle>Update Harga Pasar</DialogTitle></DialogHeader><form onSubmit={submitHarga} className="space-y-4 pt-4"><div className="space-y-2"><Label>Nilai Baru</Label><Input type="number" step="0.01" value={hargaForm.data.nilai} onChange={e => hargaForm.setData('nilai', e.target.value)} placeholder="0.00" /></div><div className="space-y-2"><Label>Tanggal Berlaku</Label><Input type="date" value={hargaForm.data.tanggal_berlaku} onChange={e => hargaForm.setData('tanggal_berlaku', e.target.value)} /></div><DialogFooter><Button type="submit" disabled={hargaForm.processing}>Simpan Perubahan</Button></DialogFooter></form></DialogContent></Dialog>
+
+                {/* Modal Konfirmasi Hapus Menggunakan AlertDialog */}
+                <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus Transaksi?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Apakah Anda yakin ingin menghapus data transaksi ini? Data yang sudah dihapus tidak dapat dikembalikan dan akan memengaruhi kalkulasi saldo.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setTransactionToDelete(null)}>Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={executeDeleteTransaction} className="bg-rose-600 hover:bg-rose-700 text-white">
+                                Ya, Hapus Data
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
             </div>
         </AppLayout>
     );

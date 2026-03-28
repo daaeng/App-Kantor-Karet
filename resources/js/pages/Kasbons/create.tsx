@@ -145,7 +145,7 @@ export default function CreateKasbon({ incisors, monthsYears, statuses, flash, e
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tambah Kasbon Baru" />
-            <div className="space-y-6 p-4 bg-gray-50/50 min-h-screen sm:p-8">
+            <div className="space-y-6 p-4 min-h-screen sm:p-8">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <Heading title="Buat Pengajuan Kasbon" description="Isi formulir untuk membuat pengajuan kasbon baru." />
                     <Link href={route('kasbons.index')}>
@@ -176,8 +176,11 @@ export default function CreateKasbon({ incisors, monthsYears, statuses, flash, e
                                 <div>
                                     <Label htmlFor="incisor_id">Penoreh</Label>
                                     <Select onValueChange={(value) => setData('incisor_id', value)} value={data.incisor_id}>
-                                        <SelectTrigger><SelectValue placeholder="Pilih Penoreh..." /></SelectTrigger>
-                                        <SelectContent>{incisors.map((incisor) => <SelectItem key={incisor.id} value={String(incisor.id)}>{incisor.label}</SelectItem>)}</SelectContent>
+                                        <SelectTrigger className='dark:bg-neutral-800'>
+                                            <SelectValue placeholder="Pilih Penoreh..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {incisors.map((incisor) => <SelectItem key={incisor.id} value={String(incisor.id)}>{incisor.label}</SelectItem>)}
+                                        </SelectContent>
                                     </Select>
                                     {errors.incisor_id && <p className="text-sm text-destructive mt-1">{errors.incisor_id}</p>}
                                 </div>
@@ -190,7 +193,9 @@ export default function CreateKasbon({ incisors, monthsYears, statuses, flash, e
                                         }}
                                         value={data.month && data.year ? `${data.month}-${data.year}` : ''}
                                     >
-                                        <SelectTrigger><SelectValue placeholder="Pilih Bulan & Tahun..." /></SelectTrigger>
+                                        <SelectTrigger className='dark:bg-neutral-800'>
+                                            <SelectValue placeholder="Pilih Bulan & Tahun..." />
+                                        </SelectTrigger>
                                         <SelectContent>{monthsYears.map((item, index) => <SelectItem key={index} value={`${item.month}-${item.year}`}>{item.label}</SelectItem>)}</SelectContent>
                                     </Select>
                                     {(errors.month || errors.year) && <p className="text-sm text-destructive mt-1">{errors.month || errors.year}</p>}

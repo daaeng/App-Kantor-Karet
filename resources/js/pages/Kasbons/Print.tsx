@@ -50,7 +50,7 @@ export default function Print({ kasbons, printDate }: PrintPageProps) {
                 {`
                     @media print {
                         .no-print { display: none !important; }
-                        @page { size: A4 portrait; margin: 1.5cm; }
+                        @page { size: A4 portrait; margin: 1cm; }
                         body { -webkit-print-color-adjust: exact; background-color: #fff; }
                         .print-container { box-shadow: none; border: none; }
                     }
@@ -70,7 +70,7 @@ export default function Print({ kasbons, printDate }: PrintPageProps) {
                     </Button>
                 </div>
 
-                <div className="print-container max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg border">
+                <div className="print-container max-w-4xl mx-auto bg-white text-black p-8 rounded-lg shadow-lg border">
                     <header className="flex justify-between items-center pb-6 border-b-2 border-gray-800">
                         <div className='flex items-center gap-4'>
                              <img src="/assets/GKA_no_Tag.png" alt="GKA Logo" className="w-20 h-auto object-contain" />
