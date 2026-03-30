@@ -130,6 +130,11 @@ export default function Edit({ ppb }: any) {
                                     <Button type="button" size="icon" variant="ghost" className="text-red-500 hover:text-red-700" onClick={() => removeItem(index)} disabled={data.items.length === 1}>
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
+
+                                    <div className="flex-col space-y-1 w-full">
+                                        <Label className="text-xs">Keterangan</Label>
+                                        <Input value={item.keterangan} onChange={e => updateItem(index, 'keterangan', e.target.value)} placeholder="keterangan" />
+                                    </div>
                                 </div>
                             ))}
                             <div className="flex justify-end pt-4 border-t">
