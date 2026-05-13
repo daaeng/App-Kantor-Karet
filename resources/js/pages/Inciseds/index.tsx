@@ -5,14 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { CirclePlus, Megaphone, Pencil, Search, Trash, Printer, PackagePlus, Wallet, CheckCircle2, Eye, Calendar as CalendarIcon, X, ArrowRight } from 'lucide-react';
+import { CirclePlus, Megaphone, Pencil, Search, Trash, Printer, PackagePlus, Wallet, CheckCircle2, Eye, Calendar as CalendarIcon, X } from 'lucide-react';
 import { can } from '@/lib/can';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FaSeedling, FaUserFriends } from 'react-icons/fa';
 import { Badge } from '@/components/ui/badge';
-// Import Modal Components
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,19 +87,23 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
     const currentYear = new Date().getFullYear();
     const [specificMonth, setSpecificMonth] = useState(filter?.month || (new Date().getMonth() + 1).toString());
     const [specificYear, setSpecificYear] = useState(filter?.year || currentYear.toString());
-
-    // State Custom Date Range
     const [startDate, setStartDate] = useState(filter?.start_date || '');
     const [endDate, setEndDate] = useState(filter?.end_date || '');
+    const [perPage, setPerPage] = useState(filter?.per_page || '15');
 
-    const [perPage, setPerPage] = useState(filter?.per_page || '10');
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
-
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-    // State untuk Modal Konfirmasi
+    // STATE UNTUK PILIHAN KASBON
+    const [potongKasbon, setPotongKasbon] = useState(true);
+
+    // STATE UNTUK MODAL BAYAR MASSAL
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+    // STATE UNTUK MODAL BAYAR SATUAN
+    const [isSingleConfirmOpen, setIsSingleConfirmOpen] = useState(false);
+    const [singlePayData, setSinglePayData] = useState<{id: number, name: string, amount: number} | null>(null);
 
     useEffect(() => {
         setSearchValue(filter?.search || '');
@@ -109,7 +112,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
         setSpecificYear(filter?.year || currentYear.toString());
         setStartDate(filter?.start_date || '');
         setEndDate(filter?.end_date || '');
-        setPerPage(filter?.per_page || '10');
+        setPerPage(filter?.per_page || '15');
     }, [filter]);
 
     useEffect(() => {
@@ -128,13 +131,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
     };
 
     const performSearch = () => applyFilters({
-        search: searchValue,
-        time_period: timePeriod,
-        month: specificMonth,
-        year: specificYear,
-        per_page: perPage,
-        start_date: startDate,
-        end_date: endDate
+        search: searchValue, time_period: timePeriod, month: specificMonth, year: specificYear, per_page: perPage, start_date: startDate, end_date: endDate
     });
 
     const handleSelectAll = (checked: boolean) => {
@@ -151,23 +148,38 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
         else setSelectedIds(prev => prev.filter(item => item !== id));
     };
 
-    const openBulkPayConfirm = () => {
-        if (selectedIds.length > 0) setIsConfirmOpen(true);
+    // TRIGGER MODAL BAYAR SATUAN
+    const triggerSinglePay = (id: number, incisorName: string, amount: number) => {
+        setSinglePayData({ id, name: incisorName, amount });
+        setPotongKasbon(true); // Reset opsi ke default potong kasbon
+        setIsSingleConfirmOpen(true);
     };
 
+    // EKSEKUSI BAYAR SATUAN
+    const executeSinglePay = () => {
+        if (singlePayData) {
+            router.post(route('inciseds.settle', singlePayData.id), { potong_kasbon: potongKasbon }, {
+                onSuccess: () => setIsSingleConfirmOpen(false)
+            });
+        }
+    };
+
+    // TRIGGER MODAL BAYAR MASSAL
+    const openBulkPayConfirm = () => {
+        if (selectedIds.length > 0) {
+            setPotongKasbon(true); // Reset opsi ke default
+            setIsConfirmOpen(true);
+        }
+    };
+
+    // EKSEKUSI BAYAR MASSAL
     const executeBulkPay = () => {
-        router.post(route('inciseds.bulkSettle'), { ids: selectedIds }, {
+        router.post(route('inciseds.bulkSettle'), { ids: selectedIds, potong_kasbon: potongKasbon }, {
             onSuccess: () => {
                 setSelectedIds([]);
                 setIsConfirmOpen(false);
             }
         });
-    };
-
-    const handlePay = (id: number, incisorName: string, amount: number) => {
-        if (confirm(`Proses pembayaran untuk ${incisorName} sebesar ${formatCurrency(amount)}?\n\nSistem akan otomatis memotong Kasbon jika ada.`)) {
-            router.post(route('inciseds.settle', id));
-        }
     };
 
     const handleDelete = (id: number, product: string) => {
@@ -178,18 +190,18 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
         const queryParams: any = { search: filter?.search || '', time_period: filter?.time_period || 'this-month' };
         if (filter?.time_period === 'specific-month') { queryParams.month = filter?.month; queryParams.year = filter?.year; }
         if (filter?.time_period === 'custom') { queryParams.start_date = filter?.start_date; queryParams.end_date = filter?.end_date; }
-
         window.open(route('inciseds.printReport', queryParams), '_blank');
     };
 
     const monthOptions = Array.from({ length: 12 }, (_, i) => ({ value: (i + 1).toString(), label: new Date(0, i).toLocaleString('id-ID', { month: 'long' }) }));
     const yearOptions = Array.from({ length: 10 }, (_, i) => ({ value: (currentYear - i).toString(), label: (currentYear - i).toString() }));
+
     const renderPagination = (links: PaginationLink[]) => (
         <div className="flex justify-center items-center mt-6 space-x-2">{links.map((link, index) => (<Link key={index} href={link.url || '#'} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 ${link.active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'} ${!link.url ? 'text-gray-400 cursor-not-allowed opacity-50' : ''}`} dangerouslySetInnerHTML={{ __html: link.label }} />))}</div>
     );
 
-    const formatRupiah = (val: string) => {
-        const num = parseFloat(val);
+    const formatRupiah = (val: string | number) => {
+        const num = typeof val === 'string' ? parseFloat(val) : val;
         if (isNaN(num)) return 'Rp 0';
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
     }
@@ -237,10 +249,8 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                             </SelectContent>
                                         </Select>
 
-                                        {/* [TAMPILAN BARU] Input Range Tanggal */}
                                         {timePeriod === 'custom' && (
                                             <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-5 duration-300">
-                                                {/* Start Date */}
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                                         <CalendarIcon className="h-3.5 w-3.5 text-gray-400" />
@@ -249,16 +259,11 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                         type="date"
                                                         value={startDate}
                                                         onChange={(e) => setStartDate(e.target.value)}
-                                                        // [FIX] Tambahkan ini agar kalender muncul saat diklik
                                                         onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                                                        onFocus={(e) => (e.target as HTMLInputElement).showPicker()}
                                                         className="pl-9 h-9 w-[140px] text-xs bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 focus:ring-indigo-500 rounded-md cursor-pointer"
                                                     />
                                                 </div>
-
                                                 <span className="text-gray-400 font-medium text-xs">s/d</span>
-
-                                                {/* End Date */}
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                                         <CalendarIcon className="h-3.5 w-3.5 text-gray-400" />
@@ -267,18 +272,11 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                         type="date"
                                                         value={endDate}
                                                         onChange={(e) => setEndDate(e.target.value)}
-                                                        // [FIX] Tambahkan ini agar kalender muncul saat diklik
                                                         onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                                                        onFocus={(e) => (e.target as HTMLInputElement).showPicker()}
                                                         className="pl-9 h-9 w-[140px] text-xs bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 focus:ring-indigo-500 rounded-md cursor-pointer"
                                                     />
                                                 </div>
-
-                                                <Button
-                                                    size="sm"
-                                                    onClick={performSearch}
-                                                    className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium text-xs"
-                                                >
+                                                <Button size="sm" onClick={performSearch} className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium text-xs">
                                                     Terapkan
                                                 </Button>
                                             </div>
@@ -299,7 +297,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                         {timePeriod !== 'custom' && <Button onClick={performSearch} variant="secondary">Cari</Button>}
                                     </div>
                                 </div>
-                                <Button onClick={handlePrintReport} variant="outline" className="bg-white hover:bg-gray-50 border-gray-300"><Printer className="w-4 h-4 mr-2" /> Laporan</Button>
+                                <Button onClick={handlePrintReport} variant="outline" className="bg-white hover:bg-gray-50 border-gray-300 dark:text-black"><Printer className="w-4 h-4 mr-2" /> Laporan</Button>
                             </div>
 
                             <div className="mb-4 space-y-2">
@@ -339,7 +337,16 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                         <TableCell>
                                                             <div className="flex items-center justify-center gap-1">
                                                                 <Link href={route('inciseds.show', incised.id)}><Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50"><Eye className="h-4 w-4" /></Button></Link>
-                                                                {isPaid ? (<div className="flex flex-col items-end mx-1"><Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100 cursor-default px-2 py-0.5 mb-1"><CheckCircle2 className="w-3 h-3 mr-1" /> Sudah Di Bayar</Badge></div>) : (can('incised.edit') && <Button size="sm" className="h-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm mx-1" onClick={() => handlePay(incised.id, incised.incisor_name || 'Penoreh', incised.amount)}><Wallet className="w-3.5 h-3.5 mr-1" /> Bayar</Button>)}
+
+                                                                {isPaid ? (
+                                                                    <div className="flex flex-col items-end mx-1"><Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100 cursor-default px-2 py-0.5 mb-1"><CheckCircle2 className="w-3 h-3 mr-1" /> Sudah Di Bayar</Badge></div>
+                                                                ) : (
+                                                                    can('incised.edit') &&
+                                                                    <Button size="sm" className="h-8 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm mx-1" onClick={() => triggerSinglePay(incised.id, incised.incisor_name || 'Penoreh', incised.amount)}>
+                                                                        <Wallet className="w-3.5 h-3.5 mr-1" /> Bayar
+                                                                    </Button>
+                                                                )}
+
                                                                 {!isPaid && (<>{can('incised.edit') && <Link href={route('inciseds.edit', incised.id)}><Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-orange-50 hover:text-orange-600"><Pencil className="h-4 w-4" /></Button></Link>}{can('incised.delete') && <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDelete(incised.id, incised.product)}><Trash className="h-4 w-4" /></Button>}</>)}
                                                                 {!isPaid && can('products.create') && (<Link href={route('incoming.create')} data={{ prefill_date: incised.date, prefill_supplier: incised.lok_kebun, prefill_qty: incised.qty_kg, prefill_keping: incised.keping, prefill_kualitas: incised.kualitas, prefill_ref: `TOREH-${incised.no_invoice}` }}><Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600 hover:bg-blue-50" title="Setor ke Gudang (Manual)"><PackagePlus className="h-4 w-4" /></Button></Link>)}
                                                             </div>
@@ -371,20 +378,82 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                         </div>
                     )}
 
-                    {/* Modal Konfirmasi */}
+                    {/* MODAL KONFIRMASI BAYAR MASSAL */}
                     <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="sm:max-w-md">
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Konfirmasi Pembayaran Massal</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Anda akan memproses pembayaran untuk <span className="font-bold text-black dark:text-white">{selectedIds.length} data terpilih</span>.
-                                    <br /><br />
-                                    Sistem akan otomatis memotong kasbon masing-masing penoreh jika ada tagihan aktif. Apakah Anda yakin ingin melanjutkan?
+                                <AlertDialogTitle className="text-xl">Konfirmasi Pembayaran</AlertDialogTitle>
+                                <AlertDialogDescription asChild>
+                                    <div className="text-slate-600 mt-2">
+                                        Anda akan memproses pembayaran untuk <span className="font-bold text-black dark:text-white">{selectedIds.length} data terpilih</span>.
+
+                                        {/* Opsi Pilihan Potong Kasbon */}
+                                        <div className="mt-5 space-y-3">
+                                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Metode Pembayaran Kasbon:</p>
+                                            <div className="flex flex-col space-y-2">
+                                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${potongKasbon ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30' : 'bg-white dark:bg-zinc-900 border-gray-200'}`}>
+                                                    <input type="radio" name="bulkPotongKasbon" className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer" checked={potongKasbon} onChange={() => setPotongKasbon(true)} />
+                                                    <div className="ml-3">
+                                                        <span className={`block text-sm font-bold ${potongKasbon ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700'}`}>Potong Kasbon Otomatis</span>
+                                                        <span className="block text-xs text-slate-500 mt-0.5">Sistem akan otomatis memotong pinjaman jika penoreh memiliki sisa kasbon yang aktif.</span>
+                                                    </div>
+                                                </label>
+                                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${!potongKasbon ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-900/30' : 'bg-white dark:bg-zinc-900 border-gray-200'}`}>
+                                                    <input type="radio" name="bulkPotongKasbon" className="mt-1 h-4 w-4 text-emerald-600 cursor-pointer" checked={!potongKasbon} onChange={() => setPotongKasbon(false)} />
+                                                    <div className="ml-3">
+                                                        <span className={`block text-sm font-bold ${!potongKasbon ? 'text-emerald-900 dark:text-emerald-100' : 'text-slate-700'}`}>Bayar Penuh (Tanpa Potongan)</span>
+                                                        <span className="block text-xs text-slate-500 mt-0.5">Penoreh akan menerima uang hasil toreh secara penuh. Kasbon tidak akan dikurangi.</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter>
+                            <AlertDialogFooter className="mt-4">
                                 <AlertDialogCancel>Batal</AlertDialogCancel>
-                                <AlertDialogAction onClick={executeBulkPay} className="bg-indigo-600 hover:bg-indigo-700">
+                                <AlertDialogAction onClick={executeBulkPay} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+                                    Ya, Proses Pembayaran
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* MODAL KONFIRMASI BAYAR SATUAN */}
+                    <AlertDialog open={isSingleConfirmOpen} onOpenChange={setIsSingleConfirmOpen}>
+                        <AlertDialogContent className="sm:max-w-md">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle className="text-xl">Konfirmasi Pembayaran</AlertDialogTitle>
+                                <AlertDialogDescription asChild>
+                                    <div className="text-slate-600 mt-2">
+                                        Anda akan memproses pembayaran untuk <span className="font-bold text-black dark:text-white uppercase">{singlePayData?.name}</span> sebesar <span className="font-bold text-emerald-600">{formatRupiah(singlePayData?.amount || 0)}</span>.
+
+                                        {/* Opsi Pilihan Potong Kasbon */}
+                                        <div className="mt-5 space-y-3">
+                                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Metode Pembayaran Kasbon:</p>
+                                            <div className="flex flex-col space-y-2">
+                                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${potongKasbon ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30' : 'bg-white dark:bg-zinc-900 border-gray-200'}`}>
+                                                    <input type="radio" name="singlePotongKasbon" className="mt-1 h-4 w-4 text-indigo-600 cursor-pointer" checked={potongKasbon} onChange={() => setPotongKasbon(true)} />
+                                                    <div className="ml-3">
+                                                        <span className={`block text-sm font-bold ${potongKasbon ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-700'}`}>Potong Kasbon Otomatis</span>
+                                                        <span className="block text-xs text-slate-500 mt-0.5">Sistem akan otomatis memotong pinjaman jika penoreh memiliki sisa kasbon yang aktif.</span>
+                                                    </div>
+                                                </label>
+                                                <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${!potongKasbon ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-900/30' : 'bg-white dark:bg-zinc-900 border-gray-200'}`}>
+                                                    <input type="radio" name="singlePotongKasbon" className="mt-1 h-4 w-4 text-emerald-600 cursor-pointer" checked={!potongKasbon} onChange={() => setPotongKasbon(false)} />
+                                                    <div className="ml-3">
+                                                        <span className={`block text-sm font-bold ${!potongKasbon ? 'text-emerald-900 dark:text-emerald-100' : 'text-slate-700'}`}>Bayar Penuh (Tanpa Potongan)</span>
+                                                        <span className="block text-xs text-slate-500 mt-0.5">Penoreh akan menerima uang hasil toreh secara penuh. Kasbon tidak akan dikurangi.</span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="mt-4">
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction onClick={executeSinglePay} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
                                     Ya, Proses Pembayaran
                                 </AlertDialogAction>
                             </AlertDialogFooter>

@@ -59,7 +59,7 @@ class AdministrasiController extends Controller
                 $q->whereMonth(DB::raw('COALESCE(transaction_date, created_at)'), $month)
                   ->whereYear(DB::raw('COALESCE(transaction_date, created_at)'), $year);
             });
-        } elseif ($timePeriod === 'last-month') { // [FIX] Tambahan Filter Bulan Lalu
+        } elseif ($timePeriod === 'last-month') {
             $lastMonth = Carbon::now()->subMonth();
             $month = $lastMonth->month; $year = $lastMonth->year;
             $outgoingQuery->whereMonth('date', $month)->whereYear('date', $year);
@@ -87,7 +87,7 @@ class AdministrasiController extends Controller
             $trxQuery->whereYear('transaction_date', $year);
             $payrollQuery->whereYear('created_at', $year);
             $kasbonQuery->whereYear(DB::raw('COALESCE(transaction_date, created_at)'), $year);
-        } elseif ($timePeriod === 'periodic-years') { // [FIX] Tambahan Filter Rentang Tahun
+        } elseif ($timePeriod === 'periodic-years') {
             $outgoingQuery->whereYear('date', '>=', $startYear)->whereYear('date', '<=', $endYear);
             $incomingQuery->whereYear('date', '>=', $startYear)->whereYear('date', '<=', $endYear);
             $trxQuery->whereYear('transaction_date', '>=', $startYear)->whereYear('transaction_date', '<=', $endYear);
@@ -178,9 +178,10 @@ class AdministrasiController extends Controller
         $revenue_lain = $trxQuery->clone()->where('category', 'Pendapatan Lain (Bank)')->sum('amount') ?? 0;
         $revenue = $revenue_karet + $revenue_lain;
 
-        $beliKaret_Auto = $incomingQuery->sum('total_amount') ?? 0;
-        $cogs_Manual = $trxQuery->clone()->where('category', 'Pembelian Karet')->sum('amount') ?? 0;
-        $cogs = $beliKaret_Auto + $cogs_Manual;
+        // [FIX] HPP menggunakan nilai bersih yang dibayarkan ke Penoreh (Sama dengan Laporan Kas)
+        $cogs_Auto = $kasOut_BayarPenoreh; // Uang riil yang keluar untuk penoreh
+        $cogs_Manual = $kasOut_BeliKaretManual; // Uang riil yang keluar untuk beli manual
+        $cogs = $cogs_Auto + $cogs_Manual;
 
         $grossProfit = $revenue - $cogs;
 
@@ -410,7 +411,6 @@ class AdministrasiController extends Controller
         FinancialTransaction::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Transaksi dihapus!');
     }
-
 
     public function updateHarga(Request $request)
     {

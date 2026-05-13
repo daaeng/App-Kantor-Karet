@@ -67,7 +67,7 @@ export default function PrintReport({ inciseds, totals, filter }: Props) {
                 {/* [UPDATED] Menambahkan mx-auto agar logo berada di tengah */}
                 <img
                     src="/assets/GKA_no_Tag.png"
-                    className="h-20 w-auto mx-auto mb-2 object-contain"
+                    className="h-10 w-auto mx-auto mb-2 object-contain"
                     alt="Logo GKA"
                 />
                 <h1 className="text-2xl font-bold uppercase tracking-widest">Garuda Karya Amanat</h1>
