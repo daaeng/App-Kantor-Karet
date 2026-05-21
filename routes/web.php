@@ -202,6 +202,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/transactions/{id}', [AdministrasiController::class, 'updateTransaction'])->name('updateTransaction')->middleware("permission:administrasis.edit");
         Route::delete('/transactions/{id}', [AdministrasiController::class, 'destroyTransaction'])->name('destroyTransaction')->middleware("permission:administrasis.delete");
         Route::post('/update-harga', [AdministrasiController::class, 'updateHarga'])->name('updateHarga')->middleware("permission:administrasis.edit");
+        Route::get('/profit-loss-periods', [AdministrasiController::class, 'getProfitLossPeriods'])->name('getProfitLossPeriods');
+        Route::get('/export-excel', [AdministrasiController::class, 'exportExcel'])->name('exportExcel')->middleware("permission:administrasis.view");
     });
 
     // Roles

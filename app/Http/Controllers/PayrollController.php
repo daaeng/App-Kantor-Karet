@@ -7,11 +7,9 @@ use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollSetting;
 use App\Models\Kasbon;
-use App\Models\SalaryHistory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -19,53 +17,65 @@ class PayrollController extends Controller
 {
     public function index(Request $request)
     {
-        $request->validate([
-            'period' => 'nullable|date_format:Y-m',
-        ]);
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
 
-        $selectedPeriod = $request->input('period');
+        $month = $request->input('month', $currentMonth);
+        $year = $request->input('year', $currentYear);
+        $search = $request->input('search', '');
+        $status = $request->input('status', 'all');
+
+        $periodString = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
 
         $payrollsQuery = Payroll::query()
-            ->with('employee')
-            ->when($selectedPeriod, function ($query, $period) {
-                return $query->where('payroll_period', $period);
+            ->with(['employee', 'items'])
+            ->where('payroll_period', $periodString);
+
+        if (!empty($search)) {
+            $payrollsQuery->whereHas('employee', function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
             });
-
-        $statsQuery = clone $payrollsQuery;
-        $totalGajiPeriod = $statsQuery->sum('gaji_bersih');
-        $jumlahKaryawan = $statsQuery->count();
-
-        $periodeAktif = 'Semua Periode';
-        if ($selectedPeriod) {
-            $periodeAktif = Carbon::createFromFormat('Y-m', $selectedPeriod)->translatedFormat('F Y');
         }
 
+        if ($status !== 'all') {
+            $payrollsQuery->where('status', $status);
+        }
+
+        $basePeriodQuery = Payroll::where('payroll_period', $periodString);
+        $totalGajiPeriod = $basePeriodQuery->sum('gaji_bersih');
+        $jumlahKaryawan = $basePeriodQuery->count();
+        $totalDraft = $basePeriodQuery->clone()->where('status', 'draft')->count();
+        $totalFinal = $basePeriodQuery->clone()->whereIn('status', ['final', 'paid'])->count();
+
         $payrolls = $payrollsQuery
-            ->orderBy('payroll_period', 'desc')
-            ->orderBy('id', 'asc')
+            ->orderBy('id', 'desc')
             ->paginate(15)
             ->withQueryString();
 
-        $availablePeriods = DB::table('payrolls')
-            ->select('payroll_period')
-            ->distinct()
-            ->orderBy('payroll_period', 'desc')
-            ->get()
-            ->map(function ($item) {
-                $date = Carbon::createFromFormat('Y-m', $item->payroll_period);
-                return [
-                    'value' => $item->payroll_period,
-                    'label' => $date->translatedFormat('F Y'),
-                ];
-            });
+        $payrolls->getCollection()->transform(function ($item) {
+            return $item;
+        });
+
+        $periodeAktif = Carbon::createFromFormat('Y-m', $periodString)->translatedFormat('F Y');
+
+        $uangMakanHarian = PayrollSetting::where('setting_key', 'uang_makan_harian')->first()->setting_value ?? 20000;
 
         return Inertia::render('Payroll/Index', [
             'payrolls' => $payrolls,
-            'availablePeriods' => $availablePeriods,
-            'filters' => $request->only(['period']),
-            'totalGajiPeriod' => $totalGajiPeriod,
-            'jumlahKaryawan' => $jumlahKaryawan,
+            'filters' => [
+                'month' => (string) $month,
+                'year' => (string) $year,
+                'search' => $search,
+                'status' => $status,
+            ],
+            'summary' => [
+                'totalGajiPeriod' => $totalGajiPeriod,
+                'jumlahKaryawan' => $jumlahKaryawan,
+                'totalDraft' => $totalDraft,
+                'totalFinal' => $totalFinal,
+            ],
             'periodeAktif' => $periodeAktif,
+            'uangMakanHarian' => (int) $uangMakanHarian
         ]);
     }
 
@@ -84,11 +94,6 @@ class PayrollController extends Controller
         $period = Carbon::create($request->period_year, $request->period_month, 1);
         $periodString = $period->format('Y-m');
 
-        // [MODIFIKASI] HAPUS/KOMENTARI BARIS INI AGAR BISA SPLIT PAYMENT
-        // if (Payroll::where('payroll_period', $periodString)->exists()) {
-        //     return redirect()->route('payroll.create')->with('error', 'Penggajian untuk periode ini sudah pernah dibuat.');
-        // }
-
         $employees = Employee::where('status', 'active')
             ->with(['kasbons' => function ($query) {
                 $query->whereIn('payment_status', ['unpaid', 'partial']);
@@ -96,9 +101,6 @@ class PayrollController extends Controller
             ->get();
 
         $payrollData = [];
-
-        // Ambil default tarif makan dari setting (jika ada), default 20.000
-        $defaultUangMakan = PayrollSetting::where('setting_key', 'uang_makan_harian')->first()->setting_value ?? 20000;
 
         foreach ($employees as $employee) {
             $gajiPokok = $employee->salary ?? 0;
@@ -115,12 +117,11 @@ class PayrollController extends Controller
                 'employee_id' => $employee->id,
                 'name' => $employee->name,
                 'gaji_pokok' => (int) $gajiPokok,
-                'hari_hadir' => 26,
+                'hari_hadir' => 0,
                 'insentif' => 0,
                 'potongan_kasbon' => (int) $saranPotongan,
-                // [BARU] Data tambahan untuk frontend
                 'is_paid' => true,
-                'uang_makan_rate' => (int)$defaultUangMakan,
+                'uang_makan_rate' => 0,
             ];
         }
 
@@ -128,7 +129,6 @@ class PayrollController extends Controller
             'payrollData' => $payrollData,
             'period' => $period->translatedFormat('F Y'),
             'period_string' => $periodString,
-            // 'uang_makan_harian' tidak lagi dipakai global, tapi injected ke setiap row di atas
         ]);
     }
 
@@ -146,29 +146,22 @@ class PayrollController extends Controller
         DB::beginTransaction();
         try {
             foreach ($request->payrolls as $empPayroll) {
-                // 1. Cek apakah karyawan ini dicentang untuk dibayar?
                 $isPaid = $empPayroll['is_paid'] ?? true;
-                if (!$isPaid) continue; // Skip jika tidak dibayar
+                if (!$isPaid) continue;
 
-                // 2. Hitung Komponen
                 $gajiPokok = $includeGaji ? (int)$empPayroll['gaji_pokok'] : 0;
                 $insentif = (int)$empPayroll['insentif'];
-
-                // [MODIFIKASI] Hitung Uang Makan pakai Rate Individu
                 $hariHadir = (int)$empPayroll['hari_hadir'];
                 $rateMakan = (int)($empPayroll['uang_makan_rate'] ?? 0);
                 $uangMakan = $includeMakan ? ($hariHadir * $rateMakan) : 0;
-
                 $potonganKasbon = $includeKasbon ? (int)$empPayroll['potongan_kasbon'] : 0;
 
                 $totalPendapatan = $gajiPokok + $insentif + $uangMakan;
                 $totalPotongan = $potonganKasbon;
                 $gajiBersih = $totalPendapatan - $totalPotongan;
 
-                // Jangan simpan jika nilainya 0 semua (data kosong)
                 if ($totalPendapatan == 0 && $totalPotongan == 0) continue;
 
-                // 3. Simpan Header Payroll
                 $payroll = Payroll::create([
                     'employee_id' => $empPayroll['employee_id'],
                     'payroll_period' => $request->period_string,
@@ -179,7 +172,6 @@ class PayrollController extends Controller
                     'tanggal_pembayaran' => now(),
                 ]);
 
-                // 4. Simpan Detail Item
                 if ($gajiPokok > 0) {
                     PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => 'Gaji Pokok', 'tipe' => 'pendapatan', 'jumlah' => $gajiPokok]);
                 }
@@ -208,7 +200,7 @@ class PayrollController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-        return redirect()->route('payroll.index')->with('message', 'Penggajian berhasil disimpan.');
+        return redirect()->route('payroll.index')->with('success', 'Penggajian berhasil disimpan.');
     }
 
     private function processKasbonPayment($employeeId, $amountToPay, $payrollId)
@@ -252,7 +244,6 @@ class PayrollController extends Controller
         }
     }
 
-    // ... (Fungsi show, edit, update, printSlip, destroy biarkan seperti sebelumnya) ...
     public function show(Payroll $payroll)
     {
         $payroll->load(['employee', 'items']);
@@ -261,28 +252,67 @@ class PayrollController extends Controller
 
     public function edit(Payroll $payroll)
     {
-        $payroll->load('items', 'employee');
-        $gajiPokok = $payroll->items->where('deskripsi', 'Gaji Pokok')->first()->jumlah ?? 0;
-        $insentif = $payroll->items->where('deskripsi', 'Insentif')->first()->jumlah ?? 0;
-        $potonganKasbon = $payroll->items->where('deskripsi', 'Potongan Kasbon')->first()->jumlah ?? 0;
-        $uangMakanItem = $payroll->items->first(function ($item) { return str_starts_with($item->deskripsi, 'Uang Makan'); });
-        $hariHadir = 0;
-        if ($uangMakanItem) { preg_match('/\((\d+)\s*hari\)/', $uangMakanItem->deskripsi, $matches); $hariHadir = $matches[1] ?? 0; }
-        $uangMakanHarian = PayrollSetting::where('setting_key', 'uang_makan_harian')->first()->setting_value ?? 20000;
-
-        return Inertia::render('Payroll/Edit', [
-            'payroll' => ['id' => $payroll->id, 'status' => $payroll->status, 'payroll_period' => $payroll->payroll_period, 'employee_name' => $payroll->employee->name, 'gaji_pokok' => $gajiPokok, 'hari_hadir' => (int)$hariHadir, 'insentif' => $insentif, 'potongan_kasbon' => $potonganKasbon],
-            'uang_makan_harian' => (int)$uangMakanHarian
-        ]);
+        return Inertia::render('Payroll/Edit', ['payroll' => $payroll, 'uang_makan_harian' => 0]);
     }
 
     public function update(Request $request, Payroll $payroll)
     {
-        // Logika update sederhana (jika diperlukan detail, copy dari file sebelumnya)
-        // Untuk saat ini fokus ke generate/store yang diminta
-        $request->validate(['status' => ['required', Rule::in(['draft', 'final', 'paid'])]]);
-        $payroll->update(['status' => $request->status]);
-        return redirect()->route('payroll.index')->with('message', 'Status diperbarui.');
+        $request->validate([
+            'hari_hadir'      => 'required|integer|min:0',
+            'insentif'        => 'required|integer|min:0',
+            'potongan_kasbon' => 'required|integer|min:0',
+            'status'          => ['required', Rule::in(['draft', 'final', 'paid'])],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $hariHadir      = (int)$request->hari_hadir;
+            $insentif       = (int)$request->insentif;
+            $potonganKasbon = (int)$request->potongan_kasbon;
+            $status         = $request->status;
+
+            $gajiPokok = $payroll->items()->where('tipe', 'pendapatan')->where('deskripsi', 'Gaji Pokok')->first()->jumlah ?? 0;
+            $uangMakanHarian = PayrollSetting::where('setting_key', 'uang_makan_harian')->first()->setting_value ?? 20000;
+            $uangMakan = $hariHadir * $uangMakanHarian;
+
+            $totalPendapatan = $gajiPokok + $insentif + $uangMakan;
+            $totalPotongan   = $potonganKasbon;
+            $gajiBersih      = $totalPendapatan - $totalPotongan;
+
+            $payroll->update([
+                'total_pendapatan' => $totalPendapatan,
+                'total_potongan'   => $totalPotongan,
+                'gaji_bersih'      => $gajiBersih,
+                'status'           => $status,
+                'tanggal_pembayaran' => $status === 'paid' ? now() : $payroll->tanggal_pembayaran,
+            ]);
+
+            $payroll->items()->delete();
+
+            if ($gajiPokok > 0) {
+                PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => 'Gaji Pokok', 'tipe' => 'pendapatan', 'jumlah' => $gajiPokok]);
+            }
+            if ($uangMakan > 0) {
+                PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => "Uang Makan ({$hariHadir} hari x Rp " . number_format($uangMakanHarian, 0, ',', '.') . ")", 'tipe' => 'pendapatan', 'jumlah' => $uangMakan]);
+            }
+            if ($insentif > 0) {
+                PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => 'Insentif', 'tipe' => 'pendapatan', 'jumlah' => $insentif]);
+            }
+            if ($potonganKasbon > 0) {
+                PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => 'Potongan Kasbon', 'tipe' => 'potongan', 'jumlah' => $potonganKasbon]);
+
+                if ($status === 'paid') {
+                    $this->processKasbonPayment($payroll->employee_id, $potonganKasbon, $payroll->id);
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('payroll.index')->with('success', 'Data penggajian berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+        }
     }
 
     public function printSlip(Payroll $payroll)
@@ -305,7 +335,7 @@ class PayrollController extends Controller
             $payroll->items()->delete();
             $payroll->delete();
             DB::commit();
-            return redirect()->back()->with('message', 'Data gaji berhasil dihapus.');
+            return redirect()->back()->with('success', 'Data gaji berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());

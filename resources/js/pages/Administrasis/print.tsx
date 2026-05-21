@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 
-// --- Interface Data (Sama dengan index.tsx) ---
 interface FinancialReport {
     bank: {
         in_penjualan: number; in_lainnya: number; out_gaji: number; out_kapal: number; out_truck: number; out_hutang: number; out_penarikan: number; total_in: number; total_out: number; balance: number;
@@ -9,8 +8,8 @@ interface FinancialReport {
     kas: {
         in_penarikan: number; out_lapangan: number; out_kantor: number; out_bpjs: number; out_belikaret: number; out_kasbon_pegawai: number; out_kasbon_penoreh: number; total_in: number; total_out: number; balance: number;
     };
-    profit_loss: { revenue: number; cogs: number; gross_profit: number; opex: number; net_profit: number; };
-    neraca: { assets: { kas_period: number; bank_period: number; piutang: number; inventory_value: number; }; liabilities: { hutang_dagang: number; } }
+    profit_loss: { revenue_karet: number; revenue_lain: number; revenue_total: number; cogs: number; gross_profit: number; opex_gaji: number; opex_lapangan: number; opex_kantor: number; opex_bpjs: number; opex_kapal_truck: number; opex_lainnya: number; opex_total: number; net_profit: number; };
+    neraca: { assets: { kas_period: number; bank_period: number; piutang: number; inventory_value: number; total_aktiva?: number; }; liabilities: { hutang_dagang: number; } }
 }
 
 interface PageProps {
@@ -18,20 +17,20 @@ interface PageProps {
     printType: 'all' | 'bank' | 'kas' | 'profit_loss' | 'neraca';
     currentMonth: number;
     currentYear: number;
+    current_filter?: any;
+    profitLossPeriods?: any[];
 }
 
-// Helper Format
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
-const PrintPage = ({ summary, printType, currentMonth, currentYear }: PageProps) => {
-    
+const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filter, profitLossPeriods }: PageProps) => {
+
     useEffect(() => {
-        // Otomatis trigger print saat halaman dimuat
         setTimeout(() => window.print(), 500);
     }, []);
 
     const ReportRow = ({ label, value, isMinus = false, isBold = false }: { label: string, value: number, isMinus?: boolean, isBold?: boolean }) => (
-        <div className={`flex justify-between items-center text-sm py-1 border-b border-dashed border-gray-300 ${isBold ? 'font-bold' : ''}`}>
+        <div className={`flex justify-between items-center text-[12px] py-1 border-b border-dashed border-gray-300 ${isBold ? 'font-bold' : ''}`}>
             <span>{label}</span>
             <span className={isMinus ? 'text-red-600' : ''}>
                 {isMinus ? '-' : ''} {formatCurrency(value || 0)}
@@ -42,47 +41,68 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear }: PageProps)
     const getMonthName = (month: number) => new Date(0, month - 1).toLocaleString('id-ID', { month: 'long' });
 
     const Header = ({ title }: { title: string }) => (
-        <div className="text-center mb-6">
-            <h1 className="text-xl font-bold uppercase">{title}</h1>
-            <p className="text-sm text-gray-600">Periode: {getMonthName(currentMonth)} {currentYear}</p>
+        <div className="text-center mb-4">
+            <h1 className="text-lg font-bold uppercase">{title}</h1>
+            <div className="mt-1 font-semibold text-[12px]">
+                Periode: {current_filter?.time_period === 'range-month'
+                    ? `${getMonthName(Number(current_filter.start_month))} ${current_filter.start_year} s/d ${getMonthName(Number(current_filter.end_month))} ${current_filter.end_year}`
+                    : `${getMonthName(currentMonth)} ${currentYear}`}
+            </div>
         </div>
     );
 
     return (
-        <div className="bg-white text-black p-8 min-h-screen font-sans">
-            <Head title="Cetak Laporan" />
-            
+        <div className="bg-white text-black px-6 pb-6 pt-0 min-h-screen font-sans">
+            <Head title="Cetak Laporan">
+                <style>{`
+                    @media print {
+                        @page {
+                            /* Mengatur margin kertas secara spesifik saat dialog print terbuka */
+                            margin-top: 0.2cm;
+                            margin-bottom: 0.5cm;
+                            margin-left: 0.5cm;
+                            margin-right: 0.5cm;
+                        }
+                    }
+                `}</style>
+            </Head>
+
             {/* Kop Surat Sederhana */}
-            <div className="border-b-2 border-black pb-4 mb-6 flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold">GARUDA KARYA AMANAT</h2>
-                    <p className="text-sm">Laporan Keuangan & Administrasi</p>
-                </div>
-                <div className="text-right text-xs">
-                    <p>Dicetak pada: {new Date().toLocaleString('id-ID')}</p>
+            <div className="border-b-2 border-black pb-3 mb-5 flex justify-center items-center">
+                <div className="text-center">
+                    <div className="flex justify-center mb-2">
+                        <img
+                            src="/assets/GKA_no_Tag.png"
+                            alt="Company Logo"
+                            className="h-10 w-auto object-contain"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                    </div>
+                    <h1 className="text-xl font-bold tracking-tight">GARUDA KARYA AMANAT</h1>
+                    <p className="text-[12px] text-gray-600 mt-1">Laporan Keuangan & Administrasi</p>
                 </div>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
                 {/* 1. LAPORAN BANK */}
                 {(printType === 'all' || printType === 'bank') && (
                     <section className="break-inside-avoid">
                         <Header title="Laporan Arus Bank" />
                         <div className="border border-gray-400 p-4 rounded-sm">
-                            <h3 className="font-bold border-b border-gray-400 pb-2 mb-2">PEMASUKAN</h3>
+                            <h3 className="font-bold text-[13px] border-b border-gray-400 pb-1 mb-2">PEMASUKAN</h3>
                             <ReportRow label="Penjualan Karet (Buyer)" value={summary.reports.bank.in_penjualan} />
                             <ReportRow label="Pemasukan Lain (Investasi/Modal)" value={summary.reports.bank.in_lainnya} />
-                            <div className="flex justify-between font-bold mt-2"><span>Total Masuk</span><span>{formatCurrency(summary.reports.bank.total_in)}</span></div>
+                            <div className="flex justify-between font-bold mt-2 text-[12px]"><span>Total Masuk</span><span>{formatCurrency(summary.reports.bank.total_in)}</span></div>
 
-                            <h3 className="font-bold border-b border-gray-400 pb-2 mb-2 mt-6">PENGELUARAN</h3>
+                            <h3 className="font-bold text-[13px] border-b border-gray-400 pb-1 mb-2 mt-4">PENGELUARAN</h3>
                             <ReportRow label="Pembayaran Gaji (Payroll)" value={summary.reports.bank.out_gaji} isMinus />
                             <ReportRow label="Pembayaran Kapal" value={summary.reports.bank.out_kapal} isMinus />
                             <ReportRow label="Pembayaran Truck" value={summary.reports.bank.out_truck} isMinus />
                             <ReportRow label="Bayar Hutang" value={summary.reports.bank.out_hutang} isMinus />
                             <ReportRow label="Penarikan Tunai (Ke Kas)" value={summary.reports.bank.out_penarikan} isMinus />
-                            <div className="flex justify-between font-bold mt-2"><span>Total Keluar</span><span>{formatCurrency(summary.reports.bank.total_out)}</span></div>
+                            <div className="flex justify-between font-bold mt-2 text-[12px]"><span>Total Keluar</span><span>{formatCurrency(summary.reports.bank.total_out)}</span></div>
 
-                            <div className="bg-gray-100 p-2 mt-4 flex justify-between font-bold text-lg border-t-2 border-black">
+                            <div className="bg-gray-100 p-2 mt-3 flex justify-between font-bold text-[14px] border-t-2 border-black">
                                 <span>SALDO AKHIR (Periode Ini)</span>
                                 <span>{formatCurrency(summary.reports.bank.balance)}</span>
                             </div>
@@ -95,20 +115,20 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear }: PageProps)
                     <section className="break-inside-avoid">
                         <Header title="Laporan Arus Kas Tunai" />
                         <div className="border border-gray-400 p-4 rounded-sm">
-                            <h3 className="font-bold border-b border-gray-400 pb-2 mb-2">PEMASUKAN</h3>
+                            <h3 className="font-bold text-[13px] border-b border-gray-400 pb-1 mb-2">PEMASUKAN</h3>
                             <ReportRow label="Penarikan dari Bank" value={summary.reports.kas.in_penarikan} />
-                            <div className="flex justify-between font-bold mt-2"><span>Total Masuk</span><span>{formatCurrency(summary.reports.kas.total_in)}</span></div>
+                            <div className="flex justify-between font-bold mt-2 text-[12px]"><span>Total Masuk</span><span>{formatCurrency(summary.reports.kas.total_in)}</span></div>
 
-                            <h3 className="font-bold border-b border-gray-400 pb-2 mb-2 mt-6">PENGELUARAN</h3>
+                            <h3 className="font-bold text-[13px] border-b border-gray-400 pb-1 mb-2 mt-4">PENGELUARAN</h3>
                             <ReportRow label="Operasional Lapangan" value={summary.reports.kas.out_lapangan} isMinus />
                             <ReportRow label="Operasional Kantor" value={summary.reports.kas.out_kantor} isMinus />
                             <ReportRow label="BPJS Ketenagakerjaan" value={summary.reports.kas.out_bpjs} isMinus />
                             <ReportRow label="Pembelian Karet (Tunai)" value={summary.reports.kas.out_belikaret} isMinus />
                             <ReportRow label="Kasbon Pegawai Kantor" value={summary.reports.kas.out_kasbon_pegawai} isMinus />
                             <ReportRow label="Kasbon Penoreh" value={summary.reports.kas.out_kasbon_penoreh} isMinus />
-                            <div className="flex justify-between font-bold mt-2"><span>Total Keluar</span><span>{formatCurrency(summary.reports.kas.total_out)}</span></div>
+                            <div className="flex justify-between font-bold mt-2 text-[12px]"><span>Total Keluar</span><span>{formatCurrency(summary.reports.kas.total_out)}</span></div>
 
-                            <div className="bg-gray-100 p-2 mt-4 flex justify-between font-bold text-lg border-t-2 border-black">
+                            <div className="bg-gray-100 p-2 mt-3 flex justify-between font-bold text-[14px] border-t-2 border-black">
                                 <span>SISA KAS (Periode Ini)</span>
                                 <span>{formatCurrency(summary.reports.kas.balance)}</span>
                             </div>
@@ -119,49 +139,249 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear }: PageProps)
                 {/* 3. LABA RUGI */}
                 {(printType === 'all' || printType === 'profit_loss') && (
                     <section className="break-inside-avoid">
-                        <Header title="Laporan Laba Rugi" />
-                        <div className="border border-gray-400 p-4 rounded-sm space-y-2">
-                            <ReportRow label="Total Pendapatan (Revenue)" value={summary.reports.profit_loss.revenue} />
-                            <ReportRow label="Harga Pokok Penjualan (HPP)" value={summary.reports.profit_loss.cogs} isMinus />
-                            <div className="flex justify-between font-bold border-t border-black pt-2"><span>LABA KOTOR</span><span>{formatCurrency(summary.reports.profit_loss.gross_profit)}</span></div>
-                            
-                            <div className="my-4"></div>
-                            <ReportRow label="Biaya Operasional (OpEx)" value={summary.reports.profit_loss.opex} isMinus />
-                            
-                            <div className="bg-gray-100 p-2 mt-4 flex justify-between font-bold text-lg border-t-2 border-black">
-                                <span>LABA BERSIH (Net Profit)</span>
-                                <span>{formatCurrency(summary.reports.profit_loss.net_profit)}</span>
+                        <Header title="Laporan Laba Rugi (Profit & Loss)" />
+
+                        {/* RENDER TABEL MULTI-KOLOM UNTUK RANGE-MONTH TANPA GARIS BERLEBIHAN */}
+                        {current_filter?.time_period === 'range-month' && profitLossPeriods && profitLossPeriods.length > 0 ? (
+                            <div className="mt-3">
+                                <table className="w-full text-[12px] border-collapse">
+                                    <thead className="border-y-2 border-black">
+                                        <tr>
+                                            <th className="py-2 text-left font-bold">Nama Akun</th>
+                                            {profitLossPeriods.map((p, idx) => (
+                                                <th key={idx} className="py-2 text-right font-bold">
+                                                    {p.period_label}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {/* PENDAPATAN */}
+                                        <tr className="font-bold">
+                                            <td className="py-2 pt-4">PENDAPATAN</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.revenue_total)}</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Penjualan Bersih (Karet)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.revenue_karet)}</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Pendapatan Lain-Lain</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.revenue_lain)}</td>
+                                            ))}
+                                        </tr>
+
+                                        {/* COGS */}
+                                        <tr className="font-bold">
+                                            <td className="py-2 pt-4">HARGA POKOK PENJUALAN (COGS)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.cogs)}</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Pembelian Bahan Baku Karet</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.cogs)}</td>
+                                            ))}
+                                        </tr>
+
+                                        {/* GROSS PROFIT */}
+                                        <tr className="font-bold border-t border-gray-400">
+                                            <td className="py-2">LABA KOTOR (GROSS PROFIT)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className={`py-2 text-right ${p.gross_profit < 0 ? 'text-red-600' : ''}`}>
+                                                    {formatCurrency(p.gross_profit)}
+                                                </td>
+                                            ))}
+                                        </tr>
+
+                                        {/* OPEX */}
+                                        <tr className="font-bold">
+                                            <td className="py-2 pt-4">BIAYA OPERASIONAL (OPEX)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.opex_total)}</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Gaji & Upah Pegawai</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_gaji)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Operasional Lapangan</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_lapangan)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Operasional Kantor</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_kantor)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Ekspedisi (Kapal & Truck)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_kapal_truck)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya BPJS Ketenagakerjaan</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_bpjs)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Uang Makan Mandor</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_makan_mandor)})</td>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Rupa-Rupa Lainnya</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_lainnya)})</td>
+                                            ))}
+                                        </tr>
+
+                                        {/* NET PROFIT */}
+                                        <tr className="border-y-2 border-black font-bold text-[13px]">
+                                            <td className="py-3">LABA BERSIH (NET PROFIT)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className={`py-3 text-right ${p.net_profit < 0 ? 'text-red-600' : ''}`}>
+                                                    {formatCurrency(p.net_profit)}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
+                        ) : (
+                            /* RENDER TAMPILAN SINGLE COLUMN */
+                            <div className="border border-gray-400 p-5 rounded">
+                                <h3 className="font-bold text-[13px] mb-2 border-b border-gray-300 pb-1">PENDAPATAN (REVENUE)</h3>
+                                <div className="space-y-1 text-[12px]">
+                                    <div className="flex justify-between">
+                                        <span>Penjualan Bersih (Karet)</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.revenue_karet)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Pendapatan Lain-Lain</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.revenue_lain)}</span>
+                                    </div>
+                                    <div className="flex justify-between font-bold border-t border-gray-400 pt-1 mt-1">
+                                        <span>TOTAL PENDAPATAN</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.revenue_total)}</span>
+                                    </div>
+                                </div>
+
+                                <h3 className="font-bold text-[13px] mt-5 mb-2 border-b border-gray-300 pb-1">HARGA POKOK PENJUALAN (COGS)</h3>
+                                <div className="space-y-1 text-[12px]">
+                                    <div className="flex justify-between">
+                                        <span>Pembelian Bahan Baku Karet</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.cogs)}</span>
+                                    </div>
+                                    <div className="flex justify-between font-bold border-t border-gray-400 pt-1 mt-1">
+                                        <span>LABA KOTOR (GROSS PROFIT)</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.gross_profit)}</span>
+                                    </div>
+                                </div>
+
+                                <h3 className="font-bold text-[13px] mt-5 mb-2 border-b border-gray-300 pb-1">BIAYA OPERASIONAL (OPEX)</h3>
+                                <div className="space-y-1 text-[12px]">
+                                    <div className="flex justify-between">
+                                        <span>Biaya Gaji & Upah Pegawai</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_gaji)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Biaya Operasional Lapangan</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_lapangan)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Biaya Operasional Kantor</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_kantor)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Biaya Ekspedisi (Kapal & Truck)</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_kapal_truck)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Biaya BPJS Ketenagakerjaan</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_bpjs)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Biaya Rupa-Rupa Lainnya</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_lainnya)})</span>
+                                    </div>
+
+                                    <div className="flex justify-between font-bold border-t border-gray-400 pt-1 mt-1">
+                                        <span>TOTAL BIAYA OPERASIONAL</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_total)})</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-3 border-t-2 border-black">
+                                    <div className="flex justify-between text-[14px] font-bold">
+                                        <span>LABA BERSIH (NET PROFIT)</span>
+                                        <span>{formatCurrency(summary.reports.profit_loss.net_profit)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 )}
 
                 {/* 4. NERACA */}
                 {(printType === 'all' || printType === 'neraca') && (
                     <section className="break-inside-avoid">
-                        <Header title="Neraca (Posisi Keuangan)" />
-                        <div className="border border-gray-400 p-4 rounded-sm">
-                            <h3 className="font-bold border-b border-gray-400 pb-2 mb-2">ASET (HARTA)</h3>
-                            <ReportRow label="Saldo Kas (Akumulasi)" value={summary.reports.neraca.assets.kas_period} />
-                            <ReportRow label="Saldo Bank (Akumulasi)" value={summary.reports.neraca.assets.bank_period} />
-                            <ReportRow label="Piutang Pegawai" value={summary.reports.neraca.assets.piutang} />
-                            <div className="bg-gray-100 p-2 mt-4 flex justify-between font-bold text-lg border-t-2 border-black">
-                                <span>TOTAL ASET</span>
-                                <span>{formatCurrency(summary.reports.neraca.assets.kas_period + summary.reports.neraca.assets.bank_period + summary.reports.neraca.assets.piutang)}</span>
+                        <div className="text-center mb-6">
+                            <h2 className="text-lg font-bold">NERACA (Posisi Keuangan)</h2>
+                            <p className="text-[12px] mt-1">
+                                Periode: {getMonthName(currentMonth)} {currentYear}
+                            </p>
+                        </div>
+
+                        <div className="border border-gray-400 p-4 rounded">
+                            <h3 className="font-bold mb-2 border-b border-gray-300 pb-1 text-[13px]">ASET (HARTA)</h3>
+                            <div className="space-y-1 text-[12px]">
+                                <div className="flex justify-between">
+                                    <span>Saldo Kas (Akumulasi)</span>
+                                    <span>{formatCurrency(summary.reports.neraca.assets.kas_period)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Saldo Bank (Akumulasi)</span>
+                                    <span>{formatCurrency(summary.reports.neraca.assets.bank_period)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Piutang Pegawai</span>
+                                    <span>{formatCurrency(summary.reports.neraca.assets.piutang)}</span>
+                                </div>
+                                <div className="flex justify-between font-bold border-t border-gray-400 pt-1 mt-1">
+                                    <span>TOTAL ASET</span>
+                                    <span>{formatCurrency(summary.reports.neraca.assets.total_aktiva ||
+                                        (summary.reports.neraca.assets.kas_period +
+                                         summary.reports.neraca.assets.bank_period +
+                                         summary.reports.neraca.assets.piutang))}</span>
+                                </div>
                             </div>
                         </div>
                     </section>
                 )}
             </div>
 
-            {/* Footer Tanda Tangan */}
-            <div className="mt-12 flex justify-between text-center break-inside-avoid">
+            <div className="mt-8 flex justify-between text-center break-inside-avoid text-[12px]">
                 <div className="w-1/3">
-                    <p className="mb-20">Dibuat Oleh,</p>
+                    <p className="mb-16">Dibuat Oleh,</p>
                     <p className="font-bold underline">( Admin Keuangan )</p>
                 </div>
                 <div className="w-1/3">
-                    <p className="mb-20">Disetujui Oleh,</p>
+                    <p className="mb-16">Disetujui Oleh,</p>
                     <p className="font-bold underline">( Pimpinan )</p>
                 </div>
             </div>
