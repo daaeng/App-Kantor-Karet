@@ -73,13 +73,15 @@ const formatCurrency = (value: number) => {
 };
 
 // Komponen Kartu Statistik
-const StatCard = ({ title, value, icon, colorClass }: { title: string; value: string | number; icon: React.ReactNode; colorClass: string }) => (
-    <div className={` backdrop-blur-sm border ${colorClass} p-6 rounded-2xl shadow-lg hover:shadow-cyan-500/20 transition-shadow duration-300 flex items-center justify-between`}>
+const StatCard = ({ title, value, icon, gradient, iconColor }: { title: string; value: string | number; icon: React.ReactNode; gradient: string; iconColor: string }) => (
+    <div className={`p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-r ${gradient} text-white flex items-center justify-between`}>
         <div>
-            <p className="text-sm mb-1">{title}</p>
-            <p className="text-3xl font-bold ">{value}</p>
+            <p className="text-sm font-medium opacity-90 mb-1">{title}</p>
+            <p className="text-3xl font-bold">{value}</p>
         </div>
-        <div className={`text-4xl ${colorClass.replace('border-', 'text-')}`}>{icon}</div>
+        <div className={`bg-white p-3 rounded-full shadow-sm flex items-center justify-center ${iconColor}`}>
+            {icon}
+        </div>
     </div>
 );
 
@@ -115,11 +117,11 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                 <Link
                     key={index}
                     href={link.url || '#'}
-                    className={`px-4 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 ${
                         link.active
-                            ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/30'
-                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    } ${!link.url ? 'text-slate-500 cursor-not-allowed opacity-50' : ''}`}
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                    } ${!link.url ? 'text-gray-400 cursor-not-allowed opacity-50' : ''}`}
                     dangerouslySetInnerHTML={{ __html: link.label }}
                 />
             ))}
@@ -137,21 +139,21 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                 {/* Grid Kartu Statistik */}
                 {can('requests.edit') && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <StatCard title="Total Surat PPB" value={stats.totalPpb} icon={<FileText />} colorClass="border-cyan-500" />
-                        <StatCard title="Disetujui" value={stats.totalApproved} icon={<CheckCircle2 />} colorClass="border-green-500" />
-                        <StatCard title="Pending" value={stats.totalPending} icon={<Clock />} colorClass="border-yellow-500" />
-                        <StatCard title="Total Dana Disetujui" value={formatCurrency(stats.sumApprovedAmount)} icon={<DollarSign />} colorClass="border-purple-500" />
+                        <StatCard title="Total Surat PPB" value={stats.totalPpb} icon={<FileText className="w-8 h-8" />} gradient="from-cyan-500 to-blue-600" iconColor="text-blue-600" />
+                        <StatCard title="Disetujui" value={stats.totalApproved} icon={<CheckCircle2 className="w-8 h-8" />} gradient="from-emerald-500 to-teal-600" iconColor="text-teal-600" />
+                        <StatCard title="Pending" value={stats.totalPending} icon={<Clock className="w-8 h-8" />} gradient="from-amber-500 to-orange-600" iconColor="text-orange-600" />
+                        <StatCard title="Total Dana Disetujui" value={formatCurrency(stats.sumApprovedAmount || 0)} icon={<DollarSign className="w-8 h-8" />} gradient="from-violet-500 to-purple-600" iconColor="text-purple-600" />
                     </div>
                 )}
 
                 {/* Tabel Laporan */}
-                <div className="backdrop-blur-sm border border-slate-700 p-6 rounded-2xl shadow-lg">
+                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-6 rounded-2xl shadow-sm relative">
 
                     {can('requests.create') && (
                         <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold ">Daftar Surat PPB</h2>
+                            <h2 className="text-xl font-bold">Daftar Surat PPB</h2>
                             <Link href={route('ppb.create')}>
-                                <Button className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold shadow-lg shadow-cyan-500/20 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
                                     <CirclePlus className="w-5 h-5 mr-2" />
                                     Buat PPB Baru
                                 </Button>
@@ -170,31 +172,31 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
 
                     {/* Search Bar */}
                     <div className="flex gap-4 py-4">
-                        <div className="relative flex-1">
-                            <Search className="text-slate-400 absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                        <div className="relative flex-1 md:max-w-md">
+                            <Search className="text-gray-400 absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                             <Input
                                 placeholder="Cari berdasarkan nomor surat atau perihal..."
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 onKeyPress={handleKeyPress}
-                                className="pl-10 bg-slate-800 border-slate-700 focus:border-cyan-500 focus:ring-cyan-500"
+                                className="pl-10 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
                             />
                         </div>
                     </div>
 
                     {/* Tabel Data */}
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-zinc-800">
                         <Table>
-                            <TableHeader>
-                                <TableRow className="border-slate-700 hover:bg-slate-800/60">
-                                    <TableHead className="text-slate-400">Nomor Surat</TableHead>
-                                    <TableHead className="text-slate-400">Tanggal</TableHead>
-                                    <TableHead className="text-slate-400">Perihal</TableHead>
-                                    <TableHead className="text-slate-400">Grand Total</TableHead>
-                                    <TableHead className="text-slate-400">Status</TableHead>
+                            <TableHeader className="bg-gray-50 dark:bg-zinc-800">
+                                <TableRow>
+                                    <TableHead className="font-semibold">Nomor Surat</TableHead>
+                                    <TableHead className="font-semibold">Tanggal</TableHead>
+                                    <TableHead className="font-semibold">Perihal</TableHead>
+                                    <TableHead className="font-semibold">Grand Total</TableHead>
+                                    <TableHead className="font-semibold">Status</TableHead>
                                     
                                     {can('requests.edit') && (
-                                        <TableHead className="text-center text-slate-400">Aksi</TableHead>
+                                        <TableHead className="text-center font-semibold">Aksi</TableHead>
                                     )}
 
                                 </TableRow>
@@ -202,8 +204,8 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                             <TableBody>
                                 {ppbs.data.length > 0 ? (
                                     ppbs.data.map((ppb) => (
-                                        <TableRow key={ppb.id} className="border-slate-800 hover:bg-slate-800/50 transition-colors">
-                                            <TableCell className="font-medium">{ppb.nomor}</TableCell>
+                                        <TableRow key={ppb.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <TableCell className="font-medium text-gray-800 dark:text-gray-200">{ppb.nomor}</TableCell>
                                             <TableCell>{ppb.tanggal_formatted}</TableCell>
                                             <TableCell>{ppb.perihal}</TableCell>
                                             <TableCell>{ppb.grand_total_formatted}</TableCell>
@@ -212,12 +214,12 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                                             {can('requests.edit') && (
                                                 <TableCell className="text-center space-x-1">
                                                     <Link href={route('ppb.show', ppb.id)}>
-                                                        <Button variant="ghost" size="icon" title="Lihat Detail">
-                                                            <Eye className="h-4 w-4 text-cyan-400 hover:text-cyan-500" />
+                                                        <Button variant="ghost" size="icon" className="text-blue-500 hover:text-blue-600 hover:bg-blue-50" title="Lihat Detail">
+                                                            <Eye className="h-4 w-4" />
                                                         </Button>
                                                     </Link>
-                                                    <Button variant="ghost" size="icon" title="Hapus" disabled={processing} onClick={() => handleDelete(ppb.id, ppb.nomor)}>
-                                                        <Trash className="h-4 w-4 text-red-400 hover:text-red-500" />
+                                                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" title="Hapus" disabled={processing} onClick={() => handleDelete(ppb.id, ppb.nomor)}>
+                                                        <Trash className="h-4 w-4" />
                                                     </Button>
                                                 </TableCell>
                                             )}
@@ -226,7 +228,7 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="p-8 text-center text-slate-500">
+                                        <TableCell colSpan={6} className="p-8 text-center text-gray-500">
                                             Tidak ada data pengajuan PPB ditemukan.
                                         </TableCell>
                                     </TableRow>

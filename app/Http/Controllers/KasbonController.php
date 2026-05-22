@@ -150,13 +150,29 @@ class KasbonController extends Controller
         $sumRemainingAmount = $approvedKasbons->sum('kasbon') - $totalApprovedPaid;
 
 
+        $employees = Employee::select('id', 'name', 'salary', 'employee_id')->get()->map(fn ($e) => [
+            'id' => $e->id,
+            'label' => "{$e->employee_id} - {$e->name}",
+            'salary' => $e->salary
+        ]);
+        $incisors = Incisor::select('id', 'no_invoice', 'name')->get()->map(fn ($i) => ['id' => $i->id, 'label' => "{$i->no_invoice} - {$i->name}"]);
+        $monthsYears = Incised::select(DB::raw('YEAR(date) as year, MONTH(date) as month'))
+            ->groupBy('year', 'month')->orderBy('year', 'desc')->orderBy('month', 'desc')->get()
+            ->map(function ($item) {
+                $monthName = Carbon::createFromDate($item->year, $item->month, 1)->translatedFormat('F');
+                return ['year' => $item->year, 'month' => $item->month, 'label' => "{$monthName} {$item->year}"];
+            });
+
         return Inertia::render("Kasbons/index", [
             'kasbons' => $kasbonGroups,
-            // [MODIFIED] Kirim semua filter ke frontend
             'filter' => $request->only('search', 'type', 'location'),
-            'totalPendingKasbon' => $totalPendingKasbon, // <-- Sudah terfilter
-            'totalApprovedKasbon' => $totalApprovedKasbon, // <-- Sudah terfilter
-            'sumApprovedKasbonAmount' => $sumRemainingAmount, // <-- Sudah terfilter
+            'totalPendingKasbon' => $totalPendingKasbon,
+            'totalApprovedKasbon' => $totalApprovedKasbon,
+            'sumApprovedKasbonAmount' => $sumRemainingAmount,
+            'employees' => $employees,
+            'incisors' => $incisors,
+            'monthsYears' => $monthsYears,
+            'statuses' => $this->statuses,
         ]);
     }
 
@@ -227,6 +243,17 @@ class KasbonController extends Controller
             return $item;
         });
 
+        $history = $history->sortByDesc('date')->values();
+
+        $perPage = 15;
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');
+        $currentPageItems = $history->slice(($currentPage - 1) * $perPage, $perPage)->all();
+
+        $paginatedHistory = new \Illuminate\Pagination\LengthAwarePaginator($currentPageItems, count($history), $perPage, $currentPage, [
+            'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+            'query' => request()->query()
+        ]);
+
         $payableKasbons = Kasbon::where('kasbonable_id', $id)
             ->where('kasbonable_type', $modelType)
             ->where('status', 'Approved')
@@ -236,10 +263,11 @@ class KasbonController extends Controller
 
         return Inertia::render('Kasbons/Detail', [
             'owner' => $ownerData,
-            'history' => $history->sortBy('date')->values()->all(),
+            'history' => $paginatedHistory,
             'payableKasbons' => $payableKasbons,
             'kasbon_owner_id' => $id,
             'kasbon_owner_type' => $type,
+            'finalBalance' => $runningBalance,
             'errors' => session()->get('errors') ? session()->get('errors')->getBag('default')->getMessages() : (object)[],
         ]);
     }

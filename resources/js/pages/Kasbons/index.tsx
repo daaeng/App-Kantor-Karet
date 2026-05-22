@@ -19,6 +19,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Search, Clock, CheckCircle2, Wallet, Megaphone, XCircle, User, HardHat, ChevronLeft, ChevronRight, Eye, Printer } from 'lucide-react';
+import CreateKasbonPenorehModal from './Modals/CreateKasbonPenorehModal';
+import CreateKasbonPegawaiModal from './Modals/CreateKasbonPegawaiModal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Rekap Kasbon', href: route('kasbons.index') },
@@ -58,24 +60,28 @@ interface PageProps {
     totalPendingKasbon: number;
     totalApprovedKasbon: number;
     sumApprovedKasbonAmount: number;
+    employees: any[];
+    incisors: any[];
+    monthsYears: any[];
+    statuses: string[];
 }
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
-const StatCard: React.FC<{ icon: React.ElementType; title: string; value: string | number; description: string; className?: string; }> = ({ icon: Icon, title, value, description, className }) => (
-    <Card className={cn("border-0 shadow-lg text-white overflow-hidden", className)}>
-        <CardContent className="p-5 relative">
-            <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 rounded-full bg-white/10"></div>
-            <div className="relative z-10">
-                <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6" />
-                </div>
-                <p className="text-2xl font-bold">{value}</p>
-                <p className="text-sm font-medium">{title}</p>
-                <p className="text-xs opacity-80 mt-1">{description}</p>
+const StatCard = ({ title, value, description, icon: Icon, gradient, iconColor }: { title: string; value: string | number; description: string; icon: React.ElementType; gradient: string; iconColor: string }) => (
+    <div className={`p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-r ${gradient} text-white border border-white/20 relative overflow-hidden group`}>
+        <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+        <div className="flex items-center justify-between relative z-10">
+            <div>
+                <p className="text-white/90 text-sm font-medium mb-1">{title}</p>
+                <h3 className="text-3xl font-bold tracking-tight mb-1">{value}</h3>
+                <p className="text-xs text-white/70">{description}</p>
             </div>
-        </CardContent>
-    </Card>
+            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-inner flex-shrink-0">
+                <Icon className={`w-7 h-7 ${iconColor}`} />
+            </div>
+        </div>
+    </div>
 );
 
 
@@ -128,7 +134,7 @@ const Pagination: React.FC<{ links: PaginationLink[] }> = ({ links }) => {
     );
 };
 
-export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon, totalApprovedKasbon, sumApprovedKasbonAmount }: PageProps) {
+export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon, totalApprovedKasbon, sumApprovedKasbonAmount, employees, incisors, monthsYears, statuses }: PageProps) {
     // [MODIFIED] Add state for new filters
     const [search, setSearch] = useState(filter.search || '');
     // [MODIFIED] Use 'all' as default value instead of empty string ''
@@ -140,6 +146,9 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
 
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+    const [isPenorehModalOpen, setIsPenorehModalOpen] = useState(false);
+    const [isPegawaiModalOpen, setIsPegawaiModalOpen] = useState(false);
 
     useEffect(() => {
         if (flash.message) {
@@ -204,27 +213,23 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
 
                         {/* [MODIFICATION END] */}
                         {can('kasbons.create') && (
-                            <Link href={route('kasbons.create')}>
-                                <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg hover:shadow-indigo-500/50 transition-shadow">
-                                    <HardHat className="w-4 h-4 mr-2" /> Buat Kasbon Penoreh
-                                </Button>
-                            </Link>
+                            <Button onClick={() => setIsPenorehModalOpen(true)} className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg hover:shadow-indigo-500/50 transition-shadow">
+                                <HardHat className="w-4 h-4 mr-2" /> Buat Kasbon Penoreh
+                            </Button>
                         )}
                         {can('kasbons.create') && (
-                            <Link href={route('kasbons.create_pegawai')}>
-                                <Button className="bg-gradient-to-r from-emerald-500 to-lime-500 text-white shadow-lg hover:shadow-emerald-500/50 transition-shadow">
-                                    <User className="w-4 h-4 mr-2" /> Buat Kasbon Pegawai
-                                </Button>
-                            </Link>
+                            <Button onClick={() => setIsPegawaiModalOpen(true)} className="bg-gradient-to-r from-emerald-500 to-lime-500 text-white shadow-lg hover:shadow-emerald-500/50 transition-shadow">
+                                <User className="w-4 h-4 mr-2" /> Buat Kasbon Pegawai
+                            </Button>
                         )}
 
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <StatCard icon={Clock} title="Kasbon Pending" value={totalPendingKasbon} description="Menunggu persetujuan" className="bg-gradient-to-br from-yellow-400 to-orange-500"/>
-                    <StatCard icon={CheckCircle2} title="Kasbon Perlu Dibayar" value={totalApprovedKasbon} description="Telah disetujui & belum lunas" className="bg-gradient-to-br from-green-400 to-cyan-500"/>
-                    <StatCard icon={Wallet} title="Total Sisa Utang" value={formatCurrency(sumApprovedKasbonAmount)} description="Jumlah dana yang belum lunas" className="bg-gradient-to-br from-sky-400 to-blue-500"/>
+                    <StatCard icon={Clock} title="Kasbon Pending" value={totalPendingKasbon} description="Menunggu persetujuan" gradient="from-yellow-400 to-orange-500" iconColor="text-orange-500"/>
+                    <StatCard icon={CheckCircle2} title="Kasbon Perlu Dibayar" value={totalApprovedKasbon} description="Telah disetujui & belum lunas" gradient="from-emerald-400 to-teal-500" iconColor="text-teal-600"/>
+                    <StatCard icon={Wallet} title="Total Sisa Utang" value={formatCurrency(sumApprovedKasbonAmount)} description="Jumlah dana yang belum lunas" gradient="from-blue-500 to-indigo-600" iconColor="text-indigo-500"/>
                 </div>
 
                 { (showSuccessAlert && flash.message) && (
@@ -242,8 +247,8 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                     </Alert>
                 )}
 
-                <Card className="shadow-sm">
-                    <CardHeader>
+                <Card className="shadow-sm border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+                    <CardHeader className="bg-gray-50/50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 pb-4">
                          {/* [MODIFIED] Changed sm:flex-row to lg:flex-row for better responsiveness */}
                          <div className="flex flex-col lg:flex-row gap-3">
                             {/* [MODIFIED] Changed sm:w-1/2 to lg:w-1/2 */}
@@ -291,13 +296,12 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-100 dark:bg-transparent hover:bg-slate-100">
-                                    <TableHead className="pl-6">Nama</TableHead>
-                                    <TableHead>Total Kasbon</TableHead>
-                                    <TableHead>Total Dibayar</TableHead>
-                                    <TableHead>Sisa Utang</TableHead>
-                                    {/* [MODIFIED] Corrected closing tag from </Read> to </TableHead> */}
-                                    <TableHead className="text-center pr-6">Aksi</TableHead>
+                                <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
+                                    <TableHead className="pl-6 font-semibold text-gray-700 dark:text-gray-300">Nama</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Total Kasbon</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Total Dibayar</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Sisa Utang</TableHead>
+                                    <TableHead className="text-center pr-6 font-semibold text-gray-700 dark:text-gray-300">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             {/* [NEW] Add loading opacity effect to table body */}
@@ -336,6 +340,20 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                 <Pagination links={kasbons.links} />
 
             </div>
+
+            <CreateKasbonPenorehModal 
+                isOpen={isPenorehModalOpen} 
+                onClose={() => setIsPenorehModalOpen(false)} 
+                incisors={incisors} 
+                monthsYears={monthsYears} 
+                statuses={statuses} 
+            />
+
+            <CreateKasbonPegawaiModal 
+                isOpen={isPegawaiModalOpen} 
+                onClose={() => setIsPegawaiModalOpen(false)} 
+                employees={employees} 
+            />
         </AppLayout>
     );
 }

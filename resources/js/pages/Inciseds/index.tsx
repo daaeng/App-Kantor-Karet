@@ -224,7 +224,8 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                             )}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <StatCard icon={FaSeedling} title="Total Karet" value={`${totalKebunA + totalKebunB} Kg`} subtitle="Akumulasi Temadu & Sebayar" gradient="from-amber-500 to-orange-600" />
                             <StatCard icon={FaSeedling} title="Kebun Temadu" value={`${totalKebunA} Kg`} subtitle="Total Produksi Periode Ini" gradient="from-emerald-500 to-teal-600" />
                             <StatCard icon={FaSeedling} title="Kebun Sebayar" value={`${totalKebunB} Kg`} subtitle="Total Produksi Periode Ini" gradient="from-blue-500 to-indigo-600" />
                             <StatCard icon={FaUserFriends} title="Top Penoreh" value={mostProductiveIncisor?.name || 'N/A'} subtitle={`Produktivitas: ${(mostProductiveIncisor?.total_qty_kg || 0).toFixed(0)} Kg`} gradient="from-violet-500 to-purple-600" />

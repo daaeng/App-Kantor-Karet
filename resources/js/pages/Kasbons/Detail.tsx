@@ -6,7 +6,7 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Undo2, Banknote, Edit, Trash2, Printer } from 'lucide-react';
+import { Undo2, Banknote, Edit, Trash2, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -48,14 +48,50 @@ interface PayableKasbon {
     transaction_date: string;
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
 interface PageProps {
     owner: Owner;
-    history: Transaction[];
+    history: {
+        data: Transaction[];
+        links: PaginationLink[];
+    };
     payableKasbons: PayableKasbon[];
     kasbon_owner_id: number;
     kasbon_owner_type: string;
+    finalBalance: number;
     errors: any;
 }
+
+const Pagination: React.FC<{ links: PaginationLink[] }> = ({ links }) => {
+    if (links.length <= 3) return null;
+
+    return (
+        <div className="flex items-center justify-center gap-1 mt-4">
+            {links.map((link, index) => {
+                const cleanLabel = link.label.replace(/&laquo;|&raquo;/g, '').trim();
+                const icon = cleanLabel === 'Previous' ? <ChevronLeft size={18} /> : cleanLabel === 'Next' ? <ChevronRight size={18} /> : null;
+
+                return (
+                    <Link
+                        key={index}
+                        href={link.url || '#'}
+                        preserveScroll
+                        preserveState
+                        className={`flex items-center justify-center h-9 min-w-[2.25rem] px-3 text-sm font-medium rounded-md transition-colors ${link.active ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-foreground hover:bg-accent"} ${!link.url && "text-muted-foreground cursor-not-allowed opacity-50"}`}
+                        dangerouslySetInnerHTML={!icon ? { __html: cleanLabel } : undefined}
+                    >
+                        {icon && <span>{icon}</span>}
+                    </Link>
+                );
+            })}
+        </div>
+    );
+};
 
 const formatCurrency = (value: number) => {
     if (isNaN(value) || value === null) return "Rp 0";
@@ -63,7 +99,7 @@ const formatCurrency = (value: number) => {
 }
 
 export default function KasbonDetail() {
-    const { owner, history, payableKasbons, kasbon_owner_id, kasbon_owner_type, errors } = usePage<PageProps>().props;
+    const { owner, history, payableKasbons, kasbon_owner_id, kasbon_owner_type, finalBalance, errors } = usePage<PageProps>().props;
 
     const [showPayDialog, setShowPayDialog] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
@@ -97,8 +133,6 @@ export default function KasbonDetail() {
             }
         }
     }, [errors]);
-
-    const finalBalance = history && history.length > 0 ? history[history.length - 1].balance : 0;
 
     const dynamicBreadcrumbs: BreadcrumbItem[] = [
         { title: 'Rekap Kasbon', href: route('kasbons.index') },
@@ -190,43 +224,45 @@ export default function KasbonDetail() {
                     </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
+                <Card className="shadow-sm border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 mt-6">
+                    <CardHeader className="bg-gray-50/50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 pb-4">
                         <CardTitle>Rincian Transaksi</CardTitle>
-                        <CardDescription>Menampilkan semua pinjaman dan pembayaran yang tercatat (dari lama ke baru).</CardDescription>
+                        <CardDescription>Menampilkan semua pinjaman dan pembayaran yang tercatat (dari baru ke lama).</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50 dark:bg-transparent hover:bg-slate-50">
-                                    <TableHead>Tanggal</TableHead>
-                                    <TableHead>Keterangan</TableHead>
-                                    <TableHead className="text-right">Debit (Pinjaman)</TableHead>
-                                    <TableHead className="text-right">Kredit (Pembayaran)</TableHead>
-                                    <TableHead className="text-right">Saldo</TableHead>
-                                    <TableHead className="text-center">Aksi</TableHead>
+                                <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
+                                    <TableHead className="pl-6 font-semibold text-gray-700 dark:text-gray-300">Tanggal</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Keterangan</TableHead>
+                                    <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Debit (Pinjaman)</TableHead>
+                                    <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Kredit (Pembayaran)</TableHead>
+                                    <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Saldo</TableHead>
+                                    <TableHead className="text-center pr-6 font-semibold text-gray-700 dark:text-gray-300">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {history && history.length > 0 ? history.map((tx) => (
+                                {history.data && history.data.length > 0 ? history.data.map((tx) => (
                                     <TableRow key={tx.id}>
-                                        <TableCell className="text-sm text-gray-500 whitespace-nowrap">{tx.date_formatted}</TableCell>
-                                        <TableCell>{tx.description}</TableCell>
+                                        <TableCell className="pl-6 text-sm text-gray-500 whitespace-nowrap">{tx.date_formatted}</TableCell>
+                                        <TableCell>
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tx.transaction_type === 'kasbon' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+                                                {tx.description}
+                                            </span>
+                                        </TableCell>
                                         <TableCell className="text-right font-medium text-red-600">{tx.debit > 0 ? formatCurrency(tx.debit) : '-'}</TableCell>
                                         <TableCell className="text-right font-medium text-green-600">{tx.credit > 0 ? formatCurrency(tx.credit) : '-'}</TableCell>
                                         <TableCell className="text-right font-semibold">{formatCurrency(tx.balance)}</TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell className="text-center pr-6">
                                             <div className='flex items-center justify-center gap-1'>
                                                 <Button variant="ghost" size="icon" onClick={() => tx.transaction_type === 'kasbon' ? (window.location.href = route('kasbons.edit', tx.transaction_ref.id)) : openEditDialog(tx)}>
                                                     <Edit className="w-4 h-4 text-blue-600"/>
                                                 </Button>
 
-                                                {/* Tombol Delete dengan logika yang sudah diperbaiki */}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handleDelete(tx.transaction_type, tx.transaction_ref.id)}
-                                                    // Disable tombol saat sedang proses delete
                                                     disabled={deleteForm.processing}
                                                 >
                                                     <Trash2 className={`w-4 h-4 ${deleteForm.processing ? 'text-gray-400' : 'text-red-500'}`}/>
@@ -241,6 +277,8 @@ export default function KasbonDetail() {
                         </Table>
                     </CardContent>
                 </Card>
+
+                <Pagination links={history.links} />
 
                 {/* DIALOG UNTUK BAYAR CICILAN BARU */}
                 <AlertDialog open={showPayDialog} onOpenChange={setShowPayDialog}>

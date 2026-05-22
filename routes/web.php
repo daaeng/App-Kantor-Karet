@@ -186,9 +186,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/ppb/{ppb}/status', [PpbController::class, 'updateStatus'])->name('ppb.updateStatus')->middleware("permission:requests.edit");
 
     // Nota / Invoice
+    Route::get('/notas/up_nota', [NotaController::class, 'up_nota'])->name('notas.up_nota')->middleware("permission:notas.create");
     Route::resource('notas', NotaController::class)->except(['create', 'store'])->middleware("permission:notas.view"); // Handle standard routes
     Route::post('/notas', [NotaController::class, 'c_nota'])->name('notas.c_nota')->middleware("permission:notas.create");
-    Route::get('/notas/up_nota', [NotaController::class, 'up_nota'])->name('notas.up_nota')->middleware("permission:notas.create");
     Route::get('/notas/{nota}/editAct', [NotaController::class, 'editAct'])->name('notas.editAct')->middleware("permission:notas.edit");
     Route::put('/notas/{nota}', [NotaController::class, 'updateAct'])->name('notas.updateAct')->middleware("permission:notas.edit");
     Route::get('/notas/{nota}/showAct', [NotaController::class, 'showAct'])->name('notas.showAct')->middleware("permission:notas.view");
