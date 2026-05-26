@@ -44,6 +44,21 @@ const getStatusBadge = (status: string) => {
     }
 };
 
+const StatCard = ({ title, value, icon: Icon, gradient, iconColor }: { title: string; value: string | number; icon: React.ElementType; gradient: string; iconColor: string }) => (
+    <div className={`p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 bg-gradient-to-r ${gradient} text-white border border-white/20 relative overflow-hidden group`}>
+        <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+        <div className="flex items-center justify-between relative z-10">
+            <div>
+                <p className="text-white/90 text-sm font-medium mb-1">{title}</p>
+                <h3 className="text-3xl font-bold tracking-tight mb-1">{value}</h3>
+            </div>
+            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-inner flex-shrink-0">
+                <Icon className={`w-7 h-7 ${iconColor}`} />
+            </div>
+        </div>
+    </div>
+);
+
 export default function Index({ payrolls, filters, summary, periodeAktif, uangMakanHarian }: any) {
     const { flash } = usePage<any>().props;
 
@@ -261,99 +276,75 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                 )}
 
                 {/* --- STATS BENTO --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <Card className="rounded-2xl border-none bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/20 shadow-sm flex flex-col justify-center items-center text-center p-5 relative overflow-hidden group">
-                        <Users className="absolute -right-4 -bottom-4 w-24 h-24 text-blue-500/10 group-hover:scale-110 transition-transform" />
-                        <div className="p-3 bg-white/60 dark:bg-black/20 rounded-xl mb-3 text-blue-600 dark:text-blue-400 backdrop-blur-sm shadow-sm"><Users className="w-5 h-5"/></div>
-                        <span className="text-3xl font-black text-blue-900 dark:text-blue-100 z-10 leading-none">{summary.jumlahKaryawan}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700/80 dark:text-blue-400/80 mt-2 z-10">Pegawai Diproses</span>
-                    </Card>
-
-                    <Card className="rounded-2xl border-none bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/20 shadow-sm flex flex-col justify-center items-center text-center p-5 relative overflow-hidden group">
-                        <Wallet className="absolute -right-4 -bottom-4 w-24 h-24 text-indigo-500/10 group-hover:scale-110 transition-transform" />
-                        <div className="p-3 bg-white/60 dark:bg-black/20 rounded-xl mb-3 text-indigo-600 dark:text-indigo-400 backdrop-blur-sm shadow-sm"><Wallet className="w-5 h-5"/></div>
-                        <span className="text-3xl font-black text-indigo-900 dark:text-indigo-100 z-10 font-mono leading-none">{formatCurrency(summary.totalGajiPeriod)}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700/80 dark:text-indigo-400/80 mt-2 z-10">Total Beban Gaji</span>
-                    </Card>
-
-                    <Card className="rounded-2xl border-none bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/20 shadow-sm flex flex-col justify-center items-center text-center p-5 relative overflow-hidden group">
-                        <CheckCircle2 className="absolute -right-4 -bottom-4 w-24 h-24 text-emerald-500/10 group-hover:scale-110 transition-transform" />
-                        <div className="p-3 bg-white/60 dark:bg-black/20 rounded-xl mb-3 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm shadow-sm"><CheckCircle2 className="w-5 h-5"/></div>
-                        <span className="text-3xl font-black text-emerald-900 dark:text-emerald-100 z-10 leading-none">{summary.totalFinal}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700/80 dark:text-emerald-400/80 mt-2 z-10">Selesai / Lunas</span>
-                    </Card>
-
-                    <Card className="rounded-2xl border-none bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/20 shadow-sm flex flex-col justify-center items-center text-center p-5 relative overflow-hidden group">
-                        <FileText className="absolute -right-4 -bottom-4 w-24 h-24 text-amber-500/10 group-hover:scale-110 transition-transform" />
-                        <div className="p-3 bg-white/60 dark:bg-black/20 rounded-xl mb-3 text-amber-600 dark:text-amber-400 backdrop-blur-sm shadow-sm"><FileText className="w-5 h-5"/></div>
-                        <span className="text-3xl font-black text-amber-900 dark:text-amber-100 z-10 leading-none">{summary.totalDraft}</span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700/80 dark:text-amber-400/80 mt-2 z-10">Masih Draft</span>
-                    </Card>
-                </div>
-
-                {/* --- FILTERS --- */}
-                <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/40 dark:border-zinc-800/50 rounded-2xl shadow-sm p-3 mb-6 flex flex-col xl:flex-row items-center justify-between gap-3">
-                    <div className="flex items-center w-full xl:w-auto">
-                        <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg mr-3 text-indigo-500"><CalendarDays className="w-4 h-4" /></div>
-                        <Select value={month} onValueChange={handleMonthChange}>
-                            <SelectTrigger className="w-[130px] border-none shadow-none h-10 bg-slate-50 dark:bg-zinc-950 rounded-l-xl rounded-r-none font-semibold text-slate-700 dark:text-zinc-300"><SelectValue /></SelectTrigger>
-                            <SelectContent className="rounded-xl">{months.map(m => <SelectItem key={m.value} value={m.value} className="py-2.5">{m.label}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <div className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800" />
-                        <Select value={year} onValueChange={handleYearChange}>
-                            <SelectTrigger className="w-[100px] border-none shadow-none h-10 bg-slate-50 dark:bg-zinc-950 rounded-r-xl rounded-l-none font-semibold text-slate-700 dark:text-zinc-300"><SelectValue /></SelectTrigger>
-                            <SelectContent className="rounded-xl">{years.map(y => <SelectItem key={y.value} value={y.value} className="py-2.5">{y.label}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row w-full xl:w-auto gap-3">
-                        <div className="relative w-full sm:w-[280px] group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                            <Input placeholder="Cari nama pegawai..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-10 rounded-xl bg-slate-50 dark:bg-zinc-950 border-none text-sm focus-visible:ring-1 focus-visible:ring-indigo-500" />
-                        </div>
-                        <Select value={status} onValueChange={handleStatusChange}>
-                            <SelectTrigger className="w-full sm:w-[180px] h-10 rounded-xl bg-slate-50 dark:bg-zinc-950 border-none text-sm focus:ring-1 focus:ring-indigo-500">
-                                <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-400" /><SelectValue placeholder="Status" /></div>
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                <SelectItem value="all" className="font-medium text-indigo-600 py-2">Semua Status</SelectItem>
-                                <SelectItem value="final" className="py-2">Final / Selesai</SelectItem>
-                                <SelectItem value="paid" className="py-2">Lunas / Paid</SelectItem>
-                                <SelectItem value="draft" className="py-2">Draft</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <StatCard icon={Users} title="Pegawai Diproses" value={summary.jumlahKaryawan} gradient="from-blue-500 to-indigo-600" iconColor="text-indigo-500" />
+                    <StatCard icon={Wallet} title="Total Beban Gaji" value={formatCurrency(summary.totalGajiPeriod)} gradient="from-indigo-500 to-purple-600" iconColor="text-purple-500" />
+                    <StatCard icon={CheckCircle2} title="Selesai / Lunas" value={summary.totalFinal} gradient="from-emerald-400 to-teal-500" iconColor="text-teal-600" />
+                    <StatCard icon={FileText} title="Masih Draft" value={summary.totalDraft} gradient="from-amber-400 to-orange-500" iconColor="text-orange-500" />
                 </div>
 
                 {/* --- TABLE MAIN --- */}
-                <div className="rounded-2xl border border-slate-200 dark:border-zinc-800/80 overflow-hidden bg-white dark:bg-zinc-950 shadow-sm">
-                    <div className="bg-slate-50/80 dark:bg-zinc-900/50 border-b border-slate-100 p-5 flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                             <div className="p-2 bg-white dark:bg-zinc-800 border rounded-lg shadow-sm text-indigo-600"><Banknote className="w-5 h-5" /></div>
+                <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+                    <div className="bg-gray-50/50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 p-5">
+                         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
                              <div>
-                                 <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">Daftar Realisasi Gaji</h3>
-                                 <p className="text-xs font-medium text-slate-500 mt-0.5">Menampilkan data periode {periodeAktif}</p>
+                                 <h3 className="text-xl font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
+                                     Daftar Realisasi Gaji
+                                 </h3>
+                                 <p className="text-sm font-medium text-slate-500 mt-1">Menampilkan data periode {periodeAktif}</p>
+                             </div>
+                             
+                             {/* --- FILTERS --- */}
+                             <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+                                <div className="flex items-center w-full md:w-auto border border-gray-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm">
+                                    <div className="pl-3 text-indigo-500"><CalendarDays className="w-4 h-4" /></div>
+                                    <Select value={month} onValueChange={handleMonthChange}>
+                                        <SelectTrigger className="w-[120px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="rounded-xl">{months.map(m => <SelectItem key={m.value} value={m.value} className="py-2.5">{m.label}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <div className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800" />
+                                    <Select value={year} onValueChange={handleYearChange}>
+                                        <SelectTrigger className="w-[90px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="rounded-xl">{years.map(y => <SelectItem key={y.value} value={y.value} className="py-2.5">{y.label}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                
+                                <div className="relative w-full md:w-[250px] group">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                    <Input placeholder="Cari nama pegawai..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-10 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm shadow-sm" />
+                                </div>
+                                <Select value={status} onValueChange={handleStatusChange}>
+                                    <SelectTrigger className="w-full md:w-[150px] h-10 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm shadow-sm">
+                                        <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-400" /><SelectValue placeholder="Status" /></div>
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        <SelectItem value="all" className="font-medium text-indigo-600 py-2">Semua Status</SelectItem>
+                                        <SelectItem value="final" className="py-2">Final / Selesai</SelectItem>
+                                        <SelectItem value="paid" className="py-2">Lunas / Paid</SelectItem>
+                                        <SelectItem value="draft" className="py-2">Draft</SelectItem>
+                                    </SelectContent>
+                                </Select>
                              </div>
                          </div>
                     </div>
-                    <div className="p-0 overflow-x-auto custom-scrollbar">
+                    <div className="p-0 overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-slate-100 dark:border-zinc-800/80 hover:bg-transparent">
-                                    <TableHead className="pl-6 font-bold text-[11px] uppercase tracking-wider text-slate-500 h-14">Periode</TableHead>
-                                    <TableHead className="font-bold text-[11px] uppercase tracking-wider text-slate-500">Pegawai</TableHead>
-                                    <TableHead className="text-right font-bold text-[11px] uppercase tracking-wider text-slate-500">Pendapatan</TableHead>
-                                    <TableHead className="text-right font-bold text-[11px] uppercase tracking-wider text-slate-500">Potongan</TableHead>
-                                    <TableHead className="text-right font-bold text-[11px] uppercase tracking-wider text-indigo-600">Total Bersih</TableHead>
-                                    <TableHead className="text-center font-bold text-[11px] uppercase tracking-wider text-slate-500">Status</TableHead>
-                                    <TableHead className="text-right font-bold text-[11px] uppercase tracking-wider text-slate-500 pr-6">Aksi</TableHead>
+                                <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+                                    <TableHead className="pl-6 font-semibold text-gray-700 dark:text-gray-300 h-12">Periode</TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Pegawai</TableHead>
+                                    <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Pendapatan</TableHead>
+                                    <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Potongan</TableHead>
+                                    <TableHead className="text-right font-semibold text-indigo-600">Total Bersih</TableHead>
+                                    <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">Status</TableHead>
+                                    <TableHead className="text-center pr-6 font-semibold text-gray-700 dark:text-gray-300">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {payrolls.data.length > 0 ? (
                                     payrolls.data.map((payroll: any) => (
-                                        <TableRow key={payroll.id} className="border-slate-50 dark:border-zinc-800/30 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group">
-                                            <TableCell className="pl-6 py-4 font-mono text-xs font-semibold text-slate-400">{payroll.payroll_period}</TableCell>
+                                        <TableRow key={payroll.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <TableCell className="pl-6 py-4 font-mono text-sm font-semibold text-slate-500">{payroll.payroll_period}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${getAvatarColor(payroll.employee?.name || '')}`}>
@@ -366,7 +357,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                             <TableCell className="text-right font-mono text-sm font-medium text-rose-500">{formatCurrency(payroll.total_potongan)}</TableCell>
                                             <TableCell className="text-right font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">{formatCurrency(payroll.gaji_bersih)}</TableCell>
                                             <TableCell className="text-center">{getStatusBadge(payroll.status)}</TableCell>
-                                            <TableCell className="text-right pr-6">
+                                            <TableCell className="text-center">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:bg-white shadow-sm border transition-all">

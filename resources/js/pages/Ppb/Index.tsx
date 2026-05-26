@@ -19,6 +19,7 @@ import {
     Trash,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import CreatePpbModal from './Modals/CreatePpbModal';
 
 // Breadcrumbs untuk halaman index PPB
 const breadcrumbs: BreadcrumbItem[] = [
@@ -88,6 +89,7 @@ const StatCard = ({ title, value, icon, gradient, iconColor }: { title: string; 
 export default function Index({ ppbs, flash, filter, stats }: PageProps) {
     const { processing, delete: destroy } = useForm();
     const [searchValue, setSearchValue] = useState(filter?.search || '');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         setSearchValue(filter?.search || '');
@@ -152,12 +154,10 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                     {can('requests.create') && (
                         <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">Daftar Surat PPB</h2>
-                            <Link href={route('ppb.create')}>
-                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
-                                    <CirclePlus className="w-5 h-5 mr-2" />
-                                    Buat PPB Baru
-                                </Button>
-                            </Link>
+                            <Button onClick={() => setIsCreateModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
+                                <CirclePlus className="w-5 h-5 mr-2" />
+                                Buat PPB Baru
+                            </Button>
                         </div>
                     )}
 
@@ -240,6 +240,7 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                     {ppbs.data.length > 0 && renderPagination(ppbs.links)}
                 </div>
             </div>
+            <CreatePpbModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
         </AppLayout>
     );
 }
