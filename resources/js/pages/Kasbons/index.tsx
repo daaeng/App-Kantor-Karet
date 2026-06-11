@@ -213,12 +213,12 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
 
                         {/* [MODIFICATION END] */}
                         {can('kasbons.create') && (
-                            <Button onClick={() => setIsPenorehModalOpen(true)} className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg hover:shadow-indigo-500/50 transition-shadow">
+                            <Button onClick={() => setIsPenorehModalOpen(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
                                 <HardHat className="w-4 h-4 mr-2" /> Buat Kasbon Penoreh
                             </Button>
                         )}
                         {can('kasbons.create') && (
-                            <Button onClick={() => setIsPegawaiModalOpen(true)} className="bg-gradient-to-r from-emerald-500 to-lime-500 text-white shadow-lg hover:shadow-emerald-500/50 transition-shadow">
+                            <Button onClick={() => setIsPegawaiModalOpen(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
                                 <User className="w-4 h-4 mr-2" /> Buat Kasbon Pegawai
                             </Button>
                         )}
@@ -247,8 +247,8 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                     </Alert>
                 )}
 
-                <Card className="shadow-sm border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
-                    <CardHeader className="bg-gray-50/50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 pb-4">
+                <Card className="glass-panel border-none rounded-2xl overflow-hidden">
+                    <CardHeader className="bg-white/50 dark:bg-zinc-800/50 border-b border-slate-100 dark:border-zinc-800 pb-4">
                          {/* [MODIFIED] Changed sm:flex-row to lg:flex-row for better responsiveness */}
                          <div className="flex flex-col lg:flex-row gap-3">
                             {/* [MODIFIED] Changed sm:w-1/2 to lg:w-1/2 */}
@@ -296,8 +296,8 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
-                                    <TableHead className="pl-6 font-semibold text-gray-700 dark:text-gray-300">Nama</TableHead>
+                                <TableRow className="bg-white/50 dark:bg-zinc-800/50 hover:bg-white/50 dark:hover:bg-zinc-800/50">
+                                    <TableHead className="pl-6 font-semibold text-slate-700 dark:text-slate-300">Nama</TableHead>
                                     <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Total Kasbon</TableHead>
                                     <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Total Dibayar</TableHead>
                                     <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Sisa Utang</TableHead>

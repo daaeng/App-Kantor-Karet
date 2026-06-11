@@ -205,3 +205,4 @@ export default function CustomerIndex({ customers, filters }: PageProps) {
         </AppLayout>
     );
 }
+

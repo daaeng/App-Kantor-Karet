@@ -1,22 +1,22 @@
 import { Head } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
-// === Ikon SVG Sederhana ===
+// === Ikon SVG ===
 const Icons = {
     Check: () => (
-        <svg className="w-5 h-5 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+        <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
     ),
     ArrowRight: () => (
         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
     ),
     Truck: () => (
-        <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
     ),
     Globe: () => (
-        <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
     ),
     Shield: () => (
-        <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
     )
 };
 
@@ -41,7 +41,7 @@ export default function Welcome() {
         const initAOS = setInterval(() => {
             if ((window as any).AOS) {
                 (window as any).AOS.init({
-                    duration: 800,
+                    duration: 1000,
                     easing: 'ease-out-cubic',
                     once: true,
                     offset: 50
@@ -70,125 +70,139 @@ export default function Welcome() {
         { name: 'Container', capacity: '24 Ton', desc: 'Standar ekspor untuk pengiriman skala besar antar pulau.', img: '/assets/pelni.png' }
     ];
 
-    // [UPDATE] Perbaikan Nama & Deskripsi Produk Tengah
     const products = [
         { name: 'Karet Alam Premium', img: '/assets/karet1.jpeg', tag: 'Best Seller' },
-        { name: 'Karet Kering Super', img: '/assets/karet2.jpeg', tag: 'High DRC' }, // Update: Kadar Kering
+        { name: 'Karet Kering Super', img: '/assets/karet2.jpeg', tag: 'High DRC' },
         { name: 'Hasil Perkebunan', img: '/assets/getah.jpeg', tag: 'Organic' }
     ];
 
     return (
-        <div className="font-sans text-slate-800 bg-slate-50 overflow-x-hidden selection:bg-yellow-400 selection:text-black">
+        <div className="font-sans text-slate-300 bg-transparent overflow-x-hidden selection:bg-emerald-500 selection:text-white relative min-h-screen">
             <Head title="Welcome" />
 
-            {/* === NAVBAR === */}
-            <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3' : 'bg-transparent py-5'}`}>
-                <div className="container mx-auto px-6 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <img src="/assets/GKA_no_Tag.png" alt="GKA Logo" className="h-10 w-auto drop-shadow-md" />
-                        <span className={`font-bold text-xl tracking-wide ${scrolled ? 'text-slate-800' : 'text-white'}`}>
-                            GKA<span className="text-yellow-500">.</span>
+            {/* MAIN CONTENT WRAPPER */}
+            <div className="relative z-10">
+
+            {/* === NAVBAR GLASSMORPHISM === */}
+            <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-slate-950/60 backdrop-blur-xl border-b border-white/5 py-4' : 'bg-transparent py-6'}`}>
+                <div className="container mx-auto px-6 lg:px-12 flex justify-between items-center">
+                    <div 
+                        className="flex items-center gap-3 group cursor-pointer"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    >
+                        <img src="/assets/GKA_no_Tag.png" alt="GKA Logo" className="h-9 w-auto opacity-90 group-hover:opacity-100 transition-opacity" />
+                        <span className={`font-semibold text-lg tracking-wide text-white`}>
+                            GKA<span className="text-emerald-400">.</span>
                         </span>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden md:flex items-center gap-6 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-2 rounded-full">
                         {navLinks.map((link) => (
                             <a
                                 key={link.name}
                                 href={link.href}
-                                className={`text-sm font-medium hover:text-yellow-500 transition-colors ${scrolled ? 'text-slate-600' : 'text-slate-200'}`}
+                                className="text-[13px] font-medium text-slate-300 hover:text-white transition-colors"
                             >
                                 {link.name}
                             </a>
                         ))}
-                        <a href="/login" className="bg-yellow-500 hover:bg-yellow-400 text-white hover:text-black px-6 py-2 rounded-full font-bold text-sm transition-all shadow-lg hover:shadow-yellow-500/50">
-                            Masuk Area Kerja
+                    </div>
+
+                    <div className="hidden md:flex">
+                        <a href="/login" className="px-6 py-2.5 text-sm font-medium bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-colors shadow-lg shadow-emerald-500/30">
+                            Login Portal
                         </a>
                     </div>
                 </div>
             </nav>
 
             {/* === HERO SECTION === */}
-            <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <img src="/assets/bghero.jpg" alt="Background" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/30"></div>
-                </div>
-
-                <div className="container mx-auto px-6 relative z-10 pt-20">
-                    <div className="max-w-3xl" data-aos="fade-up">
-                        <div className="inline-block px-3 py-1 mb-4 border border-yellow-500/50 rounded-full bg-yellow-500/10 backdrop-blur-sm">
-                            <span className="text-yellow-400 text-xs font-bold tracking-widest uppercase">Perdagangan & Konstruksi</span>
+            <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
+                <div className="container mx-auto px-6 relative z-10 pt-24 flex flex-col items-start">
+                    <div className="max-w-4xl text-left" data-aos="fade-right">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 border border-white/10 rounded-full bg-white/5 backdrop-blur-md">
+                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 absolute"></span>
+                            <span className="text-slate-300 text-[11px] font-semibold tracking-widest uppercase">Perdagangan & Konstruksi</span>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
-                            Membangun <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Natuna</span>,<br />
+                        
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold text-white leading-[1.1] mb-8 tracking-tight">
+                            Membangun <span className="text-emerald-400">Natuna</span><br />
                             Menjangkau Dunia.
                         </h1>
-                        <p className="text-lg text-slate-300 mb-8 leading-relaxed max-w-xl">
-                            PT. Garuda Karya Amanat hadir sebagai mitra strategis dalam sektor perkebunan dan konstruksi. Profesional, Amanah, dan Berintegritas.
+                        
+                        <p className="text-lg md:text-xl text-slate-400 mb-12 leading-relaxed max-w-2xl font-light">
+                            PT. Garuda Karya Amanat hadir sebagai mitra strategis dalam sektor perkebunan dan konstruksi. Menggabungkan efisiensi, teknologi, dan integritas.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <a href="#about" className="px-8 py-4 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 transition-all shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center">
-                                Jelajahi Layanan <Icons.ArrowRight />
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-start">
+                            <a href="#services" className="px-8 py-4 bg-white text-slate-950 font-medium rounded-full hover:bg-slate-100 transition-all shadow-[0_0_30px_rgba(255,255,255,0.15)] flex items-center justify-center">
+                                Jelajahi Layanan
                             </a>
-                            <a href="#contact" className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all flex items-center justify-center">
-                                Hubungi Kami
+                            <a href="#contact" className="px-8 py-4 bg-white/5 backdrop-blur-lg border border-white/10 text-white font-medium rounded-full hover:bg-white/10 transition-all flex items-center justify-center">
+                                Hubungi Kami <Icons.ArrowRight />
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="absolute bottom-0 w-full bg-white/5 backdrop-blur-md border-t border-white/10 py-6 hidden md:block">
-                    <div className="container mx-auto px-6 flex justify-around text-white">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-yellow-500/20 rounded-lg"><Icons.Shield /></div>
-                            <div><p className="font-bold text-xl">100%</p><p className="text-xs text-slate-400">Amanah</p></div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-yellow-500/20 rounded-lg"><Icons.Truck /></div>
-                            <div><p className="font-bold text-xl">Cepat</p><p className="text-xs text-slate-400">Distribusi</p></div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-yellow-500/20 rounded-lg"><Icons.Globe /></div>
-                            <div><p className="font-bold text-xl">Global</p><p className="text-xs text-slate-400">Jaringan</p></div>
                         </div>
                     </div>
                 </div>
             </section>
 
+            {/* === METRICS BAR === */}
+            <div className="relative z-20 -mt-16 container mx-auto px-6">
+                <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex justify-around text-white shadow-2xl" data-aos="fade-up" data-aos-delay="200">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="p-3 bg-emerald-500/10 rounded-2xl mb-2"><Icons.Shield /></div>
+                        <p className="font-semibold text-3xl tracking-tight text-white">100%</p>
+                        <p className="text-[11px] uppercase tracking-widest text-slate-400">Kepercayaan</p>
+                    </div>
+                    <div className="w-px h-24 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="p-3 bg-cyan-500/10 rounded-2xl mb-2"><Icons.Truck /></div>
+                        <p className="font-semibold text-3xl tracking-tight text-white">Cepat</p>
+                        <p className="text-[11px] uppercase tracking-widest text-slate-400">Distribusi</p>
+                    </div>
+                    <div className="w-px h-24 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="p-3 bg-blue-500/10 rounded-2xl mb-2"><Icons.Globe /></div>
+                        <p className="font-semibold text-3xl tracking-tight text-white">Global</p>
+                        <p className="text-[11px] uppercase tracking-widest text-slate-400">Jaringan</p>
+                    </div>
+                </div>
+            </div>
+
             {/* === ABOUT SECTION === */}
-            <section id="about" className="py-24 bg-white">
+            <section id="about" className="py-32 relative">
                 <div className="container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                    <div className="flex flex-col lg:flex-row items-center gap-20">
                         <div className="lg:w-1/2 relative" data-aos="fade-right">
-                            <div className="absolute -top-4 -left-4 w-24 h-24 bg-yellow-100 rounded-full -z-10"></div>
-                            <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-slate-100 rounded-full -z-10"></div>
-                            <img src="/assets/karet.jpeg" alt="Tentang Kami" className="rounded-2xl shadow-2xl w-full object-cover h-[500px]" />
-                            <div className="absolute bottom-10 right-[-20px] bg-white p-6 rounded-xl shadow-xl border-l-4 border-yellow-500 hidden md:block">
-                                <p className="font-bold text-4xl text-slate-800">5+</p>
-                                <p className="text-sm text-slate-500">Tahun Pengalaman</p>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/20 to-transparent rounded-3xl blur-2xl"></div>
+                            <img src="/assets/karet.jpeg" alt="Tentang Kami" className="relative rounded-3xl w-full object-cover h-[500px] border border-white/10 shadow-2xl grayscale-[30%] hover:grayscale-0 transition-all duration-700" />
+                            
+                            <div className="absolute -bottom-6 -right-6 bg-slate-900/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl hidden md:block">
+                                <p className="font-semibold text-5xl text-white mb-1">5<span className="text-emerald-400">+</span></p>
+                                <p className="text-xs uppercase tracking-widest text-slate-400">Tahun Pengalaman</p>
                             </div>
                         </div>
                         <div className="lg:w-1/2" data-aos="fade-left">
-                            <h4 className="text-yellow-500 font-bold uppercase tracking-widest text-sm mb-2">Tentang Perusahaan</h4>
-                            <h2 className="text-4xl font-bold text-slate-900 mb-6">Mitra Terpercaya di Tanah Natuna</h2>
-                            <p className="text-slate-600 mb-6 leading-relaxed text-lg">
+                            <h4 className="text-emerald-400 font-semibold uppercase tracking-widest text-xs mb-4">Mengenal GKA</h4>
+                            <h2 className="text-4xl md:text-5xl font-semibold text-white mb-8 tracking-tight">Mitra Terpercaya di<br/>Tanah Natuna.</h2>
+                            <p className="text-slate-400 mb-10 leading-relaxed text-lg font-light">
                                 PT. Garuda Karya Amanat bukan sekadar perusahaan, melainkan jembatan yang menghubungkan potensi alam Natuna dengan pasar global. Kami fokus pada kualitas, efisiensi, dan dampak positif bagi masyarakat.
                             </p>
 
                             <div className="space-y-4">
-                                <div className="flex gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100 hover:border-yellow-400 transition-colors">
+                                <div className="flex gap-5 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-colors group">
                                     <div className="mt-1"><Icons.Check /></div>
                                     <div>
-                                        <h5 className="font-bold text-slate-900">Kepuasan Pelanggan</h5>
-                                        <p className="text-sm text-slate-500">Prioritas utama kami adalah kepercayaan dan profesionalitas.</p>
+                                        <h5 className="font-medium text-white text-lg mb-1 group-hover:text-emerald-400 transition-colors">Kualitas Kompetitif</h5>
+                                        <p className="text-sm text-slate-400 font-light">Menjaga standar mutu produk perkebunan dan material dengan pengawasan ketat.</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 p-4 bg-slate-50 rounded-lg border border-slate-100 hover:border-yellow-400 transition-colors">
+                                <div className="flex gap-5 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-colors group">
                                     <div className="mt-1"><Icons.Check /></div>
                                     <div>
-                                        <h5 className="font-bold text-slate-900">Kualitas Kompetitif</h5>
-                                        <p className="text-sm text-slate-500">Menjaga standar mutu produk perkebunan dan material.</p>
+                                        <h5 className="font-medium text-white text-lg mb-1 group-hover:text-emerald-400 transition-colors">Integritas Logistik</h5>
+                                        <p className="text-sm text-slate-400 font-light">Pengiriman tepat waktu dengan armada tangguh yang selalu siap beroperasi.</p>
                                     </div>
                                 </div>
                             </div>
@@ -198,57 +212,25 @@ export default function Welcome() {
             </section>
 
             {/* === SERVICES SECTION === */}
-            <section id="services" className="py-24 bg-slate-50">
+            <section id="services" className="py-32 bg-slate-900/30 border-y border-white/5">
                 <div className="container mx-auto px-6">
-                    <div className="text-center max-w-2xl mx-auto mb-16" data-aos="fade-up">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-4">Armada Logistik</h2>
-                        <p className="text-slate-500">Kami menyediakan berbagai pilihan armada untuk memastikan barang Anda sampai tepat waktu dan aman.</p>
+                    <div className="text-center max-w-2xl mx-auto mb-20" data-aos="fade-up">
+                        <h2 className="text-4xl font-semibold text-white mb-6 tracking-tight">Armada Logistik</h2>
+                        <p className="text-slate-400 font-light text-lg">Kami menyediakan berbagai pilihan armada untuk memastikan barang Anda sampai tepat waktu dan dalam kondisi prima.</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8">
                         {facilities.map((item, idx) => (
-                            <div key={idx} className="group bg-white rounded-2xl p-2 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay={idx * 100}>
-                                <div className="relative overflow-hidden rounded-xl h-48 mb-4">
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all z-10"></div>
-                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
-                                </div>
-                                <div className="p-4">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-xl font-bold text-slate-800">{item.name}</h3>
-                                        <span className="bg-yellow-100 text-yellow-700 text-xs font-bold px-2 py-1 rounded">{item.capacity}</span>
+                            <div key={idx} className="group bg-slate-900/50 backdrop-blur-xl rounded-3xl p-3 border border-white/5 hover:border-white/20 transition-all duration-500" data-aos="fade-up" data-aos-delay={idx * 100}>
+                                <div className="relative overflow-hidden rounded-2xl h-56 mb-6">
+                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
+                                    <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md border border-white/10 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                                        {item.capacity}
                                     </div>
-                                    <p className="text-slate-500 text-sm leading-relaxed mb-4">{item.desc}</p>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* === PRODUCTS SECTION === */}
-            <section id="products" className="py-24 bg-white">
-                <div className="container mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-                        <div data-aos="fade-right">
-                            <h2 className="text-3xl font-bold text-slate-900 mb-2">Produk Unggulan</h2>
-                            <p className="text-slate-500">Komoditas terbaik dari bumi Natuna.</p>
-                        </div>
-                        <a href="#contact" className="text-yellow-600 font-bold hover:text-yellow-700 flex items-center mt-4 md:mt-0" data-aos="fade-left">
-                            Lihat Katalog Lengkap <Icons.ArrowRight />
-                        </a>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {products.map((product, idx) => (
-                            <div key={idx} className="group relative overflow-hidden rounded-2xl shadow-lg h-80" data-aos="zoom-in" data-aos-delay={idx * 100}>
-                                <img src={product.img} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                                <div className="absolute top-4 left-4">
-                                    <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">{product.tag}</span>
-                                </div>
-                                <div className="absolute bottom-0 left-0 p-6 w-full transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                                    <h3 className="text-2xl font-bold text-white mb-1">{product.name}</h3>
-                                    <div className="h-1 w-12 bg-yellow-500 rounded group-hover:w-24 transition-all duration-300"></div>
+                                <div className="px-5 pb-5">
+                                    <h3 className="text-xl font-medium text-white mb-3">{item.name}</h3>
+                                    <p className="text-slate-400 text-sm font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -257,36 +239,31 @@ export default function Welcome() {
             </section>
 
             {/* === CTA / CONTACT SECTION === */}
-            <section id="contact" className="py-24 bg-slate-900 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
+            <section id="contact" className="py-32 relative overflow-hidden">
                 <div className="container mx-auto px-6 relative z-10">
-                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-3xl p-8 md:p-12 text-center max-w-4xl mx-auto shadow-2xl">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-6">Siap Bekerja Sama?</h2>
-                        <p className="text-slate-400 mb-8 text-lg">
-                            Hubungi kami untuk penawaran harga terbaik, konsultasi logistik, atau kemitraan jangka panjang. Tim kami siap melayani Anda 24/7.
+                    <div className="bg-gradient-to-br from-emerald-900/40 to-slate-900/80 backdrop-blur-2xl border border-emerald-500/20 rounded-[3rem] p-10 md:p-16 text-center max-w-5xl mx-auto shadow-2xl relative overflow-hidden" data-aos="zoom-in">
+                        {/* Glow effect inside card */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/20 rounded-full blur-[100px] -z-10"></div>
+
+                        <h2 className="text-4xl md:text-5xl font-semibold mb-6 tracking-tight text-white">Siap Bekerja Sama?</h2>
+                        <p className="text-emerald-100/70 mb-12 text-lg font-light max-w-2xl mx-auto">
+                            Hubungi kami untuk penawaran harga terbaik, konsultasi logistik, atau kemitraan jangka panjang. Kami selalu siap melayani.
                         </p>
 
-                        <div className="grid md:grid-cols-3 gap-6 text-left mt-10">
-                            {/* Alamat */}
-                            <div className="p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors cursor-pointer group">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Kantor Pusat</p>
-                                <p className="font-semibold group-hover:text-yellow-400 transition-colors">Jl. Sudirman No 59, Ranai Kota, Natuna</p>
+                        <div className="grid md:grid-cols-3 gap-6 text-left">
+                            <div className="p-6 bg-slate-950/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2 font-semibold">Kantor Pusat</p>
+                                <p className="font-medium text-slate-200 group-hover:text-emerald-400 transition-colors text-sm">Jl. Sudirman No 59, Ranai Kota, Natuna</p>
                             </div>
 
-                            {/* Email - Perbaikan Layout untuk Email Panjang */}
-                            <a href="mailto:ptgarudakaryaamanat@gmail.com" className="p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors group">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Email Resmi</p>
-                                <p className="font-semibold group-hover:text-yellow-400 transition-colors break-all text-sm md:text-base">
-                                    ptgarudakaryaamanat@gmail.com
-                                </p>
+                            <a href="mailto:ptgarudakaryaamanat@gmail.com" className="p-6 bg-slate-950/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2 font-semibold">Email Resmi</p>
+                                <p className="font-medium text-slate-200 group-hover:text-emerald-400 transition-colors text-sm break-all">ptgarudakaryaamanat@gmail.com</p>
                             </a>
 
-                            {/* WhatsApp */}
-                            <a href="https://wa.me/6285788940801" className="p-4 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-colors group">
-                                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">WhatsApp</p>
-                                <p className="font-semibold group-hover:text-yellow-400 transition-colors">+62 857 8894 0801</p>
+                            <a href="https://wa.me/6285788940801" className="p-6 bg-slate-950/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-emerald-500/30 transition-all group">
+                                <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-2 font-semibold">WhatsApp</p>
+                                <p className="font-medium text-slate-200 group-hover:text-emerald-400 transition-colors text-sm">+62 857 8894 0801</p>
                             </a>
                         </div>
                     </div>
@@ -294,15 +271,16 @@ export default function Welcome() {
             </section>
 
             {/* === FOOTER === */}
-            <footer className="bg-black text-slate-500 py-8 border-t border-slate-800">
-                <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <img src="/assets/GKA_no_TAG.png" alt="Logo" className="h-8 opacity-70 grayscale hover:grayscale-0 transition-all" />
-                        <span className="text-sm font-semibold text-slate-300">PT. Garuda Karya Amanat</span>
+            <footer className="bg-slate-950 py-10 border-t border-white/5 relative z-10">
+                <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="flex items-center gap-3">
+                        <img src="/assets/GKA_no_Tag.png" alt="Logo" className="h-6 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500" />
+                        <span className="text-xs font-semibold tracking-wider text-slate-500">PT. GARUDA KARYA AMANAT</span>
                     </div>
-                    <p className="text-xs">&copy; {new Date().getFullYear()} Hak Cipta Dilindungi.</p>
+                    <p className="text-xs text-slate-600 font-light">&copy; {new Date().getFullYear()} Hak Cipta Dilindungi.</p>
                 </div>
             </footer>
+            </div> {/* END MAIN CONTENT WRAPPER */}
         </div>
     );
 }

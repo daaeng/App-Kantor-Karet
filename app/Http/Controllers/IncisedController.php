@@ -67,10 +67,10 @@ class IncisedController extends Controller
         $applyTimeFilter($baseStatQuery);
 
         $totalKebunA = (clone $baseStatQuery)->where('lok_kebun', 'Temadu')->sum('qty_kg');
-        $totalKebunB = (clone $baseStatQuery)->where('lok_kebun', 'Sebayar A')->sum('qty_kg');
-        $totalKebunB2 = (clone $baseStatQuery)->where('lok_kebun', 'Sebayar B')->sum('qty_kg');
-        $totalKebunB3 = (clone $baseStatQuery)->where('lok_kebun', 'Sebayar C')->sum('qty_kg');
-        $totalKebunB4 = (clone $baseStatQuery)->where('lok_kebun', 'Sebayar D')->sum('qty_kg');
+        $totalKebunA_keping = (clone $baseStatQuery)->where('lok_kebun', 'Temadu')->sum('keping');
+
+        $totalKebunB = (clone $baseStatQuery)->whereIn('lok_kebun', ['Sebayar A', 'Sebayar B', 'Sebayar C', 'Sebayar D'])->sum('qty_kg');
+        $totalKebunB_keping = (clone $baseStatQuery)->whereIn('lok_kebun', ['Sebayar A', 'Sebayar B', 'Sebayar C', 'Sebayar D'])->sum('keping');
         $totalPendapatan = (clone $baseStatQuery)->sum('amount');
 
         $mostProductiveIncisorQuery = Incised::query()
@@ -105,7 +105,9 @@ class IncisedController extends Controller
             "inciseds" => $inciseds,
             "filter" => $request->only(['search', 'time_period', 'month', 'year', 'per_page', 'start_date', 'end_date']),
             'totalKebunA' => (float)$totalKebunA,
-            'totalKebunB' => (float)$totalKebunB + (float)$totalKebunB2 + (float)$totalKebunB3 + (float)$totalKebunB4,
+            'totalKebunA_keping' => (int)$totalKebunA_keping,
+            'totalKebunB' => (float)$totalKebunB,
+            'totalKebunB_keping' => (int)$totalKebunB_keping,
             'totalPendapatan' => (float)$totalPendapatan,
             'mostProductiveIncisor' => [
                 'name' => $mostProductiveIncisor ? $mostProductiveIncisor->name : 'N/A',
@@ -465,7 +467,49 @@ class IncisedController extends Controller
     public function print($id)
     {
         $incised = Incised::with('incisor')->findOrFail($id);
+        
+        if ($incised->incisor) {
+            $kasbons = \App\Models\Kasbon::where('kasbonable_id', $incised->incisor->id)
+                ->where('kasbonable_type', \App\Models\Incisor::class)
+                ->where('status', 'Approved')
+                ->get();
+            $totalKasbon = $kasbons->sum('kasbon');
+            $totalPaid = \App\Models\KasbonPayment::whereIn('kasbon_id', $kasbons->pluck('id'))->sum('amount');
+            $incised->sisa_kasbon = max(0, $totalKasbon - $totalPaid);
+        } else {
+            $incised->sisa_kasbon = 0;
+        }
+
         return Inertia::render('Inciseds/Print', ['incised' => $incised]);
+    }
+
+    public function bulkPrint(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (!$ids) {
+            return redirect()->back()->with('error', 'Tidak ada data yang dipilih untuk dicetak.');
+        }
+
+        $idArray = explode(',', $ids);
+        $inciseds = Incised::with('incisor')->whereIn('id', $idArray)->get();
+
+        foreach ($inciseds as $incised) {
+            if ($incised->incisor) {
+                $kasbons = \App\Models\Kasbon::where('kasbonable_id', $incised->incisor->id)
+                    ->where('kasbonable_type', \App\Models\Incisor::class)
+                    ->where('status', 'Approved')
+                    ->get();
+                $totalKasbon = $kasbons->sum('kasbon');
+                $totalPaid = \App\Models\KasbonPayment::whereIn('kasbon_id', $kasbons->pluck('id'))->sum('amount');
+                $incised->sisa_kasbon = max(0, $totalKasbon - $totalPaid);
+            } else {
+                $incised->sisa_kasbon = 0;
+            }
+        }
+
+        return Inertia::render('Inciseds/PrintBulkStruk', [
+            'inciseds' => $inciseds
+        ]);
     }
 
     public function destroy(Incised $incised)
@@ -474,5 +518,18 @@ class IncisedController extends Controller
         return redirect()->route('inciseds.index')->with('message', 'Data Berhasil Dihapus');
     }
 
+    public function updateNetReceived(Request $request, Incised $incised)
+    {
+        $request->validate([
+            'net_received' => 'required|numeric'
+        ]);
 
+        $newNet = $request->input('net_received');
+        
+        $incised->update([
+            'net_received' => $newNet
+        ]);
+
+        return redirect()->back()->with('message', 'Total Diterima (Net) berhasil diperbarui.');
+    }
 }

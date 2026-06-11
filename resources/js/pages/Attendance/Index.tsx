@@ -109,7 +109,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Absensi" />
 
-            <div className="p-4 md:p-8 bg-slate-50 dark:bg-zinc-950 min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100">
+            <div className="p-4 md:p-8 bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100">
 
                 {/* --- HEADER --- */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -136,8 +136,8 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
                 )}
 
                 {/* --- FILTER TOOLBAR --- */}
-                <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-sm p-3 mb-6 flex flex-col md:flex-row items-center gap-3">
-                    <div className="flex items-center w-full md:w-auto bg-slate-50 dark:bg-zinc-950 rounded-lg border border-slate-200 dark:border-zinc-800 flex-1 md:flex-none px-3 py-1">
+                <div className="glass-panel border-0 rounded-xl shadow-sm p-3 mb-6 flex flex-col md:flex-row items-center gap-3">
+                    <div className="flex items-center w-full md:w-auto bg-transparent rounded-lg border border-slate-200 dark:border-zinc-800 flex-1 md:flex-none px-3 py-1">
                         <CalendarIcon className="w-4 h-4 text-slate-400 mr-2" />
                         <Input type="month" value={selectedMonth} onChange={(e) => handleFilter('month', e.target.value)} className="bg-transparent border-none shadow-none focus-visible:ring-0 font-medium px-0 h-8" />
                     </div>
@@ -147,7 +147,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
                             <div className="flex items-center gap-2.5"><Users className="h-4 w-4 text-slate-400" /><SelectValue placeholder="Pilih Karyawan" /></div>
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-200 dark:border-zinc-800 shadow-md">
-                            <SelectItem value="all" className="font-semibold text-indigo-600 dark:text-indigo-400">Tampilkan Semua Anggota</SelectItem>
+                            <SelectItem value="all" className="font-semibold text-emerald-600 dark:text-indigo-400">Tampilkan Semua Anggota</SelectItem>
                             {employees.map((employee) => (
                                 <SelectItem key={employee.id} value={String(employee.id)}>{employee.name}</SelectItem>
                             ))}
@@ -170,7 +170,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
 
                 {/* --- EMPTY STATE --- */}
                 {(!reportData || (reportType === 'all' && Object.keys(reportData).length === 0) || (reportType === 'individual' && (reportData as IndividualReportData).detail_absensi.length === 0)) && (
-                    <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm mt-6">
+                    <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl glass-panel border-0 shadow-sm mt-6">
                         <div className="bg-slate-100 dark:bg-zinc-800 p-4 rounded-full mb-4">
                             <CalendarDays className="h-8 w-8 text-slate-400 dark:text-zinc-500" />
                         </div>
@@ -185,7 +185,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
                 <DialogContent className="sm:max-w-[500px] p-0 rounded-2xl border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={closeModals}>
                     <DialogHeader className="bg-white dark:bg-zinc-950 border-b border-slate-100 dark:border-zinc-900 px-6 py-5">
                         <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            {currentAttendance ? <Pencil className="w-5 h-5 text-indigo-500" /> : <CalendarClock className="w-5 h-5 text-indigo-500" />}
+                            {currentAttendance ? <Pencil className="w-5 h-5 text-emerald-500" /> : <CalendarClock className="w-5 h-5 text-emerald-500" />}
                             {currentAttendance ? 'Edit Absensi' : 'Input Absensi Manual'}
                         </DialogTitle>
                         <DialogDescription className="text-sm text-slate-500 dark:text-zinc-400 mt-1.5">
@@ -251,7 +251,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
 
                         <DialogFooter className="pt-4 border-t border-slate-200 dark:border-zinc-800 mt-6 flex gap-2 sm:justify-end">
                             <Button type="button" variant="ghost" onClick={closeModals} className="rounded-lg font-medium text-slate-600 dark:text-zinc-400">Batal</Button>
-                            <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm font-medium">
+                            <Button type="submit" disabled={processing} className="bg-emerald-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm font-medium">
                                 {processing ? 'Menyimpan...' : 'Simpan Data'}
                             </Button>
                         </DialogFooter>
@@ -295,7 +295,7 @@ const IndividualReport = ({ report, employee, onEdit, onDelete }: { report: Indi
             <StatCard title="Jam Kerja" value={`${report.total_jam_kerja}h`} type="neutral" />
         </div>
 
-        <Card className="rounded-xl shadow-sm border-slate-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900">
+        <Card className="rounded-xl glass-panel border-0 overflow-hidden">
              <div className="border-b border-slate-100 dark:border-zinc-800 p-5 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="bg-slate-100 dark:bg-zinc-800 p-2 rounded-lg text-slate-700 dark:text-zinc-300">
@@ -303,13 +303,13 @@ const IndividualReport = ({ report, employee, onEdit, onDelete }: { report: Indi
                     </div>
                     <div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Riwayat Kehadiran</h3>
-                        <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400 mt-0.5">{employee.name}</p>
+                        <p className="text-sm font-medium text-emerald-600 dark:text-indigo-400 mt-0.5">{employee.name}</p>
                     </div>
                 </div>
             </div>
             <div className="p-0 overflow-x-auto">
                 <Table>
-                    <TableHeader className="bg-slate-50 dark:bg-zinc-950">
+                    <TableHeader className="bg-transparent">
                         <TableRow className="border-slate-200 dark:border-zinc-800 hover:bg-transparent">
                             <TableHead className="pl-6 font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 h-12">Tanggal</TableHead>
                             <TableHead className="font-bold text-xs uppercase tracking-wider text-center text-slate-500 dark:text-zinc-400">Masuk</TableHead>
@@ -329,7 +329,7 @@ const IndividualReport = ({ report, employee, onEdit, onDelete }: { report: Indi
                                 <TableCell className="max-w-[250px] truncate text-slate-500 dark:text-zinc-400 text-xs">{item.notes || '-'}</TableCell>
                                 <TableCell className="text-center pr-6">
                                     <div className="flex justify-center gap-1.5">
-                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-indigo-600 hover:border-indigo-200 dark:hover:bg-indigo-900/30" onClick={() => onEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
+                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-emerald-600 hover:border-indigo-200 dark:hover:bg-indigo-900/30" onClick={() => onEdit(item)}><Pencil className="h-3.5 w-3.5" /></Button>
                                         <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-900/30" onClick={() => onDelete(item)}><Trash2 className="h-3.5 w-3.5" /></Button>
                                     </div>
                                 </TableCell>
@@ -400,7 +400,7 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
 
             {/* --- KIRI: KALENDER GRID --- */}
             <div className="xl:col-span-2">
-                <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+                <div className="glass-panel border-0 rounded-xl shadow-sm overflow-hidden">
                     <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                         <div>
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Kalender Kehadiran</h2>
@@ -434,9 +434,9 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
                                         className={cn(
                                             "border rounded-xl p-2 sm:p-3 flex flex-col min-h-[100px] sm:min-h-[110px] transition-all relative group select-none",
                                             isSelected
-                                                ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 shadow-md ring-1 ring-indigo-600 z-10"
+                                                ? "border-emerald-600 bg-indigo-50 dark:bg-emerald-500/10 shadow-md ring-1 ring-indigo-600 z-10"
                                                 : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
-                                            hasAttendance && !isSelected && "hover:border-indigo-400 dark:hover:border-indigo-600 cursor-pointer hover:shadow-sm",
+                                            hasAttendance && !isSelected && "hover:border-indigo-400 dark:hover:border-emerald-600 cursor-pointer hover:shadow-sm",
                                             !hasAttendance && "bg-slate-50/50 dark:bg-zinc-950/50",
                                             isWeekend && !hasAttendance && "bg-rose-50/30 dark:bg-rose-900/10"
                                         )}
@@ -445,7 +445,7 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
                                         <div className="flex justify-between items-start mb-2">
                                             <span className={cn(
                                                 "flex items-center justify-center h-7 w-7 rounded-full text-sm font-bold",
-                                                isSelected ? "bg-indigo-600 text-white"
+                                                isSelected ? "bg-emerald-600 text-white"
                                                 : isCurrentDay ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
                                                 : isWeekend ? "text-rose-500 dark:text-rose-400"
                                                 : "text-slate-700 dark:text-zinc-300"
@@ -484,7 +484,7 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
             <div className="xl:col-span-1">
                 <Card className="rounded-xl shadow-sm border-slate-200 dark:border-zinc-800 xl:sticky xl:top-24 h-fit flex flex-col max-h-[85vh] overflow-hidden bg-white dark:bg-zinc-900">
 
-                    <div className="bg-slate-50 dark:bg-zinc-950 border-b border-slate-200 dark:border-zinc-800 p-5 flex-shrink-0 flex items-center justify-between">
+                    <div className="bg-transparent border-b border-slate-200 dark:border-zinc-800 p-5 flex-shrink-0 flex items-center justify-between">
                          <div>
                              <h3 className="font-bold text-slate-900 dark:text-white text-base">Detail Harian</h3>
                              <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 mt-0.5">
@@ -519,12 +519,12 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
                                         </div>
 
                                         <div className="flex justify-between items-end mt-1">
-                                            <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono flex items-center bg-slate-50 dark:bg-zinc-950 px-2 py-1 rounded border border-slate-200 dark:border-zinc-800">
+                                            <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono flex items-center bg-transparent px-2 py-1 rounded border border-slate-200 dark:border-zinc-800">
                                                 <Clock className="w-3.5 h-3.5 inline mr-1.5 text-slate-400" />
                                                 {format(new Date(att.clock_in_time), 'HH:mm')} - {att.clock_out_time ? format(new Date(att.clock_out_time), 'HH:mm') : '...'}
                                             </div>
                                             <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/30" onClick={() => onEdit(att)}>
+                                                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-emerald-600 hover:bg-indigo-50 hover:border-indigo-200 dark:hover:bg-indigo-900/30" onClick={() => onEdit(att)}>
                                                     <Pencil className="h-3.5 w-3.5" />
                                                 </Button>
                                                 <Button variant="outline" size="icon" className="h-7 w-7 rounded-md border-slate-200 dark:border-zinc-700 text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 dark:hover:bg-rose-900/30" onClick={() => onDelete(att)}>
@@ -542,3 +542,4 @@ const AllEmployeesCalendar = ({ attendancesByDate, selectedMonth, onEdit, onDele
         </div>
     );
 };
+

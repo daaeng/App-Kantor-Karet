@@ -321,6 +321,50 @@ class PayrollController extends Controller
         return Inertia::render('Payroll/PrintSlip', ['payroll' => $payroll, 'company_name' => 'PT. Garuda Karya Amanat']);
     }
 
+    public function bulkPrint(Request $request)
+    {
+        $type = $request->input('type', 'slip'); // 'slip' or 'receipt'
+        $month = $request->input('month');
+        $year = $request->input('year');
+        $ids = $request->input('ids'); // comma separated
+
+        $query = Payroll::with(['employee', 'items']);
+
+        if (!empty($ids)) {
+            $idArray = explode(',', $ids);
+            $query->whereIn('id', $idArray);
+            
+            // to get period string for the view
+            $firstPayroll = Payroll::whereIn('id', $idArray)->first();
+            $periodString = $firstPayroll ? $firstPayroll->payroll_period : Carbon::now()->format('Y-m');
+        } else {
+            if ($month && $year) {
+                $periodString = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
+            } else {
+                $currentMonth = Carbon::now()->month;
+                $currentYear = Carbon::now()->year;
+                $periodString = $currentYear . '-' . str_pad($currentMonth, 2, '0', STR_PAD_LEFT);
+            }
+            $query->where('payroll_period', $periodString);
+        }
+
+        $payrolls = $query->get();
+        $formattedPeriod = Carbon::createFromFormat('Y-m', $periodString)->translatedFormat('F Y');
+
+        if ($type === 'receipt') {
+            return Inertia::render('Payroll/PrintReceiptBulk', [
+                'payrolls' => $payrolls,
+                'company_name' => 'PT. Garuda Karya Amanat',
+                'period_string' => $formattedPeriod
+            ]);
+        }
+
+        return Inertia::render('Payroll/PrintSlipBulk', [
+            'payrolls' => $payrolls,
+            'company_name' => 'PT. Garuda Karya Amanat'
+        ]);
+    }
+
     public function destroy(Payroll $payroll)
     {
         DB::beginTransaction();

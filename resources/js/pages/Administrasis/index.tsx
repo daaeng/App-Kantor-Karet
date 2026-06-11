@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Administrasi & Keuangan', href:
 interface FinancialReport {
     bank: { in_penjualan: number; in_lainnya: number; out_gaji: number; out_kapal: number; out_truck: number; out_hutang: number; out_penarikan: number; total_in: number; total_out: number; balance: number; };
     kas: { in_penarikan: number; out_lapangan: number; out_kantor: number; out_bpjs: number; out_belikaret: number; out_kasbon_pegawai: number; out_kasbon_penoreh: number; out_bayar_penoreh: number; out_makan_mandor?: number; total_in: number; total_out: number; balance: number; };
-    profit_loss: { revenue_karet: number; revenue_lain: number; revenue_total: number; cogs: number; gross_profit: number; opex_gaji: number; opex_lapangan: number; opex_kantor: number; opex_bpjs: number; opex_kapal_truck: number; opex_lainnya: number; opex_total: number; net_profit: number; };
+    profit_loss: { revenue_karet: number; revenue_lain: number; revenue_total: number; cogs: number; gross_profit: number; opex_gaji: number; opex_lapangan: number; opex_kantor: number; opex_bpjs: number; opex_kapal_truck: number; opex_lainnya: number; opex_total: number; net_profit: number; kasbon_keluar_period: number; };
     neraca: { assets: { kas_period: number; bank_period: number; piutang: number; inventory_value: number; total_aktiva: number; }; liabilities: { hutang_dagang: number; ekuitas: number; total_pasiva: number; } }
 }
 
@@ -316,12 +316,12 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Sistem Akuntansi & Keuangan" />
-            <div className="flex flex-col space-y-6 p-4 md:p-8 bg-white dark:bg-[#09090b] min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100">
+            <div className="p-4 md:p-8 min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100 bg-transparent">
                 {/* HEADER */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-8 flex-wrap">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">General Ledger & Finance</h1>
-                        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Sistem Akuntansi Terpadu PT. GKA</p>
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">General Ledger & Finance</h1>
+                        <p className="text-sm text-slate-500 mt-1">Sistem Akuntansi Terpadu PT. GKA</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center bg-slate-50 dark:bg-zinc-900/50 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
@@ -382,31 +382,31 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button className="bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 text-white shadow-sm gap-2 rounded-lg"><Printer className="w-4 h-4" /> Cetak Laporan</Button>
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] gap-2 rounded-lg border-0"><Printer className="w-4 h-4" /> Cetak Laporan</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="rounded-xl">
                                 <DropdownMenuItem onClick={() => handlePrint('all')}>Semua Laporan</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handlePrint('profit_loss')}>Cetak Laba Rugi</DropdownMenuItem>
-                                {/* MENU BARU UNTUK EXPORT EXCEL */}
                                 <DropdownMenuItem onClick={handleExportExcel} className="text-emerald-600 font-medium">Export Laba Rugi (Excel)</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handlePrint('neraca')}>Cetak Neraca</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handlePrint('bank')}>Cetak Arus Bank</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handlePrint('kas')}>Cetak Arus Kas</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePrint('jurnal')}>Cetak Buku Jurnal</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </div>
 
                 <Tabs defaultValue="dashboard" className="w-full" onValueChange={setActiveTab}>
-                    <div className="flex justify-between items-center mb-6 mt-4">
-                        <TabsList className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg overflow-x-auto">
+                    <div className="flex flex-col xl:flex-row justify-between xl:items-center mb-6 mt-4 gap-4">
+                        <TabsList className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg overflow-x-auto flex-wrap h-auto justify-start">
                             <TabsTrigger value="dashboard" className="rounded-md">Executive Dashboard</TabsTrigger>
                             <TabsTrigger value="profit_loss" className="rounded-md">Laba Rugi (P&L)</TabsTrigger>
                             <TabsTrigger value="neraca" className="rounded-md">Neraca Keuangan</TabsTrigger>
                             <TabsTrigger value="cashflow" className="rounded-md">Arus Kas & Bank</TabsTrigger>
                             <TabsTrigger value="expenses" className="rounded-md">Buku Jurnal</TabsTrigger>
                         </TabsList>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-lg px-5 h-9 font-medium" onClick={openTransactionModal}>
+                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] rounded-lg px-5 h-9 font-medium border-0" onClick={openTransactionModal}>
                             <PlusCircle className="w-4 h-4 mr-2" /> Jurnal Manual
                         </Button>
                     </div>
@@ -414,10 +414,10 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                     {/* DASHBOARD */}
                     <TabsContent value="dashboard" className="space-y-6 animate-in fade-in duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card className="border-l-4 border-l-emerald-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider">Net Profit<TrendingUp className="w-4 h-4 text-emerald-500 float-right" /></CardTitle></CardHeader><CardContent><div className={`text-3xl font-black ${summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(summary.reports.profit_loss.net_profit)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-blue-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider">Total Revenue<Landmark className="w-4 h-4 text-blue-500 float-right" /></CardTitle></CardHeader><CardContent><div className="text-3xl font-black">{formatCurrency(summary.reports.profit_loss.revenue_total)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-amber-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider">Likuiditas (Kas+Bank)<Wallet className="w-4 h-4 text-amber-500 float-right" /></CardTitle></CardHeader><CardContent><div className="text-3xl font-black">{formatCurrency(summary.reports.neraca.assets.kas_period + summary.reports.neraca.assets.bank_period)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-rose-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider">Piutang Karyawan<UserCircle className="w-4 h-4 text-rose-500 float-right" /></CardTitle></CardHeader><CardContent><div className="text-3xl font-black text-rose-600">{formatCurrency(summary.reports.neraca.assets.piutang)}</div></CardContent></Card>
+                            <Card className="border-l-4 border-l-emerald-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Net Profit<TrendingUp className="w-4 h-4 text-emerald-500" /></CardTitle></CardHeader><CardContent><div className={`text-xl md:text-2xl font-black truncate ${summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(summary.reports.profit_loss.net_profit)}</div></CardContent></Card>
+                            <Card className="border-l-4 border-l-blue-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Total Revenue<Landmark className="w-4 h-4 text-blue-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black truncate">{formatCurrency(summary.reports.profit_loss.revenue_total)}</div></CardContent></Card>
+                            <Card className="border-l-4 border-l-amber-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Likuiditas (Kas+Bank)<Wallet className="w-4 h-4 text-amber-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black truncate">{formatCurrency(summary.reports.neraca.assets.kas_period + summary.reports.neraca.assets.bank_period)}</div></CardContent></Card>
+                            <Card className="border-l-4 border-l-rose-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Piutang Karyawan<UserCircle className="w-4 h-4 text-rose-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black text-rose-600 truncate">{formatCurrency(summary.reports.neraca.assets.piutang)}</div></CardContent></Card>
                         </div>
                         <Card><CardHeader><CardTitle>Visualisasi Cashflow</CardTitle></CardHeader><CardContent className="h-[400px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis tickFormatter={(val) => `${val/1000}k`} /><Tooltip formatter={(val:number)=>formatCurrency(val)} /><Legend /><Bar dataKey="Pemasukan" fill="#10b981" barSize={30} /><Bar dataKey="Pengeluaran" fill="#f43f5e" barSize={30} /></BarChart></ResponsiveContainer></CardContent></Card>
                     </TabsContent>
@@ -550,6 +550,19 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                             );
                                                         })}
                                                     </tr>
+                                                    
+                                                    <tr><td colSpan={profitLossPeriods.length + 1} className="p-4 border-b"></td></tr>
+                                                    <tr className="font-bold bg-slate-100/50 dark:bg-zinc-900/50 text-slate-500">
+                                                        <td colSpan={profitLossPeriods.length + 1} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="p-3 pl-6 text-slate-600">Total Uang Kasbon Keluar</td>
+                                                        {profitLossPeriods.map((p, i) => (
+                                                            <td key={i} className="p-3 text-right font-mono text-amber-600">
+                                                                {formatCurrency(p.kasbon_keluar_period)}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -585,6 +598,11 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     <LedgerTotal label="Total Biaya Operasional" value={summary.reports.profit_loss.opex_total} />
                                     <div className="mt-8"></div>
                                     <LedgerTotal label="LABA BERSIH (NET PROFIT)" value={summary.reports.profit_loss.net_profit} isGrandTotal />
+                                    
+                                    <div className="mt-8 pt-4 border-t border-dashed border-slate-300 dark:border-zinc-700">
+                                        <h4 className="font-bold text-slate-500 text-xs uppercase tracking-wider mb-2">Informasi Tambahan (Non-P&L)</h4>
+                                        <LedgerItem label="Total Uang Kasbon Keluar" value={summary.reports.profit_loss.kasbon_keluar_period} isIndent={false} isMinus={false} />
+                                    </div>
                                 </CardContent>
                             </Card>
                         )}

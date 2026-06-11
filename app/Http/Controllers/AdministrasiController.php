@@ -53,6 +53,35 @@ class AdministrasiController extends Controller
             $data['profitLossPeriods'] = $periods;
         }
 
+        if ($data['printType'] === 'jurnal' || $data['printType'] === 'all') {
+            $trxQuery = FinancialTransaction::query();
+            $timePeriod = $request->input('time_period', 'this-month');
+            $selectedMonth = $request->input('month', Carbon::now()->month);
+            $selectedYear = $request->input('year', Carbon::now()->year);
+            $startYear = $request->input('start_year', Carbon::now()->year);
+            $endYear = $request->input('end_year', Carbon::now()->year);
+            $startMonth = $request->input('start_month', Carbon::now()->month);
+            $endMonth = $request->input('end_month', Carbon::now()->month);
+
+            if ($timePeriod === 'specific-month') {
+                $trxQuery->whereMonth('transaction_date', $selectedMonth)->whereYear('transaction_date', $selectedYear);
+            } elseif ($timePeriod === 'last-month') {
+                $lastMonth = Carbon::now()->subMonth();
+                $trxQuery->whereMonth('transaction_date', $lastMonth->month)->whereYear('transaction_date', $lastMonth->year);
+            } elseif ($timePeriod === 'this-month') {
+                $trxQuery->whereMonth('transaction_date', Carbon::now()->month)->whereYear('transaction_date', Carbon::now()->year);
+            } elseif ($timePeriod === 'this-year') {
+                $trxQuery->whereYear('transaction_date', Carbon::now()->year);
+            } elseif ($timePeriod === 'periodic-years') {
+                $trxQuery->whereYear('transaction_date', '>=', $startYear)->whereYear('transaction_date', '<=', $endYear);
+            } elseif ($timePeriod === 'range-month') {
+                $sDate = Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+                $eDate = Carbon::create($endYear, $endMonth, 1)->endOfMonth();
+                $trxQuery->whereBetween('transaction_date', [$sDate, $eDate]);
+            }
+            $data['jurnal_transactions'] = $trxQuery->orderBy('transaction_date', 'ASC')->get();
+        }
+
         return Inertia::render("Administrasis/print", $data);
     }
 
@@ -331,7 +360,8 @@ class AdministrasiController extends Controller
                         "opex_makan_mandor" => (float) $opex_makan_mandor,
                         "opex_lainnya" => (float) $opex_lainnya,
                         "opex_total" => (float) $operatingExpenses,
-                        "net_profit" => (float) $netProfit
+                        "net_profit" => (float) $netProfit,
+                        "kasbon_keluar_period" => (float) ($kasOut_Pegawai + $kasOut_Penoreh)
                     ],
                     "neraca" => $neraca
                 ],
@@ -372,6 +402,12 @@ class AdministrasiController extends Controller
             $query->whereYear('transaction_date', Carbon::now()->year);
         } elseif ($timePeriod === 'periodic-years') {
             $query->whereYear('transaction_date', '>=', $startYear)->whereYear('transaction_date', '<=', $endYear);
+        } elseif ($timePeriod === 'range-month') {
+            $startMonth = $request->input('start_month', Carbon::now()->month);
+            $endMonth = $request->input('end_month', Carbon::now()->month);
+            $sDate = Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+            $eDate = Carbon::create($endYear, $endMonth, 1)->endOfMonth();
+            $query->whereBetween('transaction_date', [$sDate, $eDate]);
         }
 
         $paginator = $query->orderBy('transaction_date', 'DESC')->paginate($perPage, ['*'], 'page', $page);
@@ -549,6 +585,16 @@ class AdministrasiController extends Controller
 
         $net_profit = $gross_profit - $opex_total;
 
+        $kasOut_Pegawai = \App\Models\Kasbon::where('kasbonable_type', 'App\Models\Employee')
+            ->whereMonth(\Illuminate\Support\Facades\DB::raw('COALESCE(transaction_date, created_at)'), $month)
+            ->whereYear(\Illuminate\Support\Facades\DB::raw('COALESCE(transaction_date, created_at)'), $year)
+            ->sum('kasbon') ?? 0;
+        $kasOut_Penoreh = \App\Models\Kasbon::where('kasbonable_type', 'App\Models\Incisor')
+            ->whereMonth(\Illuminate\Support\Facades\DB::raw('COALESCE(transaction_date, created_at)'), $month)
+            ->whereYear(\Illuminate\Support\Facades\DB::raw('COALESCE(transaction_date, created_at)'), $year)
+            ->sum('kasbon') ?? 0;
+        $kasbon_keluar_period = $kasOut_Pegawai + $kasOut_Penoreh;
+
         return [
             'period_label'         => '',
             'revenue_karet'        => (float) $revenue_karet,
@@ -565,6 +611,7 @@ class AdministrasiController extends Controller
             'opex_lainnya'         => (float) $opex_lainnya,
             'opex_total'           => (float) $opex_total,
             'net_profit'           => (float) $net_profit,
+            'kasbon_keluar_period' => (float) $kasbon_keluar_period,
         ];
     }
 
@@ -654,6 +701,10 @@ class AdministrasiController extends Controller
 
                 $writeRow('LABA BERSIH (NET PROFIT)', 'net_profit', $periods);
 
+                fputcsv($file, [], ';');
+                fputcsv($file, ['INFORMASI TAMBAHAN (NON-P&L)'], ';');
+                $writeRow('Total Uang Kasbon Keluar', 'kasbon_keluar_period', $periods);
+
             } else {
                 // JIKA MODE BULAN BIASA (1 KOLOM)
                 fputcsv($file, ['Nama Akun', 'Total (Rp)'], ';');
@@ -677,6 +728,10 @@ class AdministrasiController extends Controller
                 $writeRow('Biaya Rupa-Rupa Lainnya', 'opex_lainnya', null, true);
 
                 $writeRow('LABA BERSIH (NET PROFIT)', 'net_profit');
+
+                fputcsv($file, [], ';');
+                fputcsv($file, ['INFORMASI TAMBAHAN (NON-P&L)'], ';');
+                $writeRow('Total Uang Kasbon Keluar', 'kasbon_keluar_period');
             }
             fclose($file);
         };

@@ -54,19 +54,19 @@ export default function Index() {
             <Head title="Product Information" />
 
             {can('products.view') && (
-                <div className="min-h-screen bg-gray-50/50 dark:bg-black py-10">
+                <div className="min-h-screen bg-transparent py-10">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                         {/* Header Section */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 glass-panel p-8">
                             <div>
-                                <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-                                    <div className="p-3 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-700">
-                                        <LayoutGrid className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                                <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-2xl border border-emerald-500/20 shadow-sm">
+                                        <LayoutGrid className="h-6 w-6 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
                                     </div>
                                     Product Information
                                 </h1>
-                                <p className="text-gray-500 mt-2 text-lg">
+                                <p className="text-slate-500 mt-2 text-sm pl-[4.5rem] font-light">
                                     Pilih modul manajemen stok dan penjualan yang ingin Anda kelola.
                                 </p>
                             </div>
@@ -75,14 +75,14 @@ export default function Index() {
                             {can('products.create') && (
                                 <div className="flex flex-wrap gap-3">
                                     <Link href={route('products.allof')}>
-                                        <Button variant="outline" className="bg-white dark:bg-zinc-900 border-gray-300 hover:bg-gray-50 shadow-sm h-11 px-5 rounded-lg">
-                                            <FolderOpen size={18} className="mr-2 text-gray-500" />
+                                        <Button variant="outline" className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:bg-slate-50/80 shadow-sm h-11 px-5 rounded-xl font-medium">
+                                            <FolderOpen size={18} className="mr-2 text-slate-500" strokeWidth={2} />
                                             Semua Data
                                         </Button>
                                     </Link>
                                     <Link href={route('master-products.index')}>
-                                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 h-11 px-5 rounded-lg transition-all hover:-translate-y-0.5">
-                                            <PackagePlus size={18} className="mr-2" />
+                                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] h-11 px-5 rounded-xl transition-all hover:-translate-y-0.5 font-medium border-0">
+                                            <PackagePlus size={18} className="mr-2" strokeWidth={2} />
                                             Master Data Barang
                                         </Button>
                                     </Link>
@@ -93,24 +93,24 @@ export default function Index() {
                         {/* Cards Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {products.map((product, idx) => (
-                                <Link key={idx} href={route(product.route)} className="group">
-                                    <Card className={`h-full border-2 border-transparent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white dark:bg-zinc-900 ${product.border} dark:border-zinc-800`}>
+                                <Link key={idx} href={route(product.route)} className="group h-full">
+                                    <Card className={`h-full border-none glass-card bg-transparent ${product.border}`}>
                                         <CardHeader>
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-colors ${product.bg}`}>
-                                                <product.icon size={28} className={product.color} />
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-colors ${product.bg} shadow-inner`}>
+                                                <product.icon size={26} className={product.color} strokeWidth={1.5} />
                                             </div>
-                                            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                                            <CardTitle className="text-xl font-bold text-slate-800 dark:text-white group-hover:text-emerald-600 transition-colors tracking-tight">
                                                 {product.name}
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <CardDescription className="text-base text-gray-500 leading-relaxed">
+                                            <CardDescription className="text-sm text-slate-500 leading-relaxed font-light">
                                                 {product.description}
                                             </CardDescription>
                                         </CardContent>
-                                        <CardFooter className="pt-4">
-                                            <div className={`flex items-center text-sm font-semibold ${product.btnColor} group-hover:underline decoration-2 underline-offset-4`}>
-                                                Buka Modul <ChevronRight size={16} className="ml-1" />
+                                        <CardFooter className="pt-4 border-t border-slate-100/50 dark:border-slate-800/50 mt-auto">
+                                            <div className={`flex items-center text-xs font-semibold ${product.btnColor} group-hover:translate-x-1 transition-transform`}>
+                                                Buka Modul <ChevronRight size={14} className="ml-1" strokeWidth={2} />
                                             </div>
                                         </CardFooter>
                                     </Card>

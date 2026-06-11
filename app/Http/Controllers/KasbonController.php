@@ -200,6 +200,7 @@ class KasbonController extends Controller
             $transactions->push([
                 'id' => 'k-'.$kasbon->id,
                 'date' => $kasbon->transaction_date,
+                'created_at' => $kasbon->created_at,
                 'description' => 'Pinjaman Dana (Kasbon) - ' . $kasbon->status,
                 'debit' => $kasbon->kasbon,
                 'credit' => 0,
@@ -211,6 +212,7 @@ class KasbonController extends Controller
             $transactions->push([
                 'id' => 'p-'.$payment->id,
                 'date' => $payment->payment_date,
+                'created_at' => $payment->created_at,
                 'description' => $payment->notes ?: 'Pembayaran Cicilan',
                 'debit' => 0,
                 'credit' => $payment->amount,
@@ -219,7 +221,15 @@ class KasbonController extends Controller
             ]);
         }
 
-        $sortedTransactions = $transactions->sortBy('date')->values();
+        $sortKeyFn = function ($item) {
+            $createdStr = isset($item['created_at']) ? (string) $item['created_at'] : '2000-01-01';
+            $dateTs = \Carbon\Carbon::parse($item['date'])->timestamp;
+            $createdTs = \Carbon\Carbon::parse($createdStr)->timestamp;
+            $idNum = preg_replace('/[^0-9]/', '', $item['id']);
+            return sprintf('%012d_%012d_%010d', $dateTs, $createdTs, (int)$idNum);
+        };
+
+        $sortedTransactions = $transactions->sortBy($sortKeyFn)->values();
 
         $runningBalance = 0;
         $balanceMap = [];
@@ -237,13 +247,13 @@ class KasbonController extends Controller
 
         $history = $sortedTransactions->map(function ($item) use ($balanceMap) {
             $item['balance'] = $balanceMap[$item['id']] ?? 0;
-            $carbonDate = Carbon::parse($item['date']);
+            $carbonDate = \Carbon\Carbon::parse($item['date']);
             $item['date_formatted'] = $carbonDate->isoFormat('D MMM YYYY, HH:mm');
             $item['date_input_format'] = $carbonDate->format('Y-m-d');
             return $item;
         });
 
-        $history = $history->sortByDesc('date')->values();
+        $history = $history->sortByDesc($sortKeyFn)->values();
 
         $perPage = 15;
         $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');

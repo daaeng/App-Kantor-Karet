@@ -38,74 +38,58 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <div className="min-h-screen w-full flex">
-            <Head title="Login Area" />
+        <div className="min-h-screen w-full relative flex items-center justify-center bg-slate-950 overflow-hidden selection:bg-emerald-500 selection:text-white font-sans">
+            <Head title="Secure Login Area" />
 
-            {/* === BAGIAN KIRI: GAMBAR LATAR (Hidden di HP) === */}
-            <div className="hidden lg:flex w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
-                {/* Background Image */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/assets/bghero.jpg"
-                        alt="Background Office"
-                        className="w-full h-full object-cover opacity-60"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-                </div>
-
-                {/* Content Overlay */}
-                <div className="relative z-10 p-12 text-white max-w-lg">
-                    <div className="mb-8">
-                        <img src="/assets/GKA_no_Tag.png" alt="Logo White" className="h-16 w-auto drop-shadow-lg" />
-                    </div>
-                    <h1 className="text-4xl font-bold mb-4 leading-tight">
-                        Sistem Informasi Manajemen Terintegrasi
-                    </h1>
-                    <p className="text-slate-300 text-lg leading-relaxed">
-                        Kelola administrasi, keuangan, dan operasional PT. Garuda Karya Amanat dengan lebih efisien, transparan, vepat, dan akurat.
-                    </p>
-
-                    <div className="mt-12 flex items-center gap-4 text-sm text-slate-400">
-                        <div className="flex -space-x-2">
-                            <div className="w-8 h-8 rounded-full bg-slate-700 border-2 border-slate-900"></div>
-                            <div className="w-8 h-8 rounded-full bg-slate-600 border-2 border-slate-900"></div>
-                            <div className="w-8 h-8 rounded-full bg-slate-500 border-2 border-slate-900"></div>
-                        </div>
-                        <span>Bergabung dengan tim profesional.</span>
-                    </div>
-                </div>
+            {/* === BACKGROUND AMBIENCE === */}
+            <div className="absolute inset-0 z-0">
+                <img
+                    src="/assets/bghero.jpg"
+                    alt="Background"
+                    className="w-full h-full object-cover opacity-20 mix-blend-luminosity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-slate-950/50 to-slate-950/80"></div>
+                
+                {/* Glowing Orbs */}
+                <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-600/20 rounded-full blur-[100px] animate-pulse mix-blend-screen"></div>
+                <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyan-600/20 rounded-full blur-[100px] animate-pulse delay-1000 mix-blend-screen"></div>
             </div>
 
-            {/* === BAGIAN KANAN: FORM LOGIN === */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-zinc-950">
-                <div className="w-full max-w-md space-y-8">
+            {/* === FLOATING GLASS CARD === */}
+            <div className="relative z-10 w-full max-w-[420px] px-6">
+                <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative overflow-hidden">
+                    {/* Subtle internal top glow */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent blur-sm"></div>
 
-                    {/* Header Mobile Only Logo */}
-                    <div className="text-center lg:text-left">
-                        <img src="/assets/gka_logo.png" alt="Logo Color" className="h-12 w-auto mx-auto lg:mx-0 mb-6 lg:hidden" />
-                        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Selamat Datang Kembali</h2>
-                        <p className="text-slate-500 dark:text-slate-400 mt-2">
-                            Silakan masuk ke akun Anda untuk melanjutkan.
+                    {/* Logo & Header */}
+                    <div className="text-center mb-10">
+                        <img src="/assets/GKA_no_Tag.png" alt="GKA Logo" className="h-14 w-auto mx-auto mb-6 opacity-90 drop-shadow-lg" />
+                        <h2 className="text-2xl font-semibold tracking-tight text-white mb-1">
+                            Welcome Back
+                        </h2>
+                        <p className="text-slate-400 text-sm font-light">
+                            Enter your credentials to access the workspace.
                         </p>
                     </div>
 
                     {status && (
-                        <div className="bg-emerald-50 text-emerald-600 p-4 rounded-lg text-sm border border-emerald-200">
+                        <div className="bg-emerald-500/10 text-emerald-400 p-3 rounded-xl text-sm border border-emerald-500/20 mb-6 text-center font-medium backdrop-blur-md">
                             {status}
                         </div>
                     )}
 
                     <form onSubmit={submit} className="space-y-6">
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email">E-mail</Label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                        
+                        {/* Email Input */}
+                        <div className="space-y-2.5">
+                            <Label htmlFor="email" className="text-slate-300 text-xs font-semibold tracking-wide uppercase">E-mail Address</Label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                                 <Input
                                     id="email"
                                     type="email"
-                                    className="pl-10 h-11 bg-slate-50 dark:bg-accent border-slate-200focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
-                                    placeholder="nama@garudakarya.com"
+                                    className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder-slate-600 rounded-xl focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-light"
+                                    placeholder="name@garudakarya.com"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     required
@@ -115,21 +99,22 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             <InputError message={errors.email} />
                         </div>
 
-                        <div className="space-y-2">
+                        {/* Password Input */}
+                        <div className="space-y-2.5">
                             <div className="flex justify-between items-center">
-                                <Label htmlFor="password">Kata Sandi</Label>
+                                <Label htmlFor="password" className="text-slate-300 text-xs font-semibold tracking-wide uppercase">Password</Label>
                                 {canResetPassword && (
-                                    <a href={route('password.request')} className="text-xs font-medium text-yellow-600 hover:text-yellow-700 hover:underline">
-                                        Lupa kata sandi?
+                                    <a href={route('password.request')} className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
+                                        Forgot?
                                     </a>
                                 )}
                             </div>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                            <div className="relative group">
+                                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                                 <Input
                                     id="password"
                                     type="password"
-                                    className="pl-10 h-11 bg-slate-50 dark:bg-accent border-slate-200 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                                    className="pl-10 h-12 bg-white/5 border-white/10 text-white placeholder-slate-600 rounded-xl focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-light"
                                     placeholder="••••••••"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
@@ -139,34 +124,39 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             <InputError message={errors.password} />
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        {/* Remember Me */}
+                        <div className="flex items-center space-x-3 pt-1">
                             <Checkbox
                                 id="remember"
                                 checked={data.remember}
                                 onCheckedChange={(checked) => setData('remember', checked as boolean)}
-                                className="border-slate-300 text-yellow-500 focus:ring-yellow-500"
+                                className="border-slate-500 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 rounded-[4px]"
                             />
-                            <Label htmlFor="remember" className="text-sm font-medium text-slate-600 cursor-pointer">Ingat saya di perangkat ini</Label>
+                            <Label htmlFor="remember" className="text-sm font-light text-slate-400 cursor-pointer">Keep me logged in</Label>
                         </div>
 
+                        {/* Submit Button */}
                         <Button
                             type="submit"
-                            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg hover:shadow-xl"
+                            className="w-full h-12 mt-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
                             disabled={processing}
                         >
                             {processing ? (
                                 <LoaderCircle className="h-5 w-5 animate-spin" />
                             ) : (
                                 <>
-                                    Masuk Sekarang <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </>
                             )}
                         </Button>
                     </form>
 
-                    <p className="text-center text-xs text-slate-400 mt-8">
-                        &copy; {new Date().getFullYear()} PT. Garuda Karya Amanat. <br/>All rights reserved.
-                    </p>
+                    <div className="mt-8 text-center border-t border-white/5 pt-6">
+                        <p className="text-[11px] text-slate-500 font-light">
+                            Secured Internal System<br/>
+                            &copy; {new Date().getFullYear()} PT. Garuda Karya Amanat
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

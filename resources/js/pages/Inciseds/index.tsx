@@ -64,7 +64,9 @@ interface PageProps {
     };
     filter?: { search?: string; time_period?: string; month?: string; year?: string; per_page?: string; start_date?: string; end_date?: string; };
     totalKebunA: number;
+    totalKebunA_keping: number;
     totalKebunB: number;
+    totalKebunB_keping: number;
     mostProductiveIncisor?: { name: string; total_qty_kg: number; };
 }
 
@@ -79,7 +81,7 @@ const StatCard = ({ icon: Icon, title, value, subtitle, gradient }: any) => (
     </div>
 );
 
-export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebunB, mostProductiveIncisor }: PageProps) {
+export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebunA_keping, totalKebunB, totalKebunB_keping, mostProductiveIncisor }: PageProps) {
     const { processing, delete: destroy } = useForm();
 
     const [searchValue, setSearchValue] = useState(filter?.search || '');
@@ -136,8 +138,8 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            const unpaidIds = inciseds.data.filter(item => item.payment_status !== 'paid').map(item => item.id);
-            setSelectedIds(unpaidIds);
+            const allIds = inciseds.data.map(item => item.id);
+            setSelectedIds(allIds);
         } else {
             setSelectedIds([]);
         }
@@ -212,12 +214,12 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
 
             {can('incised.view') && (
                 <>
-                    <div className="min-h-screen bg-gray-50/50 dark:bg-black p-4 md:p-8 pb-24">
+                    <div className="min-h-screen bg-transparent p-4 md:p-8 pb-24">
                         <div className="flex justify-between items-center mb-6">
                             <Heading title="Data Hasil Toreh" description="Rekapitulasi hasil kerja harian penoreh." />
                             {can('incised.create') && (
                                 <Link href={route('inciseds.create')}>
-                                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all hover:-translate-y-0.5">
+                                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
                                         <CirclePlus className="w-4 h-4 mr-2" /> Input Data Baru
                                     </Button>
                                 </Link>
@@ -225,22 +227,22 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <StatCard icon={FaSeedling} title="Total Karet" value={`${totalKebunA + totalKebunB} Kg`} subtitle="Akumulasi Temadu & Sebayar" gradient="from-amber-500 to-orange-600" />
-                            <StatCard icon={FaSeedling} title="Kebun Temadu" value={`${totalKebunA} Kg`} subtitle="Total Produksi Periode Ini" gradient="from-emerald-500 to-teal-600" />
-                            <StatCard icon={FaSeedling} title="Kebun Sebayar" value={`${totalKebunB} Kg`} subtitle="Total Produksi Periode Ini" gradient="from-blue-500 to-indigo-600" />
+                            <StatCard icon={FaSeedling} title="Total Karet" value={`${totalKebunA + totalKebunB} Kg`} subtitle={`${totalKebunA_keping + totalKebunB_keping} Keping - Akumulasi Temadu & Sebayar`} gradient="from-amber-500 to-orange-600" />
+                            <StatCard icon={FaSeedling} title="Kebun Temadu" value={`${totalKebunA} Kg`} subtitle={`${totalKebunA_keping} Keping - Total Produksi Periode Ini`} gradient="from-emerald-500 to-teal-600" />
+                            <StatCard icon={FaSeedling} title="Kebun Sebayar" value={`${totalKebunB} Kg`} subtitle={`${totalKebunB_keping} Keping - Total Produksi Periode Ini`} gradient="from-blue-500 to-indigo-600" />
                             <StatCard icon={FaUserFriends} title="Top Penoreh" value={mostProductiveIncisor?.name || 'N/A'} subtitle={`Produktivitas: ${(mostProductiveIncisor?.total_qty_kg || 0).toFixed(0)} Kg`} gradient="from-violet-500 to-purple-600" />
                         </div>
 
-                        <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm p-6 relative">
+                        <div className="glass-panel p-6 relative">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                                 <div className='flex flex-col gap-4 w-full md:w-auto'>
                                     <div className='relative w-full md:w-[300px]'>
-                                        <Search className="text-gray-400 absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                                        <Input placeholder="Cari Penoreh..." value={searchValue} onChange={(e) => setSearchValue(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && performSearch()} className="pl-10 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700" />
+                                        <Search className="text-slate-400 absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                                        <Input placeholder="Cari Penoreh..." value={searchValue} onChange={(e) => setSearchValue(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && performSearch()} className="pl-10 bg-white/50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700" />
                                     </div>
                                     <div className="flex gap-2 flex-wrap items-center">
                                         <Select value={timePeriod} onValueChange={(v) => { setTimePeriod(v); if (v !== 'specific-month' && v !== 'custom') applyFilters({ search: searchValue, time_period: v, per_page: perPage }); }}>
-                                            <SelectTrigger className="w-[160px] bg-gray-50 dark:bg-zinc-800"><SelectValue placeholder="Periode" /></SelectTrigger>
+                                            <SelectTrigger className="w-[160px] bg-white/50 dark:bg-zinc-800/50"><SelectValue placeholder="Periode" /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all-time">Semua Data</SelectItem>
                                                 <SelectItem value="today">Hari Ini</SelectItem>
@@ -261,7 +263,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                         value={startDate}
                                                         onChange={(e) => setStartDate(e.target.value)}
                                                         onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                                                        className="pl-9 h-9 w-[140px] text-xs bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 focus:ring-indigo-500 rounded-md cursor-pointer"
+                                                        className="pl-9 h-9 w-[140px] text-xs bg-white/50 dark:bg-zinc-800/50 border-slate-300 dark:border-zinc-700 focus:ring-emerald-500 rounded-md cursor-pointer"
                                                     />
                                                 </div>
                                                 <span className="text-gray-400 font-medium text-xs">s/d</span>
@@ -274,10 +276,10 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                         value={endDate}
                                                         onChange={(e) => setEndDate(e.target.value)}
                                                         onClick={(e) => (e.target as HTMLInputElement).showPicker()}
-                                                        className="pl-9 h-9 w-[140px] text-xs bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-700 focus:ring-indigo-500 rounded-md cursor-pointer"
+                                                        className="pl-9 h-9 w-[140px] text-xs bg-white/50 dark:bg-zinc-800/50 border-slate-300 dark:border-zinc-700 focus:ring-emerald-500 rounded-md cursor-pointer"
                                                     />
                                                 </div>
-                                                <Button size="sm" onClick={performSearch} className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm font-medium text-xs">
+                                                <Button size="sm" onClick={performSearch} className="h-9 px-4 bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm font-medium text-xs border-0">
                                                     Terapkan
                                                 </Button>
                                             </div>
@@ -286,11 +288,11 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                         {timePeriod === 'specific-month' && (
                                             <>
                                                 <Select value={specificMonth} onValueChange={(v) => { setSpecificMonth(v); applyFilters({ search: searchValue, time_period: timePeriod, month: v, year: specificYear, per_page: perPage }); }}>
-                                                    <SelectTrigger className="w-[120px] bg-gray-50"><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="w-[120px] bg-white/50"><SelectValue /></SelectTrigger>
                                                     <SelectContent>{monthOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                                 <Select value={specificYear} onValueChange={(v) => { setSpecificYear(v); applyFilters({ search: searchValue, time_period: timePeriod, month: specificMonth, year: v, per_page: perPage }); }}>
-                                                    <SelectTrigger className="w-[100px] bg-gray-50"><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="w-[100px] bg-white/50"><SelectValue /></SelectTrigger>
                                                     <SelectContent>{yearOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                             </>
@@ -312,14 +314,16 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                         <TableHeader className="bg-gray-50 dark:bg-zinc-800">
                                             <TableRow>
                                                 <TableHead className="w-10 text-center">
-                                                    <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onChange={(e) => handleSelectAll(e.target.checked)} checked={inciseds.data.length > 0 && selectedIds.length === inciseds.data.filter(i => i.payment_status !== 'paid').length && selectedIds.length > 0} />
+                                                    <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onChange={(e) => handleSelectAll(e.target.checked)} checked={inciseds.data.length > 0 && selectedIds.length === inciseds.data.length} />
                                                 </TableHead>
                                                 <TableHead className="font-semibold">Tanggal</TableHead>
                                                 <TableHead className="font-semibold">Penoreh (Invoice)</TableHead>
                                                 <TableHead className="font-semibold">Lokasi Kebun</TableHead>
                                                 <TableHead className="text-right font-semibold">Hasil (Kg)</TableHead>
                                                 <TableHead className="text-right font-semibold">Keping</TableHead>
+                                                <TableHead className="text-right font-semibold">Harga Satuan</TableHead>
                                                 <TableHead className="text-right font-semibold">Amount</TableHead>
+                                                <TableHead className="text-right font-semibold">Terima (Rp)</TableHead>
                                                 <TableHead className="text-center font-semibold">Status / Aksi</TableHead>
                                             </TableRow>
                                         </TableHeader>
@@ -328,13 +332,17 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                                                 const isPaid = incised.payment_status === 'paid';
                                                 return (
                                                     <TableRow key={incised.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.includes(incised.id) ? 'bg-indigo-50/50' : ''}`}>
-                                                        <TableCell className="text-center">{!isPaid && (<input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" checked={selectedIds.includes(incised.id)} onChange={(e) => handleSelectOne(incised.id, e.target.checked)} />)}</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" checked={selectedIds.includes(incised.id)} onChange={(e) => handleSelectOne(incised.id, e.target.checked)} />
+                                                        </TableCell>
                                                         <TableCell className="font-medium">{new Date(incised.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</TableCell>
                                                         <TableCell><Link href={route('inciseds.show', incised.id)} className="group cursor-pointer"><div className="flex flex-col"><span className="font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 transition-colors">{incised.incisor_name || 'Tanpa Nama'}</span><span className="text-xs text-gray-500 font-mono group-hover:underline">{incised.no_invoice}</span></div></Link></TableCell>
                                                         <TableCell><Badge variant="outline" className={incised.lok_kebun.toLowerCase().includes('temadu') ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-blue-700 border-blue-200"}>{incised.lok_kebun}</Badge></TableCell>
                                                         <TableCell className="text-right font-bold text-gray-700 dark:text-gray-300">{incised.qty_kg}</TableCell>
                                                         <TableCell className="text-right">{incised.keping}</TableCell>
+                                                        <TableCell className="text-right">{formatRupiah(incised.price_qty)}</TableCell>
                                                         <TableCell className="text-right">{formatRupiah(incised.amount)}</TableCell>
+                                                        <TableCell className="text-right">{formatRupiah(incised.net_received ?? incised.amount)}</TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center justify-center gap-1">
                                                                 <Link href={route('inciseds.show', incised.id)}><Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50"><Eye className="h-4 w-4" /></Button></Link>
@@ -369,12 +377,25 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 z-50 animate-in slide-in-from-bottom-5">
                             <span className="font-medium text-sm">{selectedIds.length} Data Terpilih</span>
                             <div className="h-4 w-[1px] bg-slate-700"></div>
-                            <Button
-                                onClick={openBulkPayConfirm}
-                                className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-full h-8 text-xs font-bold"
+                            
+                            {inciseds.data.some(i => selectedIds.includes(i.id) && i.payment_status !== 'paid') && (
+                                <Button
+                                    onClick={openBulkPayConfirm}
+                                    className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-full h-8 text-xs font-bold"
+                                >
+                                    <Wallet className="w-3.5 h-3.5 mr-2" /> Bayar
+                                </Button>
+                            )}
+
+                            <a 
+                                href={route('inciseds.bulkPrint', { ids: selectedIds.join(',') })} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
                             >
-                                <Wallet className="w-3.5 h-3.5 mr-2" /> Bayar ({selectedIds.length}) Item
-                            </Button>
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full h-8 text-xs font-bold">
+                                    <Printer className="w-3.5 h-3.5 mr-2" /> Cetak Invoice
+                                </Button>
+                            </a>
                             <button onClick={() => setSelectedIds([])} className="text-slate-400 hover:text-white transition-colors"><span className="sr-only">Batal</span><X className="w-4 h-4" /></button>
                         </div>
                     )}

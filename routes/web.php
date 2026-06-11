@@ -163,7 +163,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payroll/generate', [PayrollController::class, 'generate'])->name('payroll.generate')->middleware("permission:payroll.create");
     Route::resource('/payroll', PayrollController::class)->except(['destroy'])->middleware("permission:payroll.view");
     Route::get('/payroll/{payroll}/print', [PayrollController::class, 'printSlip'])->name('payroll.print');
-
+    Route::get('/payroll-bulk-print', [PayrollController::class, 'bulkPrint'])->name('payroll.bulk_print');
+    
     Route::resource('payroll', PayrollController::class);
 
     // Requests (Surat)
@@ -214,6 +215,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Inciseds (Hasil Toreh)
     Route::get('/inciseds/print-report', [IncisedController::class, 'printReport'])->name('inciseds.printReport');
+    Route::get('/inciseds-bulk-print', [IncisedController::class, 'bulkPrint'])->name('inciseds.bulkPrint');
+    Route::post('/inciseds/{incised}/update-net', [IncisedController::class, 'updateNetReceived'])->name('inciseds.updateNet');
     Route::get('/inciseds/{incised}/print', [IncisedController::class, 'print'])->name('inciseds.print');
     Route::resource('inciseds', IncisedController::class)->middleware("permission:incised.view");
 

@@ -58,13 +58,13 @@ export default function Print({ kasbons, printDate }: PrintPageProps) {
             </style>
 
             <div className="min-h-screen p-4 sm:p-8">
-                <div className="no-print max-w-4xl mx-auto mb-6 flex justify-between items-center">
-                    <Button variant="outline" onClick={() => window.history.back()}>
+                <div className="no-print max-w-4xl mx-auto mb-6 flex justify-between items-center bg-white/80 dark:bg-black/60 backdrop-blur-md p-4 rounded-xl shadow-sm border border-white/50 dark:border-white/10">
+                    <Button variant="outline" className="bg-white/50 hover:bg-white/80 dark:bg-black/50" onClick={() => window.history.back()}>
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Kembali
                     </Button>
-                    <h1 className="text-xl font-semibold text-gray-700">Pratinjau Cetak</h1>
-                    <Button onClick={handlePrint}>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">Pratinjau Cetak</h1>
+                    <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
                         <Printer className="w-4 h-4 mr-2" />
                         Cetak Laporan
                     </Button>

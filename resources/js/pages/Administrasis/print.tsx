@@ -8,22 +8,30 @@ interface FinancialReport {
     kas: {
         in_penarikan: number; out_lapangan: number; out_kantor: number; out_bpjs: number; out_belikaret: number; out_kasbon_pegawai: number; out_kasbon_penoreh: number; total_in: number; total_out: number; balance: number;
     };
-    profit_loss: { revenue_karet: number; revenue_lain: number; revenue_total: number; cogs: number; gross_profit: number; opex_gaji: number; opex_lapangan: number; opex_kantor: number; opex_bpjs: number; opex_kapal_truck: number; opex_lainnya: number; opex_total: number; net_profit: number; };
+    profit_loss: { revenue_karet: number; revenue_lain: number; revenue_total: number; cogs: number; gross_profit: number; opex_gaji: number; opex_lapangan: number; opex_kantor: number; opex_bpjs: number; opex_kapal_truck: number; opex_lainnya: number; opex_total: number; net_profit: number; kasbon_keluar_period: number; };
     neraca: { assets: { kas_period: number; bank_period: number; piutang: number; inventory_value: number; total_aktiva?: number; }; liabilities: { hutang_dagang: number; } }
+}
+
+interface TransactionData {
+    id: number; type: 'income' | 'expense'; source: 'cash' | 'bank';
+    category: string; description: string | null; amount: number;
+    transaction_date: string; transaction_code: string; transaction_number: string;
+    db_cr: 'debit' | 'credit'; counterparty: string;
 }
 
 interface PageProps {
     summary: { reports: FinancialReport };
-    printType: 'all' | 'bank' | 'kas' | 'profit_loss' | 'neraca';
+    printType: 'all' | 'bank' | 'kas' | 'profit_loss' | 'neraca' | 'jurnal';
     currentMonth: number;
     currentYear: number;
     current_filter?: any;
     profitLossPeriods?: any[];
+    jurnal_transactions?: TransactionData[];
 }
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
-const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filter, profitLossPeriods }: PageProps) => {
+const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filter, profitLossPeriods, jurnal_transactions }: PageProps) => {
 
     useEffect(() => {
         setTimeout(() => window.print(), 500);
@@ -259,6 +267,16 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                 </td>
                                             ))}
                                         </tr>
+                                        <tr><td colSpan={profitLossPeriods.length + 1} className="py-2"></td></tr>
+                                        <tr className="border-t border-gray-400 font-bold bg-gray-100">
+                                            <td colSpan={profitLossPeriods.length + 1} className="py-1 pl-2 text-[11px] uppercase text-gray-700">INFORMASI TAMBAHAN (NON-P&L)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Total Uang Kasbon Keluar</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-amber-700">{formatCurrency(p.kasbon_keluar_period)}</td>
+                                            ))}
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -332,6 +350,14 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                         <span>{formatCurrency(summary.reports.profit_loss.net_profit)}</span>
                                     </div>
                                 </div>
+                                
+                                <h3 className="font-bold text-[11px] uppercase mt-5 mb-2 border-b border-gray-300 pb-1 text-gray-600 bg-gray-100 px-1">INFORMASI TAMBAHAN (NON-P&L)</h3>
+                                <div className="space-y-1 text-[12px]">
+                                    <div className="flex justify-between">
+                                        <span>Total Uang Kasbon Keluar</span>
+                                        <span className="text-amber-700">{formatCurrency(summary.reports.profit_loss.kasbon_keluar_period)}</span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </section>
@@ -368,6 +394,76 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                         (summary.reports.neraca.assets.kas_period +
                                          summary.reports.neraca.assets.bank_period +
                                          summary.reports.neraca.assets.piutang))}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+                {/* 5. JURNAL */}
+                {(printType === 'all' || printType === 'jurnal') && jurnal_transactions && (
+                    <section className="break-inside-avoid mt-8">
+                        <Header title="Buku Jurnal Umum" />
+                        <div className="border border-gray-400 p-4 rounded mt-4">
+                            <table className="w-full text-[11px] border-collapse">
+                                <thead className="border-y-2 border-black bg-gray-100">
+                                    <tr>
+                                        <th className="p-2 text-left w-24">TANGGAL</th>
+                                        <th className="p-2 text-left">NO. TRX</th>
+                                        <th className="p-2 text-left">KETERANGAN / KATEGORI</th>
+                                        <th className="p-2 text-left">RELA/PARTY</th>
+                                        <th className="p-2 text-right w-28">DEBIT (Rp)</th>
+                                        <th className="p-2 text-right w-28">KREDIT (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {jurnal_transactions.map((trx, i) => (
+                                        <tr key={i} className="border-b border-dashed border-gray-300">
+                                            <td className="p-2">{new Date(trx.transaction_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                                            <td className="p-2 font-mono">{trx.transaction_code}-{trx.transaction_number}</td>
+                                            <td className="p-2">
+                                                <div className="font-bold">{trx.category}</div>
+                                                {trx.description && <div className="text-[10px] text-gray-600 mt-1 italic">{trx.description}</div>}
+                                            </td>
+                                            <td className="p-2 text-gray-700">{trx.counterparty || '-'}</td>
+                                            <td className="p-2 text-right text-emerald-600">{trx.type === 'income' ? formatCurrency(trx.amount) : '-'}</td>
+                                            <td className="p-2 text-right text-red-600">{trx.type === 'expense' ? formatCurrency(trx.amount) : '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                <tfoot className="border-t-2 border-black bg-gray-100 font-bold">
+                                    <tr>
+                                        <td colSpan={4} className="p-2 text-right">TOTAL MUTASI JURNAL:</td>
+                                        <td className="p-2 text-right text-emerald-700">
+                                            {formatCurrency(jurnal_transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0))}
+                                        </td>
+                                        <td className="p-2 text-right text-red-700">
+                                            {formatCurrency(jurnal_transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0))}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <div className="mt-6 pt-4 border-t-2 border-black">
+                                <h3 className="font-bold text-[13px] mb-3 border-b border-gray-300 pb-1 uppercase">Rekapitulasi Akhir Periode & Kondisi Keuangan</h3>
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div className="border border-gray-300 p-3 rounded bg-gray-50">
+                                        <h4 className="font-bold text-[11px] text-gray-600 uppercase mb-2">Likuiditas Kas Tunai</h4>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Total Pemasukan Kas</span><span>{formatCurrency(summary.reports.kas.total_in)}</span></div>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Total Pengeluaran Kas</span><span>({formatCurrency(summary.reports.kas.total_out)})</span></div>
+                                        <div className="flex justify-between text-[12px] font-bold mt-2 pt-2 border-t border-gray-300"><span>Saldo Kas Akhir</span><span>{formatCurrency(summary.reports.kas.balance)}</span></div>
+                                    </div>
+                                    <div className="border border-gray-300 p-3 rounded bg-gray-50">
+                                        <h4 className="font-bold text-[11px] text-gray-600 uppercase mb-2">Likuiditas Bank</h4>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Total Pemasukan Bank</span><span>{formatCurrency(summary.reports.bank.total_in)}</span></div>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Total Pengeluaran Bank</span><span>({formatCurrency(summary.reports.bank.total_out)})</span></div>
+                                        <div className="flex justify-between text-[12px] font-bold mt-2 pt-2 border-t border-gray-300"><span>Saldo Bank Akhir</span><span>{formatCurrency(summary.reports.bank.balance)}</span></div>
+                                    </div>
+                                    <div className="border border-gray-300 p-3 rounded bg-gray-50">
+                                        <h4 className="font-bold text-[11px] text-gray-600 uppercase mb-2">Performa Laba Rugi</h4>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Laba Kotor</span><span>{formatCurrency(summary.reports.profit_loss.gross_profit)}</span></div>
+                                        <div className="flex justify-between text-[11px] mb-1"><span>Beban Operasional</span><span>({formatCurrency(summary.reports.profit_loss.opex_total)})</span></div>
+                                        <div className="flex justify-between text-[12px] font-bold mt-2 pt-2 border-t border-gray-300"><span>Laba Bersih</span><span className={summary.reports.profit_loss.net_profit < 0 ? 'text-red-600' : 'text-emerald-600'}>{formatCurrency(summary.reports.profit_loss.net_profit)}</span></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

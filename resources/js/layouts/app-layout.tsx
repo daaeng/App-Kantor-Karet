@@ -10,7 +10,13 @@ interface AppLayoutProps {
 
 export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => (
     <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
-        {children}
-        <Toaster />
+        <div className="relative z-0">
+            {children}
+        </div>
+        <Toaster 
+            toastOptions={{ 
+                className: 'glass-panel border border-emerald-500/20 text-slate-800 dark:text-white backdrop-blur-xl',
+            }} 
+        />
     </AppLayoutTemplate>
 );

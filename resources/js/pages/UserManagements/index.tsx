@@ -141,7 +141,7 @@ export default function Index({ usermanagements, flash, filter }: PageProps) {
                     {can('usermanagements.create') && (
                         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                             <Link href={route('usermanagements.create')}>
-                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
+                                <Button className="bg-emerald-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
                                     <CirclePlus className="mr-2 h-4 w-4" />
                                     Add New User
                                 </Button>
@@ -239,7 +239,7 @@ export default function Index({ usermanagements, flash, filter }: PageProps) {
                                                         {can('usermanagements.view') && (
                                                             <Link
                                                                 href={route('usermanagements.show', user.id)}
-                                                                className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                                                className="text-gray-400 hover:text-emerald-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                                                             >
                                                                 <Eye className="h-4 w-4" />
                                                             </Link>
@@ -286,3 +286,4 @@ export default function Index({ usermanagements, flash, filter }: PageProps) {
         </AppLayout>
     );
 }
+

@@ -20,6 +20,7 @@ interface Incised {
     keping: number;
     kualitas: string;
     incisor?: Incisor;
+    sisa_kasbon?: number;
 }
 
 // --- Helpers ---
@@ -116,6 +117,12 @@ export default function PrintIncised({ incised }: { incised: Incised }) {
                     <span className="font-bold text-base">TOTAL DITERIMA</span>
                     <span className="font-bold text-xl">{formatCurrency(incised.amount)}</span>
                 </div>
+                {incised.sisa_kasbon !== undefined && incised.sisa_kasbon > 0 && (
+                    <div className="bg-red-50 border-t border-black p-2 flex justify-between items-center text-red-600">
+                        <span className="font-bold text-sm">SISA KASBON</span>
+                        <span className="font-bold text-lg">{formatCurrency(incised.sisa_kasbon)}</span>
+                    </div>
+                )}
             </div>
 
             {/* --- CATATAN --- */}
@@ -133,8 +140,8 @@ export default function PrintIncised({ incised }: { incised: Incised }) {
                     <p className="font-bold border-t border-black pt-1">{incised.incisor?.name}</p>
                 </div>
                 <div className="text-center w-1/3">
-                    <p className="text-xs mb-16">Diterima Oleh,</p>
-                    <p className="font-bold border-t border-black pt-1">Admin Gudang</p>
+                    <p className="text-xs mb-16">Mengetahui,</p>
+                    <p className="font-bold border-t border-black pt-1">Bagian Keuangan</p>
                 </div>
             </div>
 

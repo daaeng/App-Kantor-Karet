@@ -111,7 +111,7 @@ export default function Index({ notas, flash, filter, totalPendingNotas, totalAp
                     href={link.url || '#'}
                     className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors duration-200 ${
                         link.active
-                            ? 'bg-indigo-600 text-white shadow-md'
+                            ? 'bg-emerald-600 text-white shadow-md'
                             : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                     } ${!link.url ? 'text-gray-400 cursor-not-allowed opacity-50' : ''}`}
                     dangerouslySetInnerHTML={{ __html: link.label }}
@@ -140,7 +140,7 @@ export default function Index({ notas, flash, filter, totalPendingNotas, totalAp
                         <h2 className="text-xl font-bold">Laporan Nota</h2>
                         {can('notas.create') && (
                             <Link href={route('notas.up_nota')}>
-                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
+                                <Button className="bg-emerald-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all duration-300 transform hover:scale-105 w-full sm:w-auto mt-2 sm:mt-0">
                                     <CirclePlus className="w-5 h-5 mr-2" />
                                     Upload Nota Baru
                                 </Button>
@@ -226,3 +226,4 @@ export default function Index({ notas, flash, filter, totalPendingNotas, totalAp
         </AppLayout>
     );
 }
+

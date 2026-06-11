@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import {
     ArrowLeft, Printer, Wallet, CheckCircle2,
     Calendar, User, MapPin, Package, Tag, Scale,
-    AlertCircle, FileText, Calculator
+    AlertCircle, FileText, Calculator, Pencil, Check, X
 } from 'lucide-react';
 
 // --- Interfaces sesuai data dari Controller ---
@@ -75,6 +75,15 @@ export default function Show({ incised }: PageProps) {
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const [isEditingNet, setIsEditingNet] = React.useState(false);
+    const [editNetValue, setEditNetValue] = React.useState(incised.net_received ?? incised.amount);
+
+    const handleSaveNet = () => {
+        router.post(route('inciseds.updateNet', incised.id), { net_received: editNetValue }, {
+            onSuccess: () => setIsEditingNet(false)
+        });
     };
 
     return (
@@ -223,7 +232,7 @@ export default function Show({ incised }: PageProps) {
                                     </div>
 
                                     {/* Bagian Potongan Kasbon (Tampil Merah) */}
-                                    {(isPaid && incised.total_deduction > 0) && (
+                                    {incised.total_deduction > 0 && (
                                         <div className="bg-red-50 dark:bg-red-950/20 p-2 rounded border border-red-100 dark:border-red-900/30 mt-2 animate-in fade-in slide-in-from-top-1">
                                             <div className="flex justify-between items-center text-red-700 dark:text-red-400 font-medium">
                                                 <span className="flex items-center gap-1 text-xs uppercase"><Scale className="w-3 h-3"/> Potong Kasbon</span>
@@ -236,12 +245,40 @@ export default function Show({ incised }: PageProps) {
                                 <Separator className="my-4" />
 
                                 {/* Grand Total (Net Received) */}
-                                <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl text-center shadow-inner">
-                                    <p className="text-[10px] opacity-70 uppercase tracking-widest mb-1">Total Diterima (Net)</p>
-                                    <p className="text-3xl font-extrabold tracking-tight">
-                                        {/* Jika sudah bayar, tampilkan net_received. Jika belum, tampilkan estimasi (amount) */}
-                                        {isPaid ? formatCurrency(incised.net_received) : formatCurrency(incised.amount)}
-                                    </p>
+                                <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl text-center shadow-inner relative group">
+                                    <div className="flex items-center justify-center gap-2 mb-1">
+                                        <p className="text-[10px] opacity-70 uppercase tracking-widest">Total Diterima (Net)</p>
+                                        {!isEditingNet && (
+                                            <button 
+                                                onClick={() => setIsEditingNet(true)} 
+                                                className="opacity-60 hover:opacity-100 transition-opacity bg-slate-700 hover:bg-slate-600 p-1 rounded print:hidden"
+                                                title="Edit Total"
+                                            >
+                                                <Pencil className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    
+                                    {isEditingNet ? (
+                                        <div className="flex items-center justify-center gap-2 mt-2">
+                                            <input 
+                                                type="number" 
+                                                className="w-32 bg-white text-slate-900 text-center font-bold text-lg rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-500"
+                                                value={editNetValue}
+                                                onChange={(e) => setEditNetValue(Number(e.target.value))}
+                                            />
+                                            <button onClick={handleSaveNet} className="bg-emerald-500 hover:bg-emerald-600 p-1.5 rounded text-white shadow-sm">
+                                                <Check className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => setIsEditingNet(false)} className="bg-red-500 hover:bg-red-600 p-1.5 rounded text-white shadow-sm">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-3xl font-extrabold tracking-tight">
+                                            {formatCurrency(incised.net_received ?? incised.amount)}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {isPaid && incised.paid_at && (

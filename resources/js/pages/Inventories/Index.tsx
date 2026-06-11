@@ -133,3 +133,4 @@ export default function Index({ inventories, users }: PageProps<{ inventories: I
     );
 }
 
+

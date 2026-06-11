@@ -212,10 +212,10 @@ export function AppSidebar() {
                                                     asChild
                                                     isActive={isActive}
                                                     tooltip={item.title}
-                                                    className={`transition-all duration-200 ${isActive ? 'font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-400'}`}
+                                                    className={`transition-all duration-300 rounded-xl mb-1 ${isActive ? 'font-medium text-emerald-700 bg-emerald-500/10 dark:bg-emerald-500/20 shadow-sm border border-emerald-500/10' : 'text-slate-800 font-medium hover:bg-slate-100/50 hover:text-emerald-700 dark:text-slate-300'}`}
                                                 >
-                                                    <Link href={item.href}>
-                                                        <item.icon className={isActive ? "text-indigo-600" : ""} />
+                                                    <Link href={item.href} className="flex items-center gap-3">
+                                                        <item.icon className={isActive ? "text-emerald-600 drop-shadow-sm" : ""} strokeWidth={isActive ? 2.5 : 1.5} />
                                                         <span>{item.title}</span>
                                                     </Link>
                                                 </SidebarMenuButton>

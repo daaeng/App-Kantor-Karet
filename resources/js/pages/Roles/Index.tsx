@@ -62,7 +62,7 @@ export default function Index({ roles, flash }: PageProps) {
                     {can('roles.create') && (
                         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                             <Link href={route('roles.create')}>
-                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
+                                <Button className="bg-emerald-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
                                     <CirclePlus className="mr-2 h-4 w-4" />
                                     Add New Role
                                 </Button>
@@ -113,7 +113,7 @@ export default function Index({ roles, flash }: PageProps) {
                                             </td> */}
                                             <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                                    <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-emerald-600 dark:text-indigo-400">
                                                         <Shield className="h-4 w-4" />
                                                     </div>
                                                     <span className="capitalize">{role.name}</span>
@@ -147,7 +147,7 @@ export default function Index({ roles, flash }: PageProps) {
                                                     {can('roles.edit') && (
                                                         <Link 
                                                             href={route('roles.edit', role.id)}
-                                                            className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                                            className="text-gray-400 hover:text-emerald-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                                                             title="Edit Role"
                                                         >
                                                             <Pencil className="h-4 w-4" />

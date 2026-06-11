@@ -92,7 +92,7 @@ export default function Index({ incisors, flash, filter }: PageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Daftar Penoreh" />
-            <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 bg-gray-50 dark:bg-black min-h-screen">
+            <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6 bg-transparent min-h-screen">
                 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -101,7 +101,7 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                     </div>
                     {can('incisor.create') && (
                         <Link href={route('incisors.create')}>
-                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm w-full sm:w-auto">
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] w-full sm:w-auto border-0">
                                 <CirclePlus className="mr-2 h-4 w-4" /> Tambah Penoreh
                             </Button>
                         </Link>
@@ -116,7 +116,7 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                 )}
 
                 {/* Filter Bar */}
-                <div className="flex flex-col lg:flex-row gap-4 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-4 glass-panel p-4">
                     <div className="relative flex-grow">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                         <Input 
@@ -128,7 +128,7 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                     </div>
                     <div className="w-full lg:w-48">
                         <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); handleFilter(searchValue, val); }}>
-                            <SelectTrigger className="bg-gray-50 dark:bg-gray-900 border-0 h-10"><SelectValue placeholder="Status" /></SelectTrigger>
+                            <SelectTrigger className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 h-10"><SelectValue placeholder="Status" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Semua Status</SelectItem>
                                 <SelectItem value="active">🟢 Aktif</SelectItem>
@@ -141,10 +141,10 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                 {/* List Card Rows */}
                 <div className="space-y-3">
                     {incisors.data.length > 0 ? incisors.data.map((item) => (
-                        <div key={item.id} className={`flex flex-col md:flex-row items-center justify-between p-4 rounded-xl border transition-all ${
+                        <div key={item.id} className={`flex flex-col md:flex-row items-center justify-between p-4 glass-card border-none ${
                             item.is_active 
-                                ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700' 
-                                : 'bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 opacity-75 grayscale-[0.8] hover:opacity-100 hover:grayscale-0'
+                                ? '' 
+                                : 'opacity-75 grayscale-[0.8] hover:opacity-100 hover:grayscale-0'
                         }`}>
                             
                             {/* Profil */}
@@ -176,9 +176,9 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                                     <p className="font-mono text-sm font-medium bg-gray-100 dark:bg-gray-700 px-2 rounded dark:text-gray-300">{item.no_invoice}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] uppercase text-gray-400 font-bold">Lokasi</p>
-                                    <p className="text-sm font-semibold flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                                        <MapPin className="w-3 h-3 text-indigo-500"/> {item.lok_toreh}
+                                    <p className="text-[10px] uppercase text-slate-400 font-bold">Lokasi</p>
+                                    <p className="text-sm font-semibold flex items-center gap-1 text-slate-700 dark:text-slate-300">
+                                        <MapPin className="w-3 h-3 text-emerald-500"/> {item.lok_toreh}
                                     </p>
                                 </div>
                             </div>
@@ -186,10 +186,10 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                             {/* Actions */}
                             <div className="flex gap-2 w-full md:w-auto justify-end">
                                 {can('incisor.view') && (
-                                    <Link href={route('incisors.show', item.id)}><Button variant="ghost" size="icon" className="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-gray-400 hover:text-indigo-600"><Eye className="w-4 h-4"/></Button></Link>
+                                    <Link href={route('incisors.show', item.id)}><Button variant="ghost" size="icon" className="hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-400 hover:text-emerald-600"><Eye className="w-4 h-4"/></Button></Link>
                                 )}
                                 {can('incisor.edit') && (
-                                    <Link href={route('incisors.edit', item.id)}><Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 hover:text-blue-600"><Pencil className="w-4 h-4"/></Button></Link>
+                                    <Link href={route('incisors.edit', item.id)}><Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-400 hover:text-blue-600"><Pencil className="w-4 h-4"/></Button></Link>
                                 )}
                                 {can('incisor.delete') && (
                                     <Button variant="ghost" size="icon" className="hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600" onClick={() => handleDelete(item.id, item.name)}><Trash2 className="w-4 h-4"/></Button>
@@ -197,9 +197,9 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                             </div>
                         </div>
                     )) : (
-                        <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
-                            <LayoutList className="w-8 h-8 text-gray-400 mb-2" />
-                            <p className="text-gray-500 dark:text-gray-400 font-medium">Data tidak ditemukan.</p>
+                        <div className="flex flex-col items-center justify-center py-16 glass-panel border border-dashed border-slate-300 dark:border-slate-700">
+                            <LayoutList className="w-8 h-8 text-slate-400 mb-2" />
+                            <p className="text-slate-500 dark:text-slate-400 font-medium">Data tidak ditemukan.</p>
                         </div>
                     )}
                 </div>

@@ -105,6 +105,25 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
     const [status, setStatus] = useState(filters.status || 'all');
     const searchRef = useRef<NodeJS.Timeout | null>(null);
 
+    // --- SELECTION STATES ---
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+    useEffect(() => {
+        setSelectedIds([]); // Clear selection when payrolls data changes
+    }, [payrolls]);
+
+    const toggleSelection = (id: number) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+
+    const toggleAll = () => {
+        if (selectedIds.length === payrolls.data.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(payrolls.data.map((p: any) => p.id));
+        }
+    };
+
     const applyFilter = (m: string, y: string, s: string, st: string) => {
         router.get(route('payroll.index'), { month: m, year: y, search: s, status: st }, { preserveState: true, replace: true });
     };
@@ -231,23 +250,46 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
         <AppLayout breadcrumbs={[{ title: 'Data Penggajian', href: route('payroll.index') }]}>
             <Head title="Manajemen Penggajian" />
 
-            <div className="p-4 md:p-8 bg-slate-50/50 dark:bg-[#09090b] min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100 selection:bg-indigo-100 selection:text-indigo-900">
+            <div className="p-4 md:p-8 bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100 selection:bg-emerald-100 selection:text-emerald-900">
 
                 {/* --- HEADER --- */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                      <div>
                         <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">Daftar Penggajian</span>
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400">Daftar Penggajian</span>
                             <Sparkles className="w-6 h-6 text-amber-400" />
                         </h1>
                         <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">Kelola slip gaji, proses pembayaran, dan histori payroll karyawan.</p>
                     </div>
                     {can('payroll.create') && (
-                        <Link href={route('payroll.create')}>
-                            <Button className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 rounded-xl px-6 h-10 font-medium border-0 flex items-center gap-2">
-                                <PlusCircle className="w-4 h-4" /> Generate Gaji Baru
-                            </Button>
-                        </Link>
+                        <div className="flex gap-2">
+                            {can('payroll.print') && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 hover:text-emerald-800 shadow-sm rounded-xl px-4 h-10 font-medium flex items-center gap-2">
+                                            <Printer className="w-4 h-4" /> Cetak Masal
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
+                                        <DropdownMenuItem asChild>
+                                            <a href={route('payroll.bulk_print', { type: 'slip', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
+                                                <FileText className="w-4 h-4 mr-2 text-indigo-500" /> Cetak Semua Slip
+                                            </a>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <a href={route('payroll.bulk_print', { type: 'receipt', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
+                                                <Users className="w-4 h-4 mr-2 text-teal-500" /> Cetak Tanda Terima
+                                            </a>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+                            <Link href={route('payroll.create')}>
+                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 rounded-xl px-6 h-10 font-medium border-0 flex items-center gap-2">
+                                    <PlusCircle className="w-4 h-4" /> Generate Gaji Baru
+                                </Button>
+                            </Link>
+                        </div>
                     )}
                 </div>
 
@@ -283,9 +325,34 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                     <StatCard icon={FileText} title="Masih Draft" value={summary.totalDraft} gradient="from-amber-400 to-orange-500" iconColor="text-orange-500" />
                 </div>
 
+                {/* --- SELECTION ACTIONS --- */}
+                {selectedIds.length > 0 && (
+                    <div className="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-xl p-3 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300 font-bold px-3 py-1 rounded-lg text-sm">
+                                {selectedIds.length} Terpilih
+                            </div>
+                            <span className="text-sm text-indigo-700/80 dark:text-indigo-300/80 font-medium">Tindakan pada data terpilih:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Button asChild size="sm" variant="outline" className="h-9 bg-white dark:bg-zinc-900 border-indigo-200 hover:bg-indigo-100 text-indigo-700">
+                                <a href={route('payroll.bulk_print', { type: 'slip', ids: selectedIds.join(',') })} target="_blank" rel="noopener noreferrer">
+                                    <FileText className="w-4 h-4 mr-1.5" /> Cetak Slip Terpilih
+                                </a>
+                            </Button>
+                            <Button asChild size="sm" className="h-9 bg-indigo-600 hover:bg-indigo-700 text-white border-0">
+                                <a href={route('payroll.bulk_print', { type: 'receipt', ids: selectedIds.join(',') })} target="_blank" rel="noopener noreferrer">
+                                    <Users className="w-4 h-4 mr-1.5" /> Cetak Tanda Terima
+                                </a>
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])} className="h-9 text-slate-500">Batal</Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* --- TABLE MAIN --- */}
-                <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
-                    <div className="bg-gray-50/50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800 p-5">
+                <div className="glass-panel overflow-hidden">
+                    <div className="bg-white/50 dark:bg-zinc-800/50 border-b border-slate-100 dark:border-zinc-800 p-5">
                          <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
                              <div>
                                  <h3 className="text-xl font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
@@ -311,10 +378,10 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                 
                                 <div className="relative w-full md:w-[250px] group">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input placeholder="Cari nama pegawai..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-10 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm shadow-sm" />
+                                    <Input placeholder="Cari nama pegawai..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-sm shadow-sm" />
                                 </div>
                                 <Select value={status} onValueChange={handleStatusChange}>
-                                    <SelectTrigger className="w-full md:w-[150px] h-10 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm shadow-sm">
+                                    <SelectTrigger className="w-full md:w-[150px] h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-sm shadow-sm">
                                         <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-400" /><SelectValue placeholder="Status" /></div>
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -331,7 +398,13 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
-                                    <TableHead className="pl-6 font-semibold text-gray-700 dark:text-gray-300 h-12">Periode</TableHead>
+                                    <TableHead className="w-12 pl-6">
+                                        <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                            checked={payrolls.data.length > 0 && selectedIds.length === payrolls.data.length}
+                                            onChange={toggleAll}
+                                        />
+                                    </TableHead>
+                                    <TableHead className="font-semibold text-gray-700 dark:text-gray-300 h-12">Periode</TableHead>
                                     <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Pegawai</TableHead>
                                     <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Pendapatan</TableHead>
                                     <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Potongan</TableHead>
@@ -344,7 +417,13 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                 {payrolls.data.length > 0 ? (
                                     payrolls.data.map((payroll: any) => (
                                         <TableRow key={payroll.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <TableCell className="pl-6 py-4 font-mono text-sm font-semibold text-slate-500">{payroll.payroll_period}</TableCell>
+                                            <TableCell className="pl-6">
+                                                <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                    checked={selectedIds.includes(payroll.id)}
+                                                    onChange={() => toggleSelection(payroll.id)}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="py-4 font-mono text-sm font-semibold text-slate-500">{payroll.payroll_period}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${getAvatarColor(payroll.employee?.name || '')}`}>

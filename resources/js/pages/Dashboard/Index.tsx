@@ -71,36 +71,36 @@ const formatCompactNumber = (number: number) => {
 // --- Component StatCard ---
 const StatCard = ({ icon: Icon, title, value, subtitle, color }: any) => {
     const themes: any = {
-        emerald: { bg: "hover:border-emerald-500/50", icon: "bg-emerald-500", text: "text-emerald-500" },
-        blue: { bg: "hover:border-blue-500/50", icon: "bg-blue-500", text: "text-blue-500" },
-        rose: { bg: "hover:border-rose-500/50", icon: "bg-rose-500", text: "text-rose-500" },
-        amber: { bg: "hover:border-amber-500/50", icon: "bg-amber-500", text: "text-amber-500" },
-        violet: { bg: "hover:border-violet-500/50", icon: "bg-violet-500", text: "text-violet-500" },
-        pink: { bg: "hover:border-pink-500/50", icon: "bg-pink-500", text: "text-pink-500" },
-        orange: { bg: "hover:border-orange-500/50", icon: "bg-orange-500", text: "text-orange-500" },
-        indigo: { bg: "hover:border-indigo-500/50", icon: "bg-indigo-500", text: "text-indigo-500" },
+        emerald: { bg: "hover:border-emerald-500/50", icon: "bg-emerald-500/10", text: "text-emerald-500" },
+        blue: { bg: "hover:border-blue-500/50", icon: "bg-blue-500/10", text: "text-blue-500" },
+        rose: { bg: "hover:border-rose-500/50", icon: "bg-rose-500/10", text: "text-rose-500" },
+        amber: { bg: "hover:border-amber-500/50", icon: "bg-amber-500/10", text: "text-amber-500" },
+        violet: { bg: "hover:border-violet-500/50", icon: "bg-violet-500/10", text: "text-violet-500" },
+        pink: { bg: "hover:border-pink-500/50", icon: "bg-pink-500/10", text: "text-pink-500" },
+        orange: { bg: "hover:border-orange-500/50", icon: "bg-orange-500/10", text: "text-orange-500" },
+        indigo: { bg: "hover:border-indigo-500/50", icon: "bg-indigo-500/10", text: "text-indigo-500" },
     };
 
     const t = themes[color] || themes.blue;
 
     return (
-        <div className={`relative group rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 transition-all duration-300 ${t.bg} hover:shadow-lg`}>
+        <div className={`relative group glass-card transition-all duration-500 border-l-4 ${t.bg.replace('hover:border-', 'border-').replace('/50', '')}`}>
             <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                    <div className={`p-3 rounded-xl ${t.icon} text-white shadow-md`}>
-                        <Icon className="w-6 h-6" />
+                    <div className={`p-3 rounded-2xl ${t.icon} shadow-inner drop-shadow-sm flex items-center justify-center`}>
+                        <Icon className={`w-6 h-6 ${t.text}`} strokeWidth={2} />
                     </div>
-                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full bg-gray-50 dark:bg-gray-800 uppercase tracking-wider ${t.text}`}>
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full bg-white/50 dark:bg-black/20 uppercase tracking-widest ${t.text} border border-current/10`}>
                         Metric
                     </span>
                 </div>
                 <div className="space-y-1">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{value}</h3>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+                    <h3 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white tracking-tight truncate">{value}</h3>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                    <p className="text-xs text-gray-400 font-medium truncate max-w-[150px]">{subtitle}</p>
-                    <Activity className={`w-4 h-4 ${t.text}`} />
+                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+                    <p className="text-xs text-slate-400 font-medium truncate max-w-[150px]">{subtitle}</p>
+                    <Activity className={`w-4 h-4 opacity-50 ${t.text}`} />
                 </div>
             </div>
         </div>
@@ -143,22 +143,30 @@ export default function Dashboard({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
 
-            <div className="min-h-screen bg-gray-50/50 dark:bg-black py-8">
-                <div className="w-full px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className="min-h-screen bg-transparent py-8 relative">
+                
+                {/* Background Decorative Orbs */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+                    <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full bg-emerald-400/10 dark:bg-emerald-600/10 blur-[100px]"></div>
+                    <div className="absolute top-[30%] -right-[10%] w-[35%] h-[40%] rounded-full bg-blue-400/10 dark:bg-blue-600/10 blur-[120px]"></div>
+                    <div className="absolute -bottom-[10%] left-[20%] w-[40%] h-[40%] rounded-full bg-teal-400/10 dark:bg-teal-600/10 blur-[100px]"></div>
+                </div>
+
+                <div className="w-full px-4 sm:px-6 lg:px-8 space-y-8 relative z-10">
 
                     {/* 1. Header Section */}
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 glass-panel p-8">
                         <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                                    <LayoutDashboard className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-2xl border border-emerald-500/20">
+                                    <LayoutDashboard className="w-7 h-7 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Business Command Center</h1>
+                                <h1 className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">Business Command Center</h1>
                             </div>
-                            <p className="text-sm text-gray-500 pl-11">Ringkasan performa bisnis PT. Garuda Karya Amanat.</p>
+                            <p className="text-sm text-slate-500 pl-[4.5rem] font-light">Ringkasan performa bisnis PT. Garuda Karya Amanat.</p>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-3">
                             <Select value={timePeriod} onValueChange={(val) => { setTimePeriod(val); if(val !== 'custom') handleFilterChange({ time_period: val }); }}>
                                 <SelectTrigger className="w-[150px] bg-white dark:bg-black"><SelectValue placeholder="Periode" /></SelectTrigger>
                                 <SelectContent>
@@ -203,11 +211,11 @@ export default function Dashboard({
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
                         {/* Revenue Chart */}
-                        <Card className="xl:col-span-2 shadow-sm border border-gray-200 dark:border-zinc-800">
+                        <Card className="xl:col-span-2 glass-card">
                             <CardHeader>
                                 {/* [UPDATE] Tambah info Tahun di judul grafik */}
-                                <CardTitle className="flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-emerald-500" /> Tren Pendapatan Penjualan ({chartYear})
+                                <CardTitle className="flex items-center gap-3 text-slate-800 font-semibold text-lg">
+                                    <TrendingUp className="w-6 h-6 text-emerald-500" strokeWidth={2} /> Tren Pendapatan Penjualan ({chartYear})
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="h-[350px]">
@@ -230,10 +238,10 @@ export default function Dashboard({
                         </Card>
 
                         {/* Production Mix Chart */}
-                        <Card className="xl:col-span-1 shadow-sm border border-gray-200 dark:border-zinc-800">
+                        <Card className="xl:col-span-1 glass-card">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Zap className="w-5 h-5 text-blue-500" /> Produksi: Temadu vs Sebayar
+                                <CardTitle className="flex items-center gap-3 text-slate-800 font-semibold text-lg">
+                                    <Zap className="w-6 h-6 text-blue-500" strokeWidth={2} /> Produksi: Temadu vs Sebayar
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="h-[350px]">
@@ -254,10 +262,10 @@ export default function Dashboard({
 
                     {/* 4. Top Penoreh Chart (Baru) */}
                     <div className="grid grid-cols-1 gap-6">
-                        <Card className="shadow-sm border border-gray-200 dark:border-zinc-800">
+                        <Card className="glass-card">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-violet-500" /> Top 5 Penoreh Terproduktif (Kg)
+                                <CardTitle className="flex items-center gap-3 text-slate-800 font-semibold text-lg">
+                                    <Users className="w-6 h-6 text-violet-500" strokeWidth={2} /> Top 5 Penoreh Terproduktif (Kg)
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="h-[300px]">

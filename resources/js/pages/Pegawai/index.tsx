@@ -138,14 +138,14 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Pegawai" />
 
-            <div className="p-4 md:p-8 space-y-6 bg-gray-50/50 dark:bg-black min-h-screen font-sans pb-24">
+            <div className="p-4 md:p-8 space-y-6 bg-transparent min-h-screen font-sans pb-24">
 
                 {/* 1. Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                      <div>
                         <Heading title="Data Kepegawaian" description="Kelola daftar pegawai, profil, jabatan, dan basis gaji bulanan." />
                     </div>
-                    <Button onClick={handleAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all hover:-translate-y-0.5 w-full sm:w-auto rounded-full px-6">
+                    <Button onClick={handleAdd} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 w-full sm:w-auto rounded-full px-6 border-0">
                         <CirclePlus className="mr-2 h-4 w-4" /> Tambah Pegawai Baru
                     </Button>
                 </div>
@@ -169,20 +169,20 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
                 )}
 
                 {/* 3. Main Content Area */}
-                <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm p-4 md:p-6">
+                <div className="glass-panel p-4 md:p-6">
 
                     {/* Toolbar: Search & Filter */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                         <div className="relative w-full md:w-96 group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
-                            <Input placeholder="Cari nama, ID, atau jabatan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 rounded-xl h-10 focus-visible:ring-indigo-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                            <Input placeholder="Cari nama, ID, atau jabatan..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 bg-white/50 dark:bg-zinc-800/50 border-slate-200 dark:border-zinc-700 rounded-xl h-10 focus-visible:ring-emerald-500" />
                         </div>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="h-10 gap-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 w-full md:w-auto rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                    <Filter className="h-4 w-4 text-gray-500" />
-                                    <span className="font-medium text-gray-700 dark:text-gray-200">
+                                <Button variant="outline" className="h-10 gap-2 border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 w-full md:w-auto rounded-xl shadow-sm hover:bg-white/80 dark:hover:bg-zinc-800">
+                                    <Filter className="h-4 w-4 text-slate-500" />
+                                    <span className="font-medium text-slate-700 dark:text-slate-200">
                                         {statusFilter === 'all' ? 'Semua Status' : statusFilter === 'active' ? 'Status: Aktif' : 'Status: Non-Aktif'}
                                     </span>
                                     <ChevronDown className="h-4 w-4 text-gray-400 ml-2" />
@@ -204,7 +204,7 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
                             {/* --- MOBILE VIEW (CARDS) --- */}
                             <div className="grid gap-4 md:hidden">
                                 {filteredPegawai.map((item) => (
-                                    <div key={item.id} className={`flex flex-col gap-3 rounded-2xl border bg-white p-5 shadow-sm dark:bg-zinc-900/50 dark:border-zinc-800 transition-all ${item.status === 'inactive' ? 'opacity-70 bg-gray-50/50' : 'hover:border-indigo-200'}`}>
+                                    <div key={item.id} className={`flex flex-col gap-3 rounded-2xl border-none glass-card p-5 shadow-sm transition-all ${item.status === 'inactive' ? 'opacity-70 bg-white/20' : 'hover:shadow-md'}`}>
                                         <div className="flex justify-between items-start">
                                             <div className="flex items-center gap-4 min-w-0">
                                                 <div className={`relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full shadow-sm border-2 ${item.status === 'active' ? 'border-white dark:border-zinc-800' : 'border-gray-100 grayscale'}`}>
@@ -263,8 +263,8 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 font-medium">
-                                                        <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400"><Briefcase className="h-3.5 w-3.5" /></div>
+                                                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                                        <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400"><Briefcase className="h-3.5 w-3.5" strokeWidth={2} /></div>
                                                         {item.position}
                                                     </div>
                                                 </TableCell>
@@ -276,8 +276,8 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:bg-blue-50 hover:text-blue-600" onClick={() => handleEdit(item)}><Pencil className="h-4 w-4" /></Button>
-                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-gray-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => handleDeleteConfirm(item)}><Trash2 className="h-4 w-4" /></Button>
+                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600" onClick={() => handleEdit(item)}><Pencil className="h-4 w-4" /></Button>
+                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => handleDeleteConfirm(item)}><Trash2 className="h-4 w-4" /></Button>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
