@@ -183,4 +183,20 @@
     .glass-card:hover {
         @apply shadow-[0_10px_30px_rgb(0,0,0,0.08)] -translate-y-1;
     }
+
+    /* Custom Scrollbar for a cleaner look */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.3);
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(156, 163, 175, 0.5);
+    }
 }

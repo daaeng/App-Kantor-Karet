@@ -41,7 +41,8 @@ interface PageProps {
         total?: number;
         meta?: { total: number };
     };
-    filter?: { search?: string; status_filter?: string };
+    locations: string[];
+    filter?: { search?: string; status_filter?: string; sort?: string; location?: string };
 }
 
 // Helper Avatar & Warna (Support Dark Mode)
@@ -60,17 +61,24 @@ const getAvatarColor = (name: string, isActive: boolean) => {
 
 const getInitials = (name: string) => name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
-export default function Index({ incisors, flash, filter }: PageProps) {
+export default function Index({ incisors, flash, filter, locations }: PageProps) {
     const { delete: destroy } = useForm();
     const [searchValue, setSearchValue] = useState(filter?.search || '');
     const [statusFilter, setStatusFilter] = useState(filter?.status_filter || 'all');
+    const [sortFilter, setSortFilter] = useState(filter?.sort || 'name_asc');
+    const [locationFilter, setLocationFilter] = useState(filter?.location || 'all');
 
     const totalData = incisors.total ?? incisors.meta?.total ?? 0;
 
     // Handle Filter Change
-    const handleFilter = (search: string, status: string) => {
+    const handleFilter = (search: string, status: string, sort: string, location: string) => {
         router.get(route('incisors.index'), 
-            { search, status_filter: status === 'all' ? null : status }, 
+            { 
+                search, 
+                status_filter: status === 'all' ? null : status,
+                sort,
+                location: location === 'all' ? null : location
+            }, 
             { preserveState: true, replace: true }
         );
     };
@@ -116,23 +124,47 @@ export default function Index({ incisors, flash, filter }: PageProps) {
                 )}
 
                 {/* Filter Bar */}
-                <div className="flex flex-col lg:flex-row gap-4 glass-panel p-4">
-                    <div className="relative flex-grow">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 glass-panel p-4">
+                    <div className="relative">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                         <Input 
                             placeholder="Cari Nama / Kode..." 
                             value={searchValue} 
-                            onChange={(e) => { setSearchValue(e.target.value); handleFilter(e.target.value, statusFilter); }} 
-                            className="pl-10 border-0 bg-gray-50 dark:bg-gray-900 h-10" 
+                            onChange={(e) => { setSearchValue(e.target.value); handleFilter(e.target.value, statusFilter, sortFilter, locationFilter); }} 
+                            className="pl-10 border-0 bg-gray-50 dark:bg-gray-900 h-10 w-full" 
                         />
                     </div>
-                    <div className="w-full lg:w-48">
-                        <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); handleFilter(searchValue, val); }}>
-                            <SelectTrigger className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 h-10"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <div>
+                        <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); handleFilter(searchValue, val, sortFilter, locationFilter); }}>
+                            <SelectTrigger className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 h-10 w-full"><SelectValue placeholder="Status" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Semua Status</SelectItem>
                                 <SelectItem value="active">🟢 Aktif</SelectItem>
                                 <SelectItem value="inactive">⚫ Non-Aktif</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <Select value={locationFilter} onValueChange={(val) => { setLocationFilter(val); handleFilter(searchValue, statusFilter, sortFilter, val); }}>
+                            <SelectTrigger className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 h-10 w-full"><SelectValue placeholder="Lokasi" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Lokasi</SelectItem>
+                                {Array.isArray(locations) ? locations.map(loc => (
+                                    <SelectItem key={loc} value={loc}>📍 {loc}</SelectItem>
+                                )) : locations ? Object.values(locations).map(loc => (
+                                    <SelectItem key={loc as string} value={loc as string}>📍 {loc as string}</SelectItem>
+                                )) : null}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <Select value={sortFilter} onValueChange={(val) => { setSortFilter(val); handleFilter(searchValue, statusFilter, val, locationFilter); }}>
+                            <SelectTrigger className="bg-white/50 backdrop-blur-sm dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 h-10 w-full"><SelectValue placeholder="Urutkan" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="name_asc">A-Z (Nama)</SelectItem>
+                                <SelectItem value="name_desc">Z-A (Nama)</SelectItem>
+                                <SelectItem value="code_asc">A-Z (Kode)</SelectItem>
+                                <SelectItem value="code_desc">Z-A (Kode)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

@@ -165,6 +165,26 @@ const groupedNavItems: NavGroup[] = [
                 permission: 'payroll.view',
             },
         ]
+    },
+    {
+        label: "Pemberkasan & Surat",
+        items: [
+            {
+                title: 'Surat Masuk',
+                href: '/incoming-mails',
+                icon: Archive,
+            },
+            {
+                title: 'Surat Keluar',
+                href: '/outgoing-mails',
+                icon: Archive,
+            },
+            {
+                title: 'Manajemen Berkas PT',
+                href: '/company-documents',
+                icon: Notebook,
+            },
+        ]
     }
 ];
 

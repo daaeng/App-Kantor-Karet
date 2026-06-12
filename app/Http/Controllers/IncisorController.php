@@ -17,6 +17,8 @@ class IncisorController extends Controller
         $perPage = 20; 
         $searchTerm = $request->input('search');
         $statusFilter = $request->input('status_filter'); // Filter Aktif/Non-Aktif
+        $sortFilter = $request->input('sort', 'name_asc'); // Default name_asc
+        $locationFilter = $request->input('location', 'all');
 
         $incisors = Incisor::query()
             ->when($searchTerm, function ($query, $search) {
@@ -32,14 +34,32 @@ class IncisorController extends Controller
                 if ($status === 'active') $query->where('is_active', true);
                 if ($status === 'inactive') $query->where('is_active', false);
             })
+            // Logika Filter Lokasi
+            ->when($locationFilter, function ($query, $location) {
+                if ($location !== 'all') {
+                    $query->where('lok_toreh', $location);
+                }
+            })
             ->orderBy('is_active', 'DESC') // Yang aktif tampil paling atas
-            ->orderBy('name', 'ASC')
+            ->when($sortFilter, function ($query, $sort) {
+                switch ($sort) {
+                    case 'name_asc': $query->orderBy('name', 'ASC'); break;
+                    case 'name_desc': $query->orderBy('name', 'DESC'); break;
+                    case 'code_asc': $query->orderBy('no_invoice', 'ASC'); break;
+                    case 'code_desc': $query->orderBy('no_invoice', 'DESC'); break;
+                    default: $query->orderBy('name', 'ASC'); break;
+                }
+            })
             ->paginate($perPage)
             ->withQueryString(); 
 
+        // Untuk opsi dropdown lokasi unik
+        $locations = Incisor::select('lok_toreh')->distinct()->pluck('lok_toreh')->filter()->values();
+
         return Inertia::render("Incisors/Index", [
             "incisors" => $incisors,
-            "filter" => $request->only('search', 'status_filter'), 
+            "locations" => $locations,
+            "filter" => (object) $request->only('search', 'status_filter', 'sort', 'location'), 
         ]);
     }
 

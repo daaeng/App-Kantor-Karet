@@ -21,6 +21,10 @@ use App\Http\Controllers\IncomingStockController;
 use App\Http\Controllers\OutgoingStockController;
 use App\Http\Controllers\MasterProductController;
 use App\Http\Controllers\ProductController; // Legacy Controller
+use App\Http\Controllers\IncomingMailController;
+use App\Http\Controllers\OutgoingMailController;
+use App\Http\Controllers\CompanyDocumentController;
+use App\Http\Controllers\FileDownloadController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -244,6 +248,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Attendance
     Route::resource('attendances', AttendanceController::class);
+
+    // Pemberkasan (Manajemen Berkas & Surat Menyurat)
+    Route::get('/documents/download', [FileDownloadController::class, 'download'])->name('documents.download');
+    Route::get('/documents/view', [FileDownloadController::class, 'view'])->name('documents.view');
+    Route::resource('incoming-mails', IncomingMailController::class);
+    Route::resource('outgoing-mails', OutgoingMailController::class);
+    Route::resource('company-documents', CompanyDocumentController::class);
 
 });
 
