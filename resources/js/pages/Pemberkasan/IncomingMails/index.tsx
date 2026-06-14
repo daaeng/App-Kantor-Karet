@@ -27,6 +27,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -133,10 +140,10 @@ export default function IncomingMailIndex({ incomingMails, totalIncomingMails, f
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-between mb-4">
-                            <form onSubmit={handleSearch} className="flex gap-2 w-full max-w-2xl">
+                        <div className="flex flex-col md:flex-row justify-between mb-4 gap-4">
+                            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:max-w-4xl">
                                 <Select value={month} onValueChange={(val) => setMonth(val)}>
-                                    <SelectTrigger className="w-[180px] bg-white/50 dark:bg-zinc-800/50">
+                                    <SelectTrigger className="w-full sm:w-[160px] bg-white/50 dark:bg-zinc-800/50">
                                         <SelectValue placeholder="Pilih Bulan" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -158,21 +165,21 @@ export default function IncomingMailIndex({ incomingMails, totalIncomingMails, f
                                 <Input
                                     type="number"
                                     placeholder="Tahun..."
-                                    className="w-[120px] bg-white/50 dark:bg-zinc-800/50"
+                                    className="w-full sm:w-[120px] bg-white/50 dark:bg-zinc-800/50"
                                     value={year}
                                     onChange={(e) => setYear(e.target.value)}
                                 />
-                                <div className="relative w-full">
+                                <div className="relative w-full sm:flex-1 min-w-[200px]">
                                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                                     <Input
                                         type="text"
                                         placeholder="Cari nomor, pengirim, perihal..."
-                                        className="pl-9 bg-white/50 dark:bg-zinc-800/50"
+                                        className="pl-9 bg-white/50 dark:bg-zinc-800/50 w-full"
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
                                 </div>
-                                <Button type="submit" variant="secondary" className="bg-blue-600 text-white hover:bg-blue-700 border-none shadow-md">Terapkan Filter</Button>
+                                <Button type="submit" variant="secondary" className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 border-none shadow-md">Terapkan Filter</Button>
                             </form>
                         </div>
 

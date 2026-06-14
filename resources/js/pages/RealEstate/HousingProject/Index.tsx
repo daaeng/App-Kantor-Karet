@@ -20,7 +20,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Data Proyek', href: '/real-estate/housing-project' },
 ];
 
-export default function Index({ projects }: { projects: any[] }) {
+export default function Index({ projects, stats }: { projects: any[], stats: any }) {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -87,8 +87,12 @@ export default function Index({ projects }: { projects: any[] }) {
                                 <Briefcase className="h-8 w-8" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold tracking-tight">Manajemen Proyek</h1>
-                                <p className="text-indigo-100 mt-1">Kelola perumahan yang sedang Anda kembangkan (Misal: Perumahan A, Perumahan B)</p>
+                                <h1 className="text-3xl font-bold tracking-tight">
+                                    {stats ? `Dashboard: ${stats.project.nama_proyek}` : 'Manajemen Proyek Perumahan'}
+                                </h1>
+                                <p className="text-indigo-100 mt-1">
+                                    {stats ? 'Rekap data secara menyeluruh dan detail untuk proyek ini' : 'Kelola perumahan yang sedang Anda kembangkan (Pilih proyek di menu kiri atas untuk melihat detail)'}
+                                </p>
                             </div>
                         </div>
                         <Button onClick={openAddModal} className="bg-white text-indigo-700 hover:bg-indigo-50 border-0 shadow-lg">
@@ -99,6 +103,41 @@ export default function Index({ projects }: { projects: any[] }) {
             </div>
 
             <div className="px-6 max-w-7xl mx-auto -mt-20 relative z-20 pb-12">
+                {stats && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <Card className="shadow-lg border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden bg-white">
+                            <CardContent className="p-6">
+                                <div className="text-sm font-semibold text-slate-500 mb-1">Total Kavling</div>
+                                <div className="text-3xl font-bold text-slate-800">{stats.total_kavling} Unit</div>
+                                <div className="mt-2 text-xs text-slate-500">Tersedia: {stats.total_available} | Booking: {stats.total_booking}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="shadow-lg border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden bg-white">
+                            <CardContent className="p-6">
+                                <div className="text-sm font-semibold text-slate-500 mb-1">Unit Terjual (Sold)</div>
+                                <div className="text-3xl font-bold text-emerald-600">{stats.total_sold} Unit</div>
+                                <div className="mt-2 text-xs text-slate-500">Total Konsumen: {stats.total_konsumen}</div>
+                            </CardContent>
+                        </Card>
+                        <Card className="shadow-lg border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden bg-white">
+                            <CardContent className="p-6">
+                                <div className="text-sm font-semibold text-slate-500 mb-1">Pemasukan</div>
+                                <div className="text-3xl font-bold text-blue-600">
+                                    Rp {new Intl.NumberFormat('id-ID').format(stats.total_revenue)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="shadow-lg border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden bg-white">
+                            <CardContent className="p-6">
+                                <div className="text-sm font-semibold text-slate-500 mb-1">Pengeluaran</div>
+                                <div className="text-3xl font-bold text-red-600">
+                                    Rp {new Intl.NumberFormat('id-ID').format(stats.total_expense)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+                
                 <Card className="shadow-xl border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/95">
                     <CardHeader className="border-b bg-slate-50/50">
                         <div className="flex items-center justify-between">

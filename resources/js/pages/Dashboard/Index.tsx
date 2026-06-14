@@ -37,10 +37,12 @@ import {
     Filter,
     LayoutDashboard,
     TrendingUp,
+    Wallet,
+    Trees,
+    Building,
     Truck,
     Users,
-    Wallet,
-    Zap,
+    Zap
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -114,6 +116,10 @@ export default function Dashboard({
     stok_gka,
     jml_penoreh,
     jml_pegawai,
+    reProyekAktif,
+    reDanaMasuk,
+    reKavlingTersedia,
+    reValuasiAset,
     totalPendingNota,
     totalRevenueAmount,
     filter,
@@ -138,6 +144,8 @@ export default function Dashboard({
     const handleFilterChange = (newFilter: any) => {
         router.get(route('dashboard'), { ...filter, ...newFilter }, { preserveState: true, replace: true });
     };
+
+    const [activeTab, setActiveTab] = useState('gabungan');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -193,13 +201,78 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* 2. Stat Cards Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                        {/* [UPDATE] Judul Card Pendapatan */}
-                        <StatCard title="Pendapatan Penjualan Karet" value={formatCurrency(totalRevenueAmount || 0)} subtitle="Akumulasi Penjualan" icon={DollarSign} color="emerald" />
-                        <StatCard title="Produksi Karet" value={`${formatCompactNumber(hsl_tsa)} Kg`} subtitle="Total Output TSA" icon={Box} color="blue" />
-                        <StatCard title="Stok Terjual" value={`${formatCompactNumber(stok_gka)} Kg`} subtitle="Shipment ke Buyer" icon={Truck} color="amber" />
-                        <StatCard title="Total Pengeluaran" value={formatCurrency(hsl_beli || 0)} subtitle="Pembelian Karet" icon={Wallet} color="pink" />
+                    {/* Tab Navigation */}
+                    <div className="flex flex-wrap gap-2 p-1.5 bg-white/50 dark:bg-black/20 rounded-2xl w-fit backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <button
+                            onClick={() => setActiveTab('gabungan')}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center ${
+                                activeTab === 'gabungan' ? 'bg-slate-800 text-white shadow-md dark:bg-slate-200 dark:text-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <LayoutDashboard className="w-4 h-4 mr-2" />
+                            Executive Summary
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('karet')}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center ${
+                                activeTab === 'karet' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-slate-400 dark:hover:bg-emerald-900/30'
+                            }`}
+                        >
+                            <Trees className="w-4 h-4 mr-2" />
+                            Divisi Karet
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('properti')}
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center ${
+                                activeTab === 'properti' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50 dark:text-slate-400 dark:hover:bg-blue-900/30'
+                            }`}
+                        >
+                            <Building className="w-4 h-4 mr-2" />
+                            Divisi Real Estate
+                        </button>
+                    </div>
+
+                    {activeTab === 'gabungan' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Card className="glass-card bg-gradient-to-br from-slate-900 to-slate-800 border-0 text-white relative overflow-hidden shadow-2xl">
+                                    <div className="absolute top-0 right-0 p-6 opacity-10"><Wallet className="w-32 h-32"/></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-slate-300">Total Arus Kas Gabungan</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-4xl font-bold">
+                                            {((totalRevenueAmount || 0) + reDanaMasuk) > 0 
+                                                ? formatCurrency((totalRevenueAmount || 0) + reDanaMasuk) 
+                                                : "Belum ada info"}
+                                        </div>
+                                        <p className="text-emerald-400 mt-2 text-sm flex items-center"><TrendingUp className="w-4 h-4 mr-1"/> Kinerja Gabungan</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="glass-card bg-gradient-to-br from-indigo-600 to-blue-700 border-0 text-white relative overflow-hidden shadow-2xl">
+                                    <div className="absolute top-0 right-0 p-6 opacity-10"><Building className="w-32 h-32"/></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-indigo-200">Valuasi Aset Real Estate</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-4xl font-bold">
+                                            {reValuasiAset > 0 ? formatCurrency(reValuasiAset) : "Belum ada info"}
+                                        </div>
+                                        <p className="text-indigo-200 mt-2 text-sm">Estimasi Nilai Proyek Berjalan</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'karet' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                            {/* 2. Stat Cards Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <StatCard title="Pendapatan Penjualan Karet" value={totalRevenueAmount > 0 ? formatCurrency(totalRevenueAmount) : "Belum ada info"} subtitle="Akumulasi Penjualan" icon={DollarSign} color="emerald" />
+                        <StatCard title="Produksi Karet" value={hsl_tsa > 0 ? `${formatCompactNumber(hsl_tsa)} Kg` : "Belum ada info"} subtitle="Total Output TSA" icon={Box} color="blue" />
+                        <StatCard title="Stok Terjual" value={stok_gka > 0 ? `${formatCompactNumber(stok_gka)} Kg` : "Belum ada info"} subtitle="Shipment ke Buyer" icon={Truck} color="amber" />
+                        <StatCard title="Total Pengeluaran" value={hsl_beli > 0 ? formatCurrency(hsl_beli) : "Belum ada info"} subtitle="Pembelian Karet" icon={Wallet} color="pink" />
 
                         <StatCard title="Pengajuan Pending" value={`${totalPendingRequests}`} subtitle="Menunggu Persetujuan" icon={Archive} color="rose" />
                         <StatCard title="Nota Pending" value={formatCurrency(totalPendingNota || 0)} subtitle="Menunggu Konfirmasi" icon={FileClock} color="orange" />
@@ -281,6 +354,51 @@ export default function Dashboard({
                             </CardContent>
                         </Card>
                     </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'properti' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                                <Card className="border-0 shadow-lg ring-1 ring-blue-900/5 bg-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 text-blue-600"><Building className="w-24 h-24"/></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-slate-500 text-sm font-medium">Proyek Aktif</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-slate-900">
+                                            {reProyekAktif > 0 ? `${reProyekAktif} Proyek` : "Belum ada info"}
+                                        </div>
+                                        <p className="text-sm text-blue-600 mt-2">Sedang Berjalan</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-0 shadow-lg ring-1 ring-emerald-900/5 bg-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 text-emerald-600"><Wallet className="w-24 h-24"/></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-slate-500 text-sm font-medium">Dana Masuk (Pemesanan & DP)</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-slate-900">
+                                            {reDanaMasuk > 0 ? formatCurrency(reDanaMasuk) : "Belum ada info"}
+                                        </div>
+                                        <p className="text-sm text-emerald-600 mt-2 flex items-center"><TrendingUp className="w-4 h-4 mr-1"/> Pemasukan Properti</p>
+                                    </CardContent>
+                                </Card>
+                                <Card className="border-0 shadow-lg ring-1 ring-rose-900/5 bg-white relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5 text-rose-600"><Archive className="w-24 h-24"/></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-slate-500 text-sm font-medium">Kavling Tersedia</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-3xl font-bold text-slate-900">
+                                            {reKavlingTersedia > 0 ? `${reKavlingTersedia} Unit` : "Belum ada info"}
+                                        </div>
+                                        <p className="text-sm text-slate-500 mt-2">Siap Jual</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             </div>

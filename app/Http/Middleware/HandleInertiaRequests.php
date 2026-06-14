@@ -55,6 +55,10 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'global_real_estate' => [
+                'projects' => fn () => \App\Models\HousingProject::select('id', 'nama_proyek as name')->get(),
+                'active_project_id' => fn () => $request->session()->get('active_housing_project_id'),
+            ],
         ];
     }
 }

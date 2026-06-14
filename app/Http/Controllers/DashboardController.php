@@ -9,6 +9,9 @@ use App\Models\Incisor;
 use App\Models\Requested;
 use App\Models\Nota;
 use App\Models\User;
+use App\Models\HousingProject;
+use App\Models\TransaksiKeuangan;
+use App\Models\BlokKavling;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -78,6 +81,16 @@ class DashboardController extends Controller
         $jml_penoreh = Incisor::where('is_active', true)->count();
         $jml_pegawai = User::count();
 
+
+        // --- 2.5 QUERY STATISTIK REAL ESTATE ---
+        $reProyekAktif = HousingProject::where('status', 'Sedang Berjalan')->orWhere('status', 'Aktif')->count();
+        if ($reProyekAktif === 0) {
+             // fallback just in case
+             $reProyekAktif = HousingProject::count();
+        }
+        $reDanaMasuk = TransaksiKeuangan::where('tipe_transaksi', 'Pemasukan')->sum('nominal');
+        $reKavlingTersedia = BlokKavling::where('status_jual', 'Tersedia')->orWhere('status_jual', 'Available')->count();
+        $reValuasiAset = BlokKavling::sum('harga_jual_final');
 
         // --- 3. QUERY GRAFIK BULANAN (SELALU TAHUN INI/TERPILIH) ---
         // Agar grafik tidak kosong saat filter 'this-month', kita paksa grafik ambil data 1 tahun penuh.
@@ -158,9 +171,14 @@ class DashboardController extends Controller
             "totalPendingRequests" => $totalPendingRequests,
             "totalPendingNota" => $totalPendingNota,
             "jml_penoreh" => $jml_penoreh,
-            "jml_pegawai" => $jml_pegawai,
+            'jml_pegawai' => $jml_pegawai,
 
-            "monthlyData" => $monthlyData,
+            'reProyekAktif' => $reProyekAktif,
+            'reDanaMasuk' => $reDanaMasuk,
+            'reKavlingTersedia' => $reKavlingTersedia,
+            'reValuasiAset' => $reValuasiAset,
+
+            'monthlyData' => $monthlyData,
             "monthlyRevenueData" => $monthlyRevenueData,
             "topIncisorRevenue" => $topIncisorRevenue,
             "qualityDistribution" => $qualityDistribution,

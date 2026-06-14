@@ -12,8 +12,46 @@ class HousingProjectController extends Controller
     public function index()
     {
         $projects = HousingProject::latest()->get();
+        $activeProjectId = session('active_housing_project_id');
+        
+        $stats = null;
+        if ($activeProjectId) {
+            $activeProject = HousingProject::find($activeProjectId);
+            if ($activeProject) {
+                // Fetch stats for the active project
+                $totalKavling = \App\Models\BlokKavling::where('housing_project_id', $activeProjectId)->count();
+                $totalSold = \App\Models\BlokKavling::where('housing_project_id', $activeProjectId)->where('status_penjualan', 'Sold Out')->count();
+                $totalBooking = \App\Models\BlokKavling::where('housing_project_id', $activeProjectId)->where('status_penjualan', 'Booking')->count();
+                $totalAvailable = \App\Models\BlokKavling::where('housing_project_id', $activeProjectId)->where('status_penjualan', 'Tersedia')->count();
+                
+                $totalKonsumen = \App\Models\Konsumen::where('housing_project_id', $activeProjectId)->count();
+                
+                $totalRevenue = \App\Models\TransaksiKeuangan::where('housing_project_id', $activeProjectId)
+                    ->where('tipe_transaksi', 'Pemasukan')
+                    ->where('kategori', '!=', 'Pelunasan Nota Toko')
+                    ->sum('jumlah');
+                    
+                $totalExpense = \App\Models\TransaksiKeuangan::where('housing_project_id', $activeProjectId)
+                    ->where('tipe_transaksi', 'Pengeluaran')
+                    ->sum('jumlah');
+
+                $stats = [
+                    'project' => $activeProject,
+                    'total_kavling' => $totalKavling,
+                    'total_sold' => $totalSold,
+                    'total_booking' => $totalBooking,
+                    'total_available' => $totalAvailable,
+                    'total_konsumen' => $totalKonsumen,
+                    'total_revenue' => $totalRevenue,
+                    'total_expense' => $totalExpense,
+                    'net_profit' => $totalRevenue - $totalExpense
+                ];
+            }
+        }
+
         return Inertia::render('RealEstate/HousingProject/Index', [
-            'projects' => $projects
+            'projects' => $projects,
+            'stats' => $stats
         ]);
     }
 
@@ -47,5 +85,16 @@ class HousingProjectController extends Controller
     {
         $housingProject->delete();
         return redirect()->back()->with('success', 'Proyek Perumahan berhasil dihapus.');
+    }
+
+    public function setActiveProject(Request $request)
+    {
+        $request->validate([
+            'housing_project_id' => 'required|exists:housing_projects,id'
+        ]);
+
+        $request->session()->put('active_housing_project_id', $request->housing_project_id);
+        
+        return redirect()->back()->with('success', 'Proyek perumahan aktif berhasil diubah.');
     }
 }

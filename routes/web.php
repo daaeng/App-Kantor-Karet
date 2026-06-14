@@ -280,6 +280,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('real-estate/toko-material', TokoMaterialController::class)->except(['create', 'show', 'edit']);
     Route::resource('real-estate/material-receipt', MaterialReceiptController::class)->except(['create', 'show', 'edit']);
     Route::resource('real-estate/housing-project', HousingProjectController::class)->except(['create', 'show', 'edit']);
+    Route::post('real-estate/housing-project/set-active', [HousingProjectController::class, 'setActiveProject'])->name('housing-project.set-active');
+    
     Route::resource('real-estate/konsumen', KonsumenController::class)->except(['create', 'show', 'edit']);
     Route::resource('real-estate/penjualan-kavling', PenjualanKavlingController::class)->except(['create', 'show', 'edit']);
     Route::resource('real-estate/transaksi-keuangan', TransaksiKeuanganController::class)->except(['create', 'show', 'edit']);
