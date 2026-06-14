@@ -1,359 +1,195 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { BarChart3, Building, Trees, Wallet, TrendingUp, TrendingDown, Users, Package2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowRight, BarChart3, ChevronDown, DollarSign, MoreHorizontal, Package2, Search, Users } from 'lucide-react';
-
-// Dummy data
-const analyticsData = {
-    totalProducts: 254,
-    totalUsers: 1823,
-    totalCategories: 32,
-    totalInventoryValue: 543920,
-};
-
-const recentProducts = [
-    { id: 1, name: 'Ergonomic Chair', category: 'Furniture', price: 199.99, stock: 24, status: 'In Stock', image: '/api/placeholder/60/60' },
-    { id: 2, name: 'MacBook Pro M3', category: 'Electronics', price: 1999.99, stock: 12, status: 'Low Stock', image: '/api/placeholder/60/60' },
-    { id: 3, name: 'Wireless Earbuds', category: 'Audio', price: 129.99, stock: 45, status: 'In Stock', image: '/api/placeholder/60/60' },
-    { id: 4, name: 'Office Desk', category: 'Furniture', price: 349.99, stock: 8, status: 'Low Stock', image: '/api/placeholder/60/60' },
-    { id: 5, name: 'Smart Watch Series 8', category: 'Wearables', price: 399.99, stock: 0, status: 'Out of Stock', image: '/api/placeholder/60/60' },
-];
-
-const recentSales = [
-    { id: 1, customer: 'John Doe', email: 'john@example.com', product: 'Ergonomic Chair', date: '2025-04-24', amount: 199.99, status: 'Completed' },
-    {
-        id: 2,
-        customer: 'Jane Smith',
-        email: 'jane@example.com',
-        product: 'MacBook Pro M3',
-        date: '2025-04-23',
-        amount: 1999.99,
-        status: 'Processing',
-    },
-    {
-        id: 3,
-        customer: 'Robert Johnson',
-        email: 'robert@example.com',
-        product: 'Wireless Earbuds',
-        date: '2025-04-22',
-        amount: 129.99,
-        status: 'Completed',
-    },
-    { id: 4, customer: 'Emily Davis', email: 'emily@example.com', product: 'Office Desk', date: '2025-04-21', amount: 349.99, status: 'Completed' },
-    {
-        id: 5,
-        customer: 'Michael Wilson',
-        email: 'michael@example.com',
-        product: 'Smart Watch Series 8',
-        date: '2025-04-20',
-        amount: 399.99,
-        status: 'Cancelled',
-    },
+    { title: 'Dashboard Gabungan', href: '/dashboard' },
 ];
 
 const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2,
-    }).format(value);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 };
 
-const Dashboard = () => {
+export default function Dashboard() {
+    const [activeTab, setActiveTab] = useState('gabungan');
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
-            <div className="min-h-screen p-6">
+            <Head title="Executive Dashboard" />
+            <div className="min-h-screen bg-slate-50/50 p-6">
                 <div className="mb-8">
-                    <h1 className="mb-2 text-3xl font-bold ">Dashboard</h1>
-                    <p className="text-gray-500">Welcome back! Here's an overview of your store.</p>
+                    <h1 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">Executive Control Dashboard</h1>
+                    <p className="text-slate-500">Ringkasan performa finansial dan operasional perusahaan (Karet & Properti).</p>
                 </div>
 
-                {/* Analytics Cards */}
-                <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    {/* Total Products Card */}
-                    <Card className="shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium text-gray-500">Total Products</CardTitle>
-                                <div className="rounded-lg bg-blue-100 p-2">
-                                    <Package2 size={18} className="text-blue-600" />
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{analyticsData.totalProducts}</div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                            <Button variant="link" className="flex h-auto items-center p-0 text-blue-600">
-                                View details <ArrowRight size={16} className="ml-1" />
-                            </Button>
-                        </CardFooter>
-                    </Card>
-
-                    {/* Total Users Card */}
-                    <Card className="shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
-                                <div className="rounded-lg bg-green-100 p-2">
-                                    <Users size={18} className="text-green-600" />
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{analyticsData.totalUsers}</div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                            <Button variant="link" className="flex h-auto items-center p-0 text-green-600">
-                                View details <ArrowRight size={16} className="ml-1" />
-                            </Button>
-                        </CardFooter>
-                    </Card>
-
-                    {/* Total Categories Card */}
-                    <Card className="shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium text-gray-500">Total Categories</CardTitle>
-                                <div className="rounded-lg bg-purple-100 p-2">
-                                    <BarChart3 size={18} className="text-purple-600" />
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{analyticsData.totalCategories}</div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                            <Button variant="link" className="flex h-auto items-center p-0 text-purple-600">
-                                View details <ArrowRight size={16} className="ml-1" />
-                            </Button>
-                        </CardFooter>
-                    </Card>
-
-                    {/* Total Inventory Value Card */}
-                    <Card className="shadow-sm transition-shadow hover:shadow-md">
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-medium text-gray-500">Total Inventory Value</CardTitle>
-                                <div className="rounded-lg bg-amber-100 p-2">
-                                    <DollarSign size={18} className="text-amber-600" />
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatCurrency(analyticsData.totalInventoryValue)}</div>
-                        </CardContent>
-                        <CardFooter className="pt-0">
-                            <Button variant="link" className="flex h-auto items-center p-0 text-amber-600">
-                                View details <ArrowRight size={16} className="ml-1" />
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                {/* Tab Navigation */}
+                <div className="flex gap-2 p-1 bg-slate-200/50 rounded-xl mb-8 w-fit backdrop-blur-sm border border-slate-200">
+                    <button
+                        onClick={() => setActiveTab('gabungan')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                            activeTab === 'gabungan' ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-900/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                        }`}
+                    >
+                        <Wallet className="w-4 h-4 inline-block mr-2" />
+                        Executive Summary
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('karet')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                            activeTab === 'karet' ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-900/5' : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50'
+                        }`}
+                    >
+                        <Trees className="w-4 h-4 inline-block mr-2" />
+                        Divisi Karet
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('properti')}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                            activeTab === 'properti' ? 'bg-white text-blue-700 shadow-sm ring-1 ring-blue-900/5' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
+                        }`}
+                    >
+                        <Building className="w-4 h-4 inline-block mr-2" />
+                        Divisi Real Estate
+                    </button>
                 </div>
 
-                {/* Recent Products Table */}
-                <div className="mb-8">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Recent Products</CardTitle>
-                                <div className="flex gap-2">
-                                    <div className="relative">
-                                        <Search className="absolute top-2.5 left-2 h-4 w-4 text-gray-500" />
-                                        <Input placeholder="Search products..." className="w-64 pl-8" />
+                {/* TAB 1: GABUNGAN */}
+                {activeTab === 'gabungan' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-0 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-20"><Wallet className="w-24 h-24"/></div>
+                                <CardHeader>
+                                    <CardTitle className="text-slate-300 text-sm font-medium">Total Aset & Kas Perusahaan</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{formatCurrency(4250000000)}</div>
+                                    <p className="text-sm text-emerald-400 mt-2 flex items-center"><TrendingUp className="w-4 h-4 mr-1"/> +12% dari bulan lalu</p>
+                                </CardContent>
+                            </Card>
+                            <Card className="border-0 shadow-lg ring-1 ring-slate-900/5 bg-white relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 text-emerald-600"><Trees className="w-24 h-24"/></div>
+                                <CardHeader>
+                                    <CardTitle className="text-slate-500 text-sm font-medium">Laba Bersih Karet (Bulan Ini)</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold text-slate-900">{formatCurrency(85000000)}</div>
+                                    <p className="text-sm text-emerald-600 mt-2 flex items-center"><TrendingUp className="w-4 h-4 mr-1"/> Stabil</p>
+                                </CardContent>
+                            </Card>
+                            <Card className="border-0 shadow-lg ring-1 ring-slate-900/5 bg-white relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 text-blue-600"><Building className="w-24 h-24"/></div>
+                                <CardHeader>
+                                    <CardTitle className="text-slate-500 text-sm font-medium">Saldo Kas Real Estate</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold text-slate-900">{formatCurrency(1420000000)}</div>
+                                    <p className="text-sm text-slate-500 mt-2">Termasuk Booking Fee & DP masuk</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        <Card className="shadow-sm border-0 ring-1 ring-slate-900/5">
+                            <CardHeader>
+                                <CardTitle>Cross-Division Cashflow (Simulasi)</CardTitle>
+                            </CardHeader>
+                            <CardContent className="h-[300px] flex items-center justify-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                                <div className="text-center text-slate-400">
+                                    <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50"/>
+                                    <p>Grafik Gabungan Arus Kas Karet vs Properti akan dirender di sini.</p>
+                                    <p className="text-xs mt-1">Menggunakan data dari Transaksi Keuangan.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* TAB 2: KARET */}
+                {activeTab === 'karet' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                            <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Total Produksi (Ton)</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-700">12.5</div></CardContent></Card>
+                            <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Harga Rata-rata</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-slate-900">Rp 12.000 /kg</div></CardContent></Card>
+                            <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Biaya Penderes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-rose-600">{formatCurrency(45000000)}</div></CardContent></Card>
+                            <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Omset Kotor</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-700">{formatCurrency(150000000)}</div></CardContent></Card>
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-100 p-8 rounded-xl text-center">
+                            <Trees className="w-16 h-16 mx-auto mb-4 text-emerald-600/50" />
+                            <h3 className="text-xl font-bold text-emerald-900">Modul Karet Sedang Terhubung...</h3>
+                            <p className="text-emerald-700 mt-2">Data di atas adalah simulasi integrasi. Data asli akan ditarik dari modul Karet Anda yang sudah berjalan.</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB 3: PROPERTI */}
+                {activeTab === 'properti' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                            <Card className="shadow-sm border-l-4 border-l-blue-500"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Kavling Terjual</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-blue-700">8 Unit</div></CardContent></Card>
+                            <Card className="shadow-sm border-l-4 border-l-emerald-500"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Kavling Tersedia</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-emerald-700">42 Unit</div></CardContent></Card>
+                            <Card className="shadow-sm border-l-4 border-l-rose-500"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Total Hutang Material</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-rose-600">{formatCurrency(125000000)}</div></CardContent></Card>
+                            <Card className="shadow-sm border-l-4 border-l-amber-500"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-500">Proyek Aktif</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-amber-700">2 Proyek</div></CardContent></Card>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                            <Card className="shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Pencairan Dana (Masuk)</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center border-b pb-2">
+                                            <div>
+                                                <div className="font-bold">DP Bpk. Rudi</div>
+                                                <div className="text-xs text-slate-500">Kavling A-1</div>
+                                            </div>
+                                            <div className="text-emerald-600 font-bold">+{formatCurrency(50000000)}</div>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b pb-2">
+                                            <div>
+                                                <div className="font-bold">Pencairan KPR Bank BTN</div>
+                                                <div className="text-xs text-slate-500">Kavling B-5 (Ibu Siti)</div>
+                                            </div>
+                                            <div className="text-emerald-600 font-bold">+{formatCurrency(250000000)}</div>
+                                        </div>
                                     </div>
-                                    <Button>Add Product</Button>
-                                </div>
-                            </div>
-                            <CardDescription>A list of your recent products</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Stock</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentProducts.map((product) => (
-                                        <TableRow key={product.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <img src={product.image} alt={product.name} className="h-10 w-10 rounded-md object-cover" />
-                                                    <span className="font-medium">{product.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{product.category}</TableCell>
-                                            <TableCell>{formatCurrency(product.price)}</TableCell>
-                                            <TableCell>{product.stock}</TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    className={
-                                                        product.status === 'In Stock'
-                                                            ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                                                            : product.status === 'Low Stock'
-                                                              ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100'
-                                                              : 'bg-red-100 text-red-800 hover:bg-red-100'
-                                                    }
-                                                >
-                                                    {product.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>View details</DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <div className="text-sm text-gray-500">Showing 5 of {analyticsData.totalProducts} products</div>
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm" disabled>
-                                    Previous
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    Next
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
-                </div>
-
-                {/* Recent Sales Table */}
-                <div>
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle>Recent Sales</CardTitle>
-                                <div className="flex gap-2">
-                                    <div className="relative">
-                                        <Search className="absolute top-2.5 left-2 h-4 w-4 text-gray-500" />
-                                        <Input placeholder="Search sales..." className="w-64 pl-8" />
+                                    <Button variant="link" className="w-full mt-4 text-blue-600">Lihat Semua Transaksi Real Estate &rarr;</Button>
+                                </CardContent>
+                            </Card>
+                            
+                            <Card className="shadow-sm">
+                                <CardHeader>
+                                    <CardTitle>Hutang Jatuh Tempo (Keluar)</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center border-b pb-2">
+                                            <div>
+                                                <div className="font-bold">Toko Wijaya Mandiri</div>
+                                                <div className="text-xs text-slate-500">Semen & Besi (Fase 1)</div>
+                                            </div>
+                                            <div className="text-rose-600 font-bold">-{formatCurrency(45000000)}</div>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b pb-2">
+                                            <div>
+                                                <div className="font-bold">Toko Baja Jaya</div>
+                                                <div className="text-xs text-slate-500">Baja Ringan (Fase 1)</div>
+                                            </div>
+                                            <div className="text-rose-600 font-bold">-{formatCurrency(12000000)}</div>
+                                        </div>
                                     </div>
-                                    <Button variant="outline">
-                                        Filter
-                                        <ChevronDown className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                            <CardDescription>A list of your recent sales</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Customer</TableHead>
-                                        <TableHead>Product</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentSales.map((sale) => (
-                                        <TableRow key={sale.id}>
-                                            <TableCell>
-                                                <div>
-                                                    <div className="font-medium">{sale.customer}</div>
-                                                    <div className="text-sm text-gray-500">{sale.email}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{sale.product}</TableCell>
-                                            <TableCell>{sale.date}</TableCell>
-                                            <TableCell>{formatCurrency(sale.amount)}</TableCell>
-                                            <TableCell>
-                                                <Badge
-                                                    className={
-                                                        sale.status === 'Completed'
-                                                            ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                                                            : sale.status === 'Processing'
-                                                              ? 'bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                                              : 'bg-red-100 text-red-800 hover:bg-red-100'
-                                                    }
-                                                >
-                                                    {sale.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <MoreHorizontal className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>View details</DropdownMenuItem>
-                                                        <DropdownMenuItem>Send invoice</DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-red-600">Cancel order</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                        <CardFooter className="flex justify-between">
-                            <div className="text-sm text-gray-500">Showing 5 recent sales</div>
-                            <div className="flex gap-2">
-                                <Button variant="outline" size="sm" disabled>
-                                    Previous
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    Next
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
-                </div>
+                                    <Button variant="link" className="w-full mt-4 text-rose-600">Lihat Laporan Hutang &rarr;</Button>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
-};
-
-export default Dashboard;
+}

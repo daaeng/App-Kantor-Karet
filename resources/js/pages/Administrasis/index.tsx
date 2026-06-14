@@ -428,6 +428,9 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                             isPlPeriodsLoading ? (
                                 <div className="flex justify-center py-10"><Loader2 className="animate-spin h-8 w-8 text-slate-400" /></div>
                             ) : profitLossPeriods.length > 0 ? (
+                                (() => {
+                                    const getPeriodSum = (key: string) => profitLossPeriods.reduce((acc, p) => acc + (Number(p[key]) || 0), 0);
+                                    return (
                                 <Card className="max-w-7xl mx-auto shadow-sm border border-slate-200 dark:border-zinc-800 border-t-8 border-t-emerald-600 bg-white dark:bg-zinc-950">
                                     <CardHeader className="text-center border-b border-slate-100 dark:border-zinc-800 pb-6">
                                         <h2 className="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white">PT. Garuda Karya Amanat</h2>
@@ -446,6 +449,9 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                                 {p.period_label}
                                                             </th>
                                                         ))}
+                                                        <th className="p-3 text-right font-bold text-slate-800 dark:text-zinc-100 min-w-[140px] border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">
+                                                            Total
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
@@ -454,18 +460,21 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_total)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_total'))}</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Penjualan Bersih (Karet)</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_karet)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_karet'))}</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Pendapatan Lain-Lain</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_lain)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_lain'))}</td>
                                                     </tr>
 
                                                     <tr className="bg-slate-50/30 font-bold">
@@ -473,12 +482,14 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.cogs)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('cogs'))}</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Pembelian Bahan Baku Karet</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.cogs)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('cogs'))}</td>
                                                     </tr>
 
                                                     <tr className="font-bold">
@@ -488,6 +499,9 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                                 {formatCurrency(p.gross_profit)}
                                                             </td>
                                                         ))}
+                                                        <td className={`p-3 text-right font-mono font-bold border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50 ${getPeriodSum('gross_profit') < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                            {formatCurrency(getPeriodSum('gross_profit'))}
+                                                        </td>
                                                     </tr>
 
                                                     <tr className="bg-slate-50/30 font-bold">
@@ -495,48 +509,56 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.opex_total)}</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('opex_total'))}</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya Gaji & Upah Pegawai</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_gaji)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya Operasional Lapangan</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lapangan)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_lapangan'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya Operasional Kantor</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kantor)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kantor'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya Ekspedisi (Kapal & Truck)</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kapal_truck)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kapal_truck'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya BPJS Ketenagakerjaan</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_bpjs)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_bpjs'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Uang Makan Mandor</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_makan_mandor)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_makan_mandor'))})</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Biaya Rupa-Rupa Lainnya</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lainnya)})</td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_lainnya'))})</td>
                                                     </tr>
 
                                                     <tr className="border-t-2 border-double font-black text-base bg-slate-50/50">
@@ -549,11 +571,14 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                                 </td>
                                                             );
                                                         })}
+                                                        <td className={`p-3 text-right font-mono font-black border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50 ${getPeriodSum('net_profit') < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                            {formatCurrency(getPeriodSum('net_profit'))}
+                                                        </td>
                                                     </tr>
                                                     
-                                                    <tr><td colSpan={profitLossPeriods.length + 1} className="p-4 border-b"></td></tr>
+                                                    <tr><td colSpan={profitLossPeriods.length + 2} className="p-4 border-b"></td></tr>
                                                     <tr className="font-bold bg-slate-100/50 dark:bg-zinc-900/50 text-slate-500">
-                                                        <td colSpan={profitLossPeriods.length + 1} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
+                                                        <td colSpan={profitLossPeriods.length + 2} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
                                                     </tr>
                                                     <tr>
                                                         <td className="p-3 pl-6 text-slate-600">Total Uang Kasbon Keluar</td>
@@ -562,12 +587,17 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                                 {formatCurrency(p.kasbon_keluar_period)}
                                                             </td>
                                                         ))}
+                                                        <td className="p-3 text-right font-mono text-amber-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">
+                                                            {formatCurrency(getPeriodSum('kasbon_keluar_period'))}
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </CardContent>
                                 </Card>
+                                );
+                                })()
                             ) : (
                                 <div className="text-center py-10 text-slate-400">Tidak ada data untuk rentang bulan yang dipilih.</div>
                             )

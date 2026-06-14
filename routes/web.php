@@ -26,6 +26,18 @@ use App\Http\Controllers\OutgoingMailController;
 use App\Http\Controllers\CompanyDocumentController;
 use App\Http\Controllers\RubberEstimationController;
 use App\Http\Controllers\FileDownloadController;
+
+// [REAL ESTATE MODUL]
+use App\Http\Controllers\RealEstate\TipeRumahController;
+use App\Http\Controllers\RealEstate\BlokKavlingController;
+use App\Http\Controllers\RealEstate\SitePlanController;
+use App\Http\Controllers\RealEstate\ProjectPhaseController;
+use App\Http\Controllers\RealEstate\TokoMaterialController;
+use App\Http\Controllers\RealEstate\MaterialReceiptController;
+use App\Http\Controllers\RealEstate\HousingProjectController;
+use App\Http\Controllers\RealEstate\KonsumenController;
+use App\Http\Controllers\RealEstate\PenjualanKavlingController;
+use App\Http\Controllers\RealEstate\TransaksiKeuanganController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -257,6 +269,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('outgoing-mails', OutgoingMailController::class);
     Route::resource('company-documents', CompanyDocumentController::class);
     Route::resource('estimations', RubberEstimationController::class);
+
+    // =========================================================================
+    //  MODUL REAL ESTATE
+    // =========================================================================
+    Route::get('real-estate/site-plan', [SitePlanController::class, 'index'])->name('site-plan.index');
+    Route::resource('real-estate/tipe-rumah', TipeRumahController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/blok-kavling', BlokKavlingController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/project-phase', ProjectPhaseController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/toko-material', TokoMaterialController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/material-receipt', MaterialReceiptController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/housing-project', HousingProjectController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/konsumen', KonsumenController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/penjualan-kavling', PenjualanKavlingController::class)->except(['create', 'show', 'edit']);
+    Route::resource('real-estate/transaksi-keuangan', TransaksiKeuanganController::class)->except(['create', 'show', 'edit']);
 });
 
 require __DIR__.'/settings.php';

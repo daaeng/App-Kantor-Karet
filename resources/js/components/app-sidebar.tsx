@@ -31,6 +31,16 @@ import {
     BookUp2,
     Users,
     Calculator,
+    Home,
+    MapPin,
+    Map,
+    CalendarClock,
+    Store,
+    ReceiptText as ReceiptIcon,
+    Briefcase,
+    Users as UsersIcon,
+    Handshake,
+    Landmark
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -190,6 +200,61 @@ const groupedNavItems: NavGroup[] = [
                 title: 'Manajemen Berkas PT',
                 href: '/company-documents',
                 icon: Notebook,
+            },
+        ]
+    },
+    {
+        label: "Real Estate (Properti)",
+        items: [
+            {
+                title: 'Data Proyek Perumahan',
+                href: '/real-estate/housing-project',
+                icon: Briefcase,
+            },
+            {
+                title: 'Site Plan (Denah)',
+                href: '/real-estate/site-plan',
+                icon: Map,
+            },
+            {
+                title: 'Master Tipe Rumah',
+                href: '/real-estate/tipe-rumah',
+                icon: Home,
+            },
+            {
+                title: 'Blok & Kavling',
+                href: '/real-estate/blok-kavling',
+                icon: MapPin,
+            },
+            {
+                title: 'Fase Pembangunan',
+                href: '/real-estate/project-phase',
+                icon: CalendarClock,
+            },
+            {
+                title: 'Data Konsumen',
+                href: '/real-estate/konsumen',
+                icon: UsersIcon,
+            },
+            {
+                title: 'Penjualan & KPR',
+                href: '/real-estate/penjualan-kavling',
+                icon: Handshake,
+            },
+            {
+                title: 'Supplier Material',
+                href: '/real-estate/toko-material',
+                icon: Store,
+            },
+            {
+                title: 'Nota Penerimaan',
+                href: '/real-estate/material-receipt',
+                icon: ReceiptIcon,
+            },
+            {
+                title: 'Keuangan Properti',
+                href: '/real-estate/transaksi-keuangan',
+                icon: Landmark,
             },
         ]
     }

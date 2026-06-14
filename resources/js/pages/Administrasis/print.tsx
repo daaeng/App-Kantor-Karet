@@ -151,6 +151,9 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
 
                         {/* RENDER TABEL MULTI-KOLOM UNTUK RANGE-MONTH TANPA GARIS BERLEBIHAN */}
                         {current_filter?.time_period === 'range-month' && profitLossPeriods && profitLossPeriods.length > 0 ? (
+                            (() => {
+                                const getPeriodSum = (key: string) => profitLossPeriods.reduce((acc, p) => acc + (Number(p[key]) || 0), 0);
+                                return (
                             <div className="mt-3">
                                 <table className="w-full text-[12px] border-collapse">
                                     <thead className="border-y-2 border-black">
@@ -161,6 +164,7 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                     {p.period_label}
                                                 </th>
                                             ))}
+                                            <th className="py-2 text-right font-bold border-l border-gray-300">Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -170,18 +174,21 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.revenue_total)}</td>
                                             ))}
+                                            <td className="py-2 pt-4 text-right border-l border-gray-300">{formatCurrency(getPeriodSum('revenue_total'))}</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Penjualan Bersih (Karet)</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.revenue_karet)}</td>
                                             ))}
+                                            <td className="py-1 text-right text-gray-700 border-l border-gray-300">{formatCurrency(getPeriodSum('revenue_karet'))}</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Pendapatan Lain-Lain</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.revenue_lain)}</td>
                                             ))}
+                                            <td className="py-1 text-right text-gray-700 border-l border-gray-300">{formatCurrency(getPeriodSum('revenue_lain'))}</td>
                                         </tr>
 
                                         {/* COGS */}
@@ -190,12 +197,14 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.cogs)}</td>
                                             ))}
+                                            <td className="py-2 pt-4 text-right border-l border-gray-300">{formatCurrency(getPeriodSum('cogs'))}</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Pembelian Bahan Baku Karet</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-gray-700">{formatCurrency(p.cogs)}</td>
                                             ))}
+                                            <td className="py-1 text-right text-gray-700 border-l border-gray-300">{formatCurrency(getPeriodSum('cogs'))}</td>
                                         </tr>
 
                                         {/* GROSS PROFIT */}
@@ -206,6 +215,9 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                     {formatCurrency(p.gross_profit)}
                                                 </td>
                                             ))}
+                                            <td className={`py-2 text-right border-l border-gray-300 ${getPeriodSum('gross_profit') < 0 ? 'text-red-600' : ''}`}>
+                                                {formatCurrency(getPeriodSum('gross_profit'))}
+                                            </td>
                                         </tr>
 
                                         {/* OPEX */}
@@ -214,48 +226,56 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-2 pt-4 text-right">{formatCurrency(p.opex_total)}</td>
                                             ))}
+                                            <td className="py-2 pt-4 text-right border-l border-gray-300">{formatCurrency(getPeriodSum('opex_total'))}</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Gaji & Upah Pegawai</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_gaji)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Operasional Lapangan</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_lapangan)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_lapangan'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Operasional Kantor</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_kantor)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_kantor'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Ekspedisi (Kapal & Truck)</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_kapal_truck)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_kapal_truck'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya BPJS Ketenagakerjaan</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_bpjs)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_bpjs'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Uang Makan Mandor</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_makan_mandor)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_makan_mandor'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Rupa-Rupa Lainnya</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_lainnya)})</td>
                                             ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_lainnya'))})</td>
                                         </tr>
 
                                         {/* NET PROFIT */}
@@ -266,20 +286,26 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                     {formatCurrency(p.net_profit)}
                                                 </td>
                                             ))}
+                                            <td className={`py-3 text-right border-l border-gray-300 ${getPeriodSum('net_profit') < 0 ? 'text-red-600' : ''}`}>
+                                                {formatCurrency(getPeriodSum('net_profit'))}
+                                            </td>
                                         </tr>
-                                        <tr><td colSpan={profitLossPeriods.length + 1} className="py-2"></td></tr>
+                                        <tr><td colSpan={profitLossPeriods.length + 2} className="py-2"></td></tr>
                                         <tr className="border-t border-gray-400 font-bold bg-gray-100">
-                                            <td colSpan={profitLossPeriods.length + 1} className="py-1 pl-2 text-[11px] uppercase text-gray-700">INFORMASI TAMBAHAN (NON-P&L)</td>
+                                            <td colSpan={profitLossPeriods.length + 2} className="py-1 pl-2 text-[11px] uppercase text-gray-700">INFORMASI TAMBAHAN (NON-P&L)</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Total Uang Kasbon Keluar</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-amber-700">{formatCurrency(p.kasbon_keluar_period)}</td>
                                             ))}
+                                            <td className="py-1 text-right text-amber-700 border-l border-gray-300">{formatCurrency(getPeriodSum('kasbon_keluar_period'))}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
+                                )
+                            })()
                         ) : (
                             /* RENDER TAMPILAN SINGLE COLUMN */
                             <div className="border border-gray-400 p-5 rounded">
