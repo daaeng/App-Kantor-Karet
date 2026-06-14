@@ -240,7 +240,7 @@ class AdministrasiController extends Controller
                             ->whereYear('date', '<=', $endYear);
         }
 
-        $cogs = $cogs_from_inciseds->sum('total_deduction') ?? 0;
+        $cogs = $cogs_from_inciseds->sum('net_received') ?? 0;
         $cogs_Manual = $kasOut_BeliKaretManual;
         $cogs += $cogs_Manual;
 
@@ -544,7 +544,7 @@ class AdministrasiController extends Controller
             ->sum('amount') ?? 0;
         $revenue_total = $revenue_karet + $revenue_lain;
 
-        $cogs_incised = Incised::whereMonth('date', $month)->whereYear('date', $year)->sum('total_deduction') ?? 0;
+        $cogs_incised = Incised::whereMonth('date', $month)->whereYear('date', $year)->sum('net_received') ?? 0;
         $cogs_manual = FinancialTransaction::where('source', 'cash')
             ->where('type', 'expense')->where('category', 'Pembelian Karet')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)

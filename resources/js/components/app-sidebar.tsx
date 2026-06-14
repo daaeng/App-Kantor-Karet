@@ -30,6 +30,7 @@ import {
     Clock,
     BookUp2,
     Users,
+    Calculator,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -134,6 +135,12 @@ const groupedNavItems: NavGroup[] = [
                 href: '/ppb',
                 icon: BookUp2 ,
                 permission: 'requests.view',
+            },
+            {
+                title: 'Estimasi Penimbangan',
+                href: '/estimations',
+                icon: Calculator,
+                permission: 'requests.view', // Just a placeholder permission for now
             },
         ]
     },

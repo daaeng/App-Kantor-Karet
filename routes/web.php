@@ -24,6 +24,7 @@ use App\Http\Controllers\ProductController; // Legacy Controller
 use App\Http\Controllers\IncomingMailController;
 use App\Http\Controllers\OutgoingMailController;
 use App\Http\Controllers\CompanyDocumentController;
+use App\Http\Controllers\RubberEstimationController;
 use App\Http\Controllers\FileDownloadController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
@@ -255,7 +256,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('incoming-mails', IncomingMailController::class);
     Route::resource('outgoing-mails', OutgoingMailController::class);
     Route::resource('company-documents', CompanyDocumentController::class);
-
+    Route::resource('estimations', RubberEstimationController::class);
 });
 
 require __DIR__.'/settings.php';
