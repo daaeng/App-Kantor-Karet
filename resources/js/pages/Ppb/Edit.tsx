@@ -107,7 +107,7 @@ export default function Edit({ ppb }: any) {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {data.items.map((item, index) => (
-                                <div key={index} className="flex flex-col md:flex-row gap-3 items-end bg-gray-50 p-3 rounded-lg border">
+                                <div key={index} className="flex flex-col md:flex-row gap-3 items-end bg-gray-50 dark:bg-slate-900 p-3 rounded-lg border dark:border-slate-800">
                                     <div className="flex-1 space-y-1 w-full">
                                         <Label className="text-xs">Nama Barang</Label>
                                         <Input value={item.nama_barang} onChange={e => updateItem(index, 'nama_barang', e.target.value)} placeholder="Contoh: Kertas A4" />
@@ -137,10 +137,10 @@ export default function Edit({ ppb }: any) {
                                     </div>
                                 </div>
                             ))}
-                            <div className="flex justify-end pt-4 border-t">
+                            <div className="flex justify-end pt-4 border-t dark:border-slate-800">
                                 <div className="text-right">
-                                    <p className="text-sm text-gray-500">Total Estimasi</p>
-                                    <p className="text-2xl font-bold text-indigo-600">{formatCurrency(grandTotal)}</p>
+                                    <p className="text-sm text-gray-500 dark:text-slate-400">Total Estimasi</p>
+                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(grandTotal)}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -151,7 +151,7 @@ export default function Edit({ ppb }: any) {
                         <CardHeader><CardTitle>Detail Penanda Tangan & Tujuan</CardTitle></CardHeader>
                         <CardContent className="space-y-6">
                             {/* Tujuan */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-slate-900 rounded-lg border dark:border-slate-800">
                                 <div className="space-y-1">
                                     <Label>Kepada (Nama)</Label>
                                     <Input value={data.kepada_yth_nama} onChange={e => setData('kepada_yth_nama', e.target.value)} />
@@ -168,18 +168,18 @@ export default function Edit({ ppb }: any) {
 
                             {/* Penanda Tangan */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2 border p-3 rounded">
-                                    <p className="text-xs font-bold uppercase text-gray-500 mb-2">Dibuat Oleh</p>
+                                <div className="space-y-2 border dark:border-slate-800 p-3 rounded">
+                                    <p className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-2">Dibuat Oleh</p>
                                     <Input placeholder="Nama" value={data.dibuat_oleh_nama} onChange={e => setData('dibuat_oleh_nama', e.target.value)} />
                                     <Input placeholder="Jabatan" value={data.dibuat_oleh_jabatan} onChange={e => setData('dibuat_oleh_jabatan', e.target.value)} />
                                 </div>
-                                <div className="space-y-2 border p-3 rounded">
-                                    <p className="text-xs font-bold uppercase text-gray-500 mb-2">Mengetahui (Opsional)</p>
+                                <div className="space-y-2 border dark:border-slate-800 p-3 rounded">
+                                    <p className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-2">Mengetahui (Opsional)</p>
                                     <Input placeholder="Nama" value={data.menyetujui_1_nama} onChange={e => setData('menyetujui_1_nama', e.target.value)} />
                                     <Input placeholder="Jabatan" value={data.menyetujui_1_jabatan} onChange={e => setData('menyetujui_1_jabatan', e.target.value)} />
                                 </div>
-                                <div className="space-y-2 border p-3 rounded">
-                                    <p className="text-xs font-bold uppercase text-gray-500 mb-2">Menyetujui (Opsional)</p>
+                                <div className="space-y-2 border dark:border-slate-800 p-3 rounded">
+                                    <p className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-2">Menyetujui (Opsional)</p>
                                     <Input placeholder="Nama" value={data.menyetujui_2_nama} onChange={e => setData('menyetujui_2_nama', e.target.value)} />
                                     <Input placeholder="Jabatan" value={data.menyetujui_2_jabatan} onChange={e => setData('menyetujui_2_jabatan', e.target.value)} />
                                 </div>
@@ -188,10 +188,10 @@ export default function Edit({ ppb }: any) {
                     </Card>
 
                     {/* Action Buttons */}
-                    <div className="fixed bottom-0 left-0 w-full bg-white border-t p-4 z-50 shadow-lg">
+                    <div className="fixed bottom-0 left-0 w-full bg-white dark:bg-slate-950 border-t dark:border-slate-800 p-4 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
                         <div className="max-w-5xl mx-auto flex justify-between items-center">
                             <Link href={route('ppb.show', ppb.id)}>
-                                <Button variant="outline" type="button"><ArrowLeft className="w-4 h-4 mr-2"/> Batal</Button>
+                                <Button variant="outline" type="button" className="dark:bg-transparent dark:border-slate-700"><ArrowLeft className="w-4 h-4 mr-2"/> Batal</Button>
                             </Link>
                             <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[150px]">
                                 {processing ? 'Menyimpan...' : 'Simpan Perubahan'} <Save className="w-4 h-4 ml-2"/>

@@ -48,7 +48,9 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => fn() => $request->user()?->getAllPermissions()->pluck('name') ?? [], 
             ],
             'flash' => [
-                'message' => fn() => $request->session()->get('message')
+                'message' => fn() => $request->session()->get('message'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

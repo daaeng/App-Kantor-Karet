@@ -250,48 +250,57 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
         <AppLayout breadcrumbs={[{ title: 'Data Penggajian', href: route('payroll.index') }]}>
             <Head title="Manajemen Penggajian" />
 
-            <div className="p-4 md:p-8 bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100 selection:bg-emerald-100 selection:text-emerald-900">
+            <div className="bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100 selection:bg-emerald-100 selection:text-emerald-900">
 
                 {/* --- HEADER --- */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                     <div>
-                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-2">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400">Daftar Penggajian</span>
-                            <Sparkles className="w-6 h-6 text-amber-400" />
-                        </h1>
-                        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">Kelola slip gaji, proses pembayaran, dan histori payroll karyawan.</p>
-                    </div>
-                    {can('payroll.create') && (
-                        <div className="flex gap-2">
-                            {can('payroll.print') && (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 hover:text-emerald-800 shadow-sm rounded-xl px-4 h-10 font-medium flex items-center gap-2">
-                                            <Printer className="w-4 h-4" /> Cetak Masal
+                <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-800 pb-32 pt-12">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <Banknote className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">Daftar Penggajian</h1>
+                                    <p className="text-teal-100 mt-1">Kelola slip gaji, proses pembayaran, dan histori payroll karyawan.</p>
+                                </div>
+                            </div>
+                            {can('payroll.create') && (
+                                <div className="flex gap-2">
+                                    {can('payroll.print') && (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button className="bg-white/20 hover:bg-white/30 text-white border-0 shadow-sm backdrop-blur-md font-medium flex items-center gap-2">
+                                                    <Printer className="w-4 h-4" /> Cetak Masal
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
+                                                <DropdownMenuItem asChild>
+                                                    <a href={route('payroll.bulk_print', { type: 'slip', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
+                                                        <FileText className="w-4 h-4 mr-2 text-indigo-500" /> Cetak Semua Slip
+                                                    </a>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem asChild>
+                                                    <a href={route('payroll.bulk_print', { type: 'receipt', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
+                                                        <Users className="w-4 h-4 mr-2 text-teal-500" /> Cetak Tanda Terima
+                                                    </a>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                    <Link href={route('payroll.create')}>
+                                        <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg font-bold flex items-center gap-2">
+                                            <PlusCircle className="w-4 h-4" /> Generate Gaji Baru
                                         </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
-                                        <DropdownMenuItem asChild>
-                                            <a href={route('payroll.bulk_print', { type: 'slip', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
-                                                <FileText className="w-4 h-4 mr-2 text-indigo-500" /> Cetak Semua Slip
-                                            </a>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <a href={route('payroll.bulk_print', { type: 'receipt', month, year })} target="_blank" rel="noopener noreferrer" className="cursor-pointer py-2 rounded-lg font-medium">
-                                                <Users className="w-4 h-4 mr-2 text-teal-500" /> Cetak Tanda Terima
-                                            </a>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                    </Link>
+                                </div>
                             )}
-                            <Link href={route('payroll.create')}>
-                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 rounded-xl px-6 h-10 font-medium border-0 flex items-center gap-2">
-                                    <PlusCircle className="w-4 h-4" /> Generate Gaji Baru
-                                </Button>
-                            </Link>
                         </div>
-                    )}
+                    </div>
                 </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* --- ALERT BANNER --- */}
                 {alertMsg && (
@@ -486,14 +495,14 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                 <Link
                                     key={index}
                                     href={link.url || '#'}
-                                    className={`px-3.5 py-1.5 text-sm rounded-lg transition-all duration-200 ${link.active ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold shadow-md' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'} ${!link.url ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
+                                    className={`px-3.5 py-1.5 text-sm rounded-lg transition-all duration-200 ${link.active ? 'bg-gradient-to-r from-teal-600 to-emerald-800 text-white font-bold shadow-md' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-800 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'} ${!link.url ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
                             ))}
                         </div>
                     </div>
                 )}
-            </div>
+                </div>
 
             {/* ========================================================================= */}
             {/* MODAL 1: RINCIAN DETAIL SLIP GAJI INDIVIDU                                */}
@@ -675,6 +684,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            </div>
         </AppLayout>
     );
 }

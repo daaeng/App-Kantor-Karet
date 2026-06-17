@@ -1,11 +1,10 @@
-import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     Building2, Eye, Package, Pencil, Search, Trash, Undo2,
-    Printer, TrendingUp, Coins,
+    Printer, TrendingUp, Coins, BarChart2,
 } from 'lucide-react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -124,44 +123,60 @@ export default function Gka({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="PT. Garuda Karya Amanat" />
-            <div className="flex-1 p-4 md:p-6 space-y-6 bg-gray-50 dark:bg-black min-h-screen">
+            <Head title="Dashboard Penjualan GKA" />
 
-                {/* HEADER */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <Heading title="Dashboard Penjualan (GKA)" description="Monitoring produksi, penjualan, dan pendapatan." />
-                    <div className="flex gap-2">
-                        <Link href={route('products.index')}><Button variant="outline" size="sm"><Undo2 size={16} className="mr-2"/> Kembali</Button></Link>
-                        {can('products.create') && (
-                            <Link href={route('outgoing.create')}>
-                                <Button className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg">
-                                    <Building2 size={18} className="mr-2" /> Kirim Barang
+            {/* BANNER */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-orange-500 via-red-600 to-rose-700 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10" />
+                <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-black/10 rounded-full blur-2xl" />
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md shadow-inner">
+                                <BarChart2 className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Dashboard Penjualan (GKA)</h1>
+                                <p className="text-orange-100 mt-1">Monitoring produksi, penjualan, dan pendapatan PT. Garuda Karya Amanat.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Link href={route('products.index')}>
+                                <Button className="bg-white/10 hover:bg-white/20 border-0 text-white font-semibold backdrop-blur-md">
+                                    <Undo2 size={16} className="mr-2" /> Kembali
                                 </Button>
                             </Link>
-                        )}
-                        {/* Tombol Cetak Laporan */}
-                        <Button
-                            variant="outline"
-                            className="h-10 bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800"
-                            onClick={() => {
-                                // Buka tab baru dengan parameter filter saat ini
-                                const params = new URLSearchParams();
-                                if (filter?.search) params.append('search', filter.search);
-                                if (filter?.time_period) params.append('time_period', filter.time_period);
-                                if (filter?.month) params.append('month', filter.month);
-                                if (filter?.year) params.append('year', filter.year);
-
-                                window.open(route('outgoing.printReport') + '?' + params.toString(), '_blank');
-                            }}
-                        >
-                            <Printer className="mr-2 h-4 w-4" />
-                            Cetak Laporan
-                        </Button>
+                            {can('products.create') && (
+                                <Link href={route('outgoing.create')}>
+                                    <Button className="bg-white text-orange-700 hover:bg-orange-50 font-bold shadow-lg">
+                                        <Building2 size={18} className="mr-2" /> Kirim Barang
+                                    </Button>
+                                </Link>
+                            )}
+                            <Button
+                                className="bg-white/10 hover:bg-white/20 border-0 text-white font-semibold backdrop-blur-md"
+                                onClick={() => {
+                                    const params = new URLSearchParams();
+                                    if (filter?.search) params.append('search', filter.search);
+                                    if (filter?.time_period) params.append('time_period', filter.time_period);
+                                    if (filter?.month) params.append('month', filter.month);
+                                    if (filter?.year) params.append('year', filter.year);
+                                    window.open(route('outgoing.printReport') + '?' + params.toString(), '_blank');
+                                }}
+                            >
+                                <Printer className="mr-2 h-4 w-4" /> Cetak Laporan
+                            </Button>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            {/* MAIN CONTENT */}
+            <div className="px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* FILTER SECTION */}
-                <div className="flex flex-wrap gap-4 items-center bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border">
+                <div className="flex flex-wrap gap-4 items-center bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-800">
                     <div className="relative w-full md:w-64">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                         <Input placeholder="Cari Invoice / Customer..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />

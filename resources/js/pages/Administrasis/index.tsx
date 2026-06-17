@@ -316,100 +316,114 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Sistem Akuntansi & Keuangan" />
-            <div className="p-4 md:p-8 min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100 bg-transparent">
+            <div className="min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100 bg-transparent">
+                <Tabs defaultValue="dashboard" className="w-full" onValueChange={setActiveTab}>
                 {/* HEADER */}
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-8 flex-wrap">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">General Ledger & Finance</h1>
-                        <p className="text-sm text-slate-500 mt-1">Sistem Akuntansi Terpadu PT. GKA</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex items-center bg-slate-50 dark:bg-zinc-900/50 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
-                            <Filter className="w-4 h-4 text-slate-400 mx-2" />
-                            <Select value={timePeriod} onValueChange={handleTimePeriodChange}>
-                                <SelectTrigger className="w-[140px] border-none shadow-none h-8 bg-transparent focus:ring-0 text-sm font-medium">
-                                    <SelectValue placeholder="Pilih Periode" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-lg">
-                                    <SelectItem value="this-month">Bulan Berjalan</SelectItem>
-                                    <SelectItem value="last-month">Bulan Lalu</SelectItem>
-                                    <SelectItem value="this-year">Tahun Berjalan</SelectItem>
-                                    <SelectItem value="specific-month">Bulan Spesifik</SelectItem>
-                                    <SelectItem value="range-month">Rentang Bulan</SelectItem>
-                                    <SelectItem value="periodic-years">Bandingkan Tahun</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            {timePeriod === 'specific-month' && (
-                                <>
-                                    <div className="h-4 w-[1px] bg-slate-300 dark:bg-zinc-700 mx-1" />
-                                    <Select value={selectedMonth} onValueChange={(v) => { setSelectedMonth(v); applyFilter(timePeriod, v, selectedYear, startYear, endYear); }}>
-                                        <SelectTrigger className="w-[120px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
-                                        <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                <div className="relative overflow-hidden bg-gradient-to-r from-sky-600 to-blue-800 pb-16 pt-12">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 flex-wrap">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <Landmark className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">General Ledger & Finance</h1>
+                                    <p className="text-sky-100 mt-1">Sistem Akuntansi Terpadu PT. GKA</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center bg-white dark:bg-zinc-900 p-1 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm text-slate-700">
+                                    <Filter className="w-4 h-4 text-emerald-600 mx-2" />
+                                    <Select value={timePeriod} onValueChange={handleTimePeriodChange}>
+                                        <SelectTrigger className="w-[140px] border-none shadow-none h-8 bg-transparent focus:ring-0 text-sm font-medium text-slate-700">
+                                            <SelectValue placeholder="Pilih Periode" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-lg">
+                                            <SelectItem value="this-month">Bulan Berjalan</SelectItem>
+                                            <SelectItem value="last-month">Bulan Lalu</SelectItem>
+                                            <SelectItem value="this-year">Tahun Berjalan</SelectItem>
+                                            <SelectItem value="specific-month">Bulan Spesifik</SelectItem>
+                                            <SelectItem value="range-month">Rentang Bulan</SelectItem>
+                                            <SelectItem value="periodic-years">Bandingkan Tahun</SelectItem>
+                                        </SelectContent>
                                     </Select>
-                                    <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); applyFilter(timePeriod, selectedMonth, v, startYear, endYear); }}>
-                                        <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
-                                        <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                </>
-                            )}
 
-                            {timePeriod === 'range-month' && (
-                                <>
-                                    <div className="h-4 w-[1px] bg-slate-300 dark:bg-zinc-700 mx-1" />
-                                    <div className="flex items-center gap-1">
-                                        <Select value={startMonth} onValueChange={(v) => { setStartMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, v, endMonth); }}>
-                                            <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent"><SelectValue placeholder="Bulan Awal" /></SelectTrigger>
-                                            <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        <Select value={startYear} onValueChange={(v) => { setStartYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, v, endYear, startMonth, endMonth); }}>
-                                            <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
-                                            <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        <span className="text-slate-400 mx-1">→</span>
-                                        <Select value={endMonth} onValueChange={(v) => { setEndMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, startMonth, v); }}>
-                                            <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent"><SelectValue placeholder="Bulan Akhir" /></SelectTrigger>
-                                            <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        <Select value={endYear} onValueChange={(v) => { setEndYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, v, startMonth, endMonth); }}>
-                                            <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent"><SelectValue /></SelectTrigger>
-                                            <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </div>
-                                </>
-                            )}
+                                    {timePeriod === 'specific-month' && (
+                                        <>
+                                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
+                                            <Select value={selectedMonth} onValueChange={(v) => { setSelectedMonth(v); applyFilter(timePeriod, v, selectedYear, startYear, endYear); }}>
+                                                <SelectTrigger className="w-[120px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
+                                                <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); applyFilter(timePeriod, selectedMonth, v, startYear, endYear); }}>
+                                                <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
+                                                <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                        </>
+                                    )}
+
+                                    {timePeriod === 'range-month' && (
+                                        <>
+                                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
+                                            <div className="flex items-center gap-1">
+                                                <Select value={startMonth} onValueChange={(v) => { setStartMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, v, endMonth); }}>
+                                                    <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue placeholder="Bulan Awal" /></SelectTrigger>
+                                                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                <Select value={startYear} onValueChange={(v) => { setStartYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, v, endYear, startMonth, endMonth); }}>
+                                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                <span className="text-slate-400 mx-1">→</span>
+                                                <Select value={endMonth} onValueChange={(v) => { setEndMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, startMonth, v); }}>
+                                                    <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue placeholder="Bulan Akhir" /></SelectTrigger>
+                                                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                <Select value={endYear} onValueChange={(v) => { setEndYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, v, startMonth, endMonth); }}>
+                                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
+                                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg gap-2 rounded-lg border-0 font-bold"><Printer className="w-4 h-4" /> Cetak Laporan</Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="rounded-xl">
+                                        <DropdownMenuItem onClick={() => handlePrint('all')}>Semua Laporan</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('profit_loss')}>Cetak Laba Rugi</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleExportExcel} className="text-emerald-600 font-medium">Export Laba Rugi (Excel)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('neraca')}>Cetak Neraca</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('bank')}>Cetak Arus Bank</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('kas')}>Cetak Arus Kas</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('jurnal')}>Cetak Buku Jurnal</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </div>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] gap-2 rounded-lg border-0"><Printer className="w-4 h-4" /> Cetak Laporan</Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl">
-                                <DropdownMenuItem onClick={() => handlePrint('all')}>Semua Laporan</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrint('profit_loss')}>Cetak Laba Rugi</DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleExportExcel} className="text-emerald-600 font-medium">Export Laba Rugi (Excel)</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrint('neraca')}>Cetak Neraca</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrint('bank')}>Cetak Arus Bank</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrint('kas')}>Cetak Arus Kas</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrint('jurnal')}>Cetak Buku Jurnal</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {/* TABS LIST INSIDE BANNER */}
+                        <div className="flex flex-col xl:flex-row justify-between xl:items-center mt-4 gap-4">
+                            <TabsList className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg overflow-x-auto flex-wrap h-auto justify-start shadow-sm">
+                                <TabsTrigger value="dashboard" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Executive Dashboard</TabsTrigger>
+                                <TabsTrigger value="profit_loss" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Laba Rugi (P&L)</TabsTrigger>
+                                <TabsTrigger value="neraca" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Neraca Keuangan</TabsTrigger>
+                                <TabsTrigger value="cashflow" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Arus Kas & Bank</TabsTrigger>
+                                <TabsTrigger value="expenses" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Buku Jurnal</TabsTrigger>
+                            </TabsList>
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] rounded-lg px-5 h-9 font-medium border-0" onClick={openTransactionModal}>
+                                <PlusCircle className="w-4 h-4 mr-2" /> Jurnal Manual
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
-                <Tabs defaultValue="dashboard" className="w-full" onValueChange={setActiveTab}>
-                    <div className="flex flex-col xl:flex-row justify-between xl:items-center mb-6 mt-4 gap-4">
-                        <TabsList className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg overflow-x-auto flex-wrap h-auto justify-start">
-                            <TabsTrigger value="dashboard" className="rounded-md">Executive Dashboard</TabsTrigger>
-                            <TabsTrigger value="profit_loss" className="rounded-md">Laba Rugi (P&L)</TabsTrigger>
-                            <TabsTrigger value="neraca" className="rounded-md">Neraca Keuangan</TabsTrigger>
-                            <TabsTrigger value="cashflow" className="rounded-md">Arus Kas & Bank</TabsTrigger>
-                            <TabsTrigger value="expenses" className="rounded-md">Buku Jurnal</TabsTrigger>
-                        </TabsList>
-                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] rounded-lg px-5 h-9 font-medium border-0" onClick={openTransactionModal}>
-                            <PlusCircle className="w-4 h-4 mr-2" /> Jurnal Manual
-                        </Button>
-                    </div>
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-10 relative z-20 pb-12">
+
 
                     {/* DASHBOARD */}
                     <TabsContent value="dashboard" className="space-y-6 animate-in fade-in duration-500">
@@ -575,7 +589,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                             {formatCurrency(getPeriodSum('net_profit'))}
                                                         </td>
                                                     </tr>
-                                                    
+
                                                     <tr><td colSpan={profitLossPeriods.length + 2} className="p-4 border-b"></td></tr>
                                                     <tr className="font-bold bg-slate-100/50 dark:bg-zinc-900/50 text-slate-500">
                                                         <td colSpan={profitLossPeriods.length + 2} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
@@ -628,7 +642,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     <LedgerTotal label="Total Biaya Operasional" value={summary.reports.profit_loss.opex_total} />
                                     <div className="mt-8"></div>
                                     <LedgerTotal label="LABA BERSIH (NET PROFIT)" value={summary.reports.profit_loss.net_profit} isGrandTotal />
-                                    
+
                                     <div className="mt-8 pt-4 border-t border-dashed border-slate-300 dark:border-zinc-700">
                                         <h4 className="font-bold text-slate-500 text-xs uppercase tracking-wider mb-2">Informasi Tambahan (Non-P&L)</h4>
                                         <LedgerItem label="Total Uang Kasbon Keluar" value={summary.reports.profit_loss.kasbon_keluar_period} isIndent={false} isMinus={false} />
@@ -689,7 +703,6 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                             </CardContent>
                         </Card>
                     </TabsContent>
-                </Tabs>
 
                 <Dialog open={isTransactionModalOpen} onOpenChange={setIsTransactionModalOpen}>
                     <DialogContent className="sm:max-w-[500px] p-0">
@@ -719,6 +732,8 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                 <Dialog open={notification.show} onOpenChange={closeNotification}>
                     <DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle className="flex items-center gap-3">{notification.type==='success'?<CheckCircle2 className="w-8 h-8 text-emerald-600"/>:<XCircle className="w-8 h-8 text-red-600"/>}{notification.title}</DialogTitle></DialogHeader><div className="py-4">{notification.message}</div><DialogFooter><Button onClick={closeNotification}>Tutup</Button></DialogFooter></DialogContent>
                 </Dialog>
+                </div>
+                </Tabs>
             </div>
         </AppLayout>
     );

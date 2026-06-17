@@ -75,23 +75,25 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string',
-            'password' => 'required|string',
+            'name'     => 'required|string|max:250',
+            'email'    => 'required|email|max:250|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:6|max:250',
         ]);
-        
-        $user->update([
-            'name' => $request->input('name'),
+
+        $updateData = [
+            'name'  => $request->input('name'),
             'email' => $request->input('email'),
-            'password' => $request->input('password'),
-        ]);
+        ];
 
-        $user->save();
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->input('password'));
+        }
 
+        $user->update($updateData);
         $user->syncRoles([$request->roles]);
 
-        return to_route('usermanagements.index')->with('message', 'User Updated Successfully');   
-
+        return to_route('usermanagements.index')->with('message', 'User Berhasil Diperbarui');
     }
 
     public function destroy(User $user){

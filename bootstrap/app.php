@@ -29,5 +29,23 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response) {
+            $status = $response->getStatusCode();
+
+            // Handle HTTP errors with beautiful Inertia pages
+            if (in_array($status, [403, 404, 500, 503]) && request()->header('X-Inertia')) {
+                return \Inertia\Inertia::render("errors/{$status}")
+                    ->toResponse(request())
+                    ->setStatusCode($status);
+            }
+
+            // For non-Inertia requests (full page load)
+            if (in_array($status, [403, 404, 500, 503]) && !request()->header('X-Inertia')) {
+                return \Inertia\Inertia::render("errors/{$status}")
+                    ->toResponse(request())
+                    ->setStatusCode($status);
+            }
+
+            return $response;
+        });
     })->create();

@@ -123,8 +123,24 @@ export default function Index({ notas, flash, filter, totalPendingNotas, totalAp
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard Nota" />
-            <div className="p-4 md:p-6 min-h-screen">
-                <Heading title="Dashboard Upload Nota" description="Monitor dan kelola semua nota pembelian." />
+            <div className="relative overflow-hidden bg-gradient-to-r from-slate-600 to-gray-800 pb-32 pt-12">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <FileText className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">Dashboard Upload Nota</h1>
+                                    <p className="text-slate-100 mt-1">Monitor dan kelola semua nota pembelian.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12">
 
                 {can('notas.create') && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-6">
@@ -222,7 +238,8 @@ export default function Index({ notas, flash, filter, totalPendingNotas, totalAp
                     </div>
                     {notas.data.length > 0 && renderPagination(notas.links)}
                 </div>
-            </div>
+                </div>
+            
         </AppLayout>
     );
 }

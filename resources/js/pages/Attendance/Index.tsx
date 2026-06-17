@@ -108,21 +108,29 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Absensi" />
-
-            <div className="p-4 md:p-8 bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100">
-
-                {/* --- HEADER --- */}
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Presensi Tim</h1>
-                        <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">Sistem pencatatan dan monitoring kehadiran terpusat.</p>
+            <div className="relative overflow-hidden bg-gradient-to-r from-rose-600 to-pink-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <CalendarClock className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Presensi Tim</h1>
+                                <p className="text-rose-100 mt-1">Sistem pencatatan dan monitoring kehadiran terpusat.</p>
+                            </div>
+                        </div>
+                        {can('usermanagements.create') && (
+                            <Button onClick={handleAdd} className="bg-white text-teal-700 hover:bg-teal-50 shadow-sm transition-all rounded-full px-6 w-full sm:w-auto font-bold border-0">
+                                <CalendarClock className="mr-2 h-4 w-4" /> Catat Manual
+                            </Button>
+                        )}
                     </div>
-                    {can('usermanagements.create') && (
-                        <Button onClick={handleAdd} className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-zinc-200 dark:text-black text-white shadow-sm transition-all rounded-lg px-6 w-full sm:w-auto font-medium">
-                            <CalendarClock className="mr-2 h-4 w-4" /> Catat Manual
-                        </Button>
-                    )}
                 </div>
+            </div>
+
+            <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6 font-sans text-slate-900 dark:text-slate-100">
 
                 {/* --- FLASH MESSAGE --- */}
                 {flashMessage && (
@@ -279,6 +287,7 @@ export default function AttendanceReportPage({ reportType, reportData, selectedM
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            
         </AppLayout>
     );
 }

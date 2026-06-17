@@ -35,19 +35,19 @@ const getTodayDate = () => {
 };
 
 // Paragraf default dari gambar
-const defaultParagraph = `Bersama surat ini kami Temadu Sebayar Agro mengajukan permohonan dana untuk keperluan pembelian barang lapangan/kantor, guna kelancaran kami dalam berkegiatan di lapangan/kantor. Adapun rincian pengajuan sebagai berikut:`;
+const defaultParagraph = `Bersama surat ini kami PT Garuda Karya Amanat mengajukan permohonan dana untuk keperluan pembelian barang lapangan/kantor, guna kelancaran kami dalam berkegiatan di lapangan/kantor. Adapun rincian pengajuan sebagai berikut:`;
 
-export default function CreatePpb() {
+export default function CreatePpb({ nomorOtomatis }: { nomorOtomatis: string }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         // Default values sesuai permintaan Mas Daeng
         tanggal: getTodayDate(), // Req 1: Default hari ini
-        nomor: '', // Req 2: Input manual
+        nomor: nomorOtomatis || '', // Req 2: Input manual
         lampiran: '-', // Req 3: Default, bisa diganti
         perihal: 'Pengajuan Permintaan Barang', // Req 4: Default
         
         // Req 5: Default dari gambar
         kepada_yth_jabatan: 'Direktur Keuangan',
-        kepada_yth_nama: 'Temadu Sebayar Agro',
+        kepada_yth_nama: 'PT Garuda Karya Amanat',
         kepada_yth_lokasi: 'di - Tempat',
 
         paragraf_pembuka: defaultParagraph,

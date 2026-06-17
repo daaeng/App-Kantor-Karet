@@ -80,7 +80,7 @@
 :root {
     --background: transparent; 
     --foreground: oklch(0.145 0 0); 
-    --card: oklch(1 0 0 / 0.85); 
+    --card: oklch(1 0 0); 
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0 / 0.9);
     --popover-foreground: oklch(0.145 0 0);
@@ -116,7 +116,7 @@
 .dark {
     --background: transparent; 
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0 / 0.85);
+    --card: oklch(0.145 0 0);
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.145 0 0 / 0.9);
     --popover-foreground: oklch(0.985 0 0);
@@ -154,12 +154,7 @@
     }
 
     body {
-        @apply text-foreground font-sans antialiased;
-        background-color: #020617; /* Fallback */
-        background-image: linear-gradient(rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.6)), url('/assets/bghero.jpg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
+        @apply bg-white dark:bg-black text-foreground font-sans antialiased;
     }
 
     @media print {

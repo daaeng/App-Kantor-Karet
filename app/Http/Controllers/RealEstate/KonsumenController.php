@@ -11,9 +11,14 @@ class KonsumenController extends Controller
 {
     public function index()
     {
-        $konsumens = Konsumen::latest()->get();
+        $activeProjectId = session('active_housing_project_id');
+        $konsumens = $activeProjectId 
+            ? Konsumen::where('housing_project_id', $activeProjectId)->latest()->get()
+            : collect([]);
+            
         return Inertia::render('RealEstate/Konsumen/Index', [
-            'konsumens' => $konsumens
+            'konsumens' => $konsumens,
+            'activeProjectId' => $activeProjectId,
         ]);
     }
 
@@ -27,6 +32,12 @@ class KonsumenController extends Controller
             'status' => 'required|in:Prospek,Pembeli',
         ]);
 
+        $activeProjectId = session('active_housing_project_id');
+        if (!$activeProjectId) {
+            return redirect()->back()->with('error', 'Silakan pilih proyek perumahan terlebih dahulu.');
+        }
+
+        $validated['housing_project_id'] = $activeProjectId;
         Konsumen::create($validated);
         return redirect()->back()->with('success', 'Data Konsumen berhasil ditambahkan.');
     }

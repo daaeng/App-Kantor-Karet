@@ -56,6 +56,7 @@ interface PageProps {
         links: PaginationLink[];
     };
     filter?: { search?: string };
+    nomorOtomatis: string;
     stats: {
         totalPpb: number;
         totalPending: number;
@@ -86,7 +87,7 @@ const StatCard = ({ title, value, icon, gradient, iconColor }: { title: string; 
     </div>
 );
 
-export default function Index({ ppbs, flash, filter, stats }: PageProps) {
+export default function Index({ ppbs, filter, stats, flash, nomorOtomatis }: PageProps) {
     const { processing, delete: destroy } = useForm();
     const [searchValue, setSearchValue] = useState(filter?.search || '');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -133,10 +134,24 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Daftar Pengajuan Barang (PPB)" />
-            <div className="p-4 md:p-6 min-h-screen">
-                <div className="flex justify-between items-center mb-6">
-                    <Heading title="Pengajuan Permintaan Barang (PPB)" description="Monitor dan kelola semua surat PPB." />
+            <div className="relative overflow-hidden bg-gradient-to-r from-zinc-800 to-zinc-900 dark:from-zinc-900 dark:to-zinc-950 pb-32 pt-12 border-b border-zinc-700/50">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-5"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <FileText className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight text-white">Pengajuan Permintaan Barang (PPB)</h1>
+                                    <p className="text-zinc-400 mt-1">Monitor dan kelola semua surat PPB.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12">
 
                 {/* Grid Kartu Statistik */}
                 {can('requests.edit') && (
@@ -239,8 +254,13 @@ export default function Index({ ppbs, flash, filter, stats }: PageProps) {
                     {/* Pagination */}
                     {ppbs.data.length > 0 && renderPagination(ppbs.links)}
                 </div>
-            </div>
-            <CreatePpbModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+                </div>
+            
+            <CreatePpbModal 
+                isOpen={isCreateModalOpen} 
+                onClose={() => setIsCreateModalOpen(false)} 
+                nomorOtomatis={nomorOtomatis}
+            />
         </AppLayout>
     );
 }

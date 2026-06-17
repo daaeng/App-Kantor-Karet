@@ -322,16 +322,27 @@ export default function EstimationIndex({ estimations, filters }: any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Estimasi" />
-            <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Estimasi Penimbangan Karet</h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Kalkulator otomatis untuk pembelian dan pengeluaran penimbangan.</p>
+            <div className="relative overflow-hidden bg-gradient-to-r from-amber-600 to-yellow-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Calculator className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Estimasi Penimbangan Karet</h1>
+                                <p className="text-amber-100 mt-1">Kalkulator otomatis untuk pembelian dan pengeluaran penimbangan.</p>
+                            </div>
+                        </div>
+                        <Button onClick={() => setIsCreateOpen(true)} className="bg-white text-indigo-700 hover:bg-indigo-50 border-0 shadow-lg font-bold">
+                            <Plus className="h-4 w-4 mr-2" /> Buat Estimasi Baru
+                        </Button>
                     </div>
-                    <Button onClick={() => setIsCreateOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
-                        <Plus className="h-4 w-4 mr-2" /> Buat Estimasi Baru
-                    </Button>
                 </div>
+            </div>
+
+            <div className="px-6 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 <Card className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border-white/30 shadow-xl">
                     <CardHeader>

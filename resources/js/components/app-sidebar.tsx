@@ -1,3 +1,5 @@
+import React from 'react';
+import { toast } from 'sonner';
 import { NavUser } from '@/components/nav-user';
 import { NavFooter } from '@/components/nav-footer';
 import {
@@ -83,6 +85,12 @@ const groupedNavItems: NavGroup[] = [
                 href: '/dashboard',
                 icon: LayoutDashboard,
             },
+            {
+                title: 'Customer / Client',
+                href: '/customers',
+                icon: Users,
+                permission: 'products.view',
+            },
         ]
     },
     // [PINDAH KE ATAS] SDM & Manajemen User
@@ -101,12 +109,6 @@ const groupedNavItems: NavGroup[] = [
                 icon: Clock,
             },
             {
-                title: 'Customer / Client',
-                href: '/customers',
-                icon: Users,
-                permission: 'products.view',
-            },
-            {
                 title: 'User Management',
                 href: '/usermanagements',
                 icon: UserCog2,
@@ -120,79 +122,34 @@ const groupedNavItems: NavGroup[] = [
             },
         ]
     },
+
     {
-        label: "Perkebunan Karet",
-        items: [],
-        subGroups: [
+        label: "Keuangan & Administrasi",
+        items: [
             {
-                label: "Operasional & Produksi",
-                items: [
-                    {
-                        title: 'Product / Barang',
-                        href: '/products',
-                        icon: PackageIcon,
-                        permission: 'products.view',
-                    },
-                    {
-                        title: 'Inventory / Gudang',
-                        href: '/inventories',
-                        icon: Archive,
-                    },
-                    {
-                        title: 'Penoreh (Incisor)',
-                        href: '/incisors',
-                        icon: UsersRound,
-                        permission: 'incisor.view',
-                    },
-                    {
-                        title: 'Hasil Toreh',
-                        href: '/inciseds',
-                        icon: PackageOpen,
-                        permission: 'incised.view',
-                    },
-                    {
-                        title: 'Permintaan Barang (PPB)',
-                        href: '/ppb',
-                        icon: BookUp2 ,
-                        permission: 'requests.view',
-                    },
-                    {
-                        title: 'Estimasi Penimbangan',
-                        href: '/estimations',
-                        icon: Calculator,
-                        permission: 'requests.view',
-                    },
-                ]
+                title: 'Invoice / Nota',
+                href: '/notas',
+                icon: ReceiptText ,
+                permission: 'notas.view',
             },
             {
-                label: "Keuangan & Administrasi",
-                items: [
-                    {
-                        title: 'Invoice / Nota',
-                        href: '/notas',
-                        icon: ReceiptText ,
-                        permission: 'notas.view',
-                    },
-                    {
-                        title: 'Kasbon & Piutang',
-                        href: '/kasbons',
-                        icon: HandCoins,
-                        permission: 'kasbons.view',
-                    },
-                    {
-                        title: 'Administrasi (Karet)',
-                        href: '/administrasis',
-                        icon: ChartArea,
-                        permission: 'administrasis.view',
-                    },
-                    {
-                        title: 'Payroll / Penggajian',
-                        href: '/payroll',
-                        icon: Banknote,
-                        permission: 'payroll.view',
-                    },
-                ]
-            }
+                title: 'Kasbon & Piutang',
+                href: '/kasbons',
+                icon: HandCoins,
+                permission: 'kasbons.view',
+            },
+            {
+                title: 'Administrasi (Karet)',
+                href: '/administrasis',
+                icon: ChartArea,
+                permission: 'administrasis.view',
+            },
+            {
+                title: 'Payroll / Penggajian',
+                href: '/payroll',
+                icon: Banknote,
+                permission: 'payroll.view',
+            },
         ]
     },
     {
@@ -212,6 +169,46 @@ const groupedNavItems: NavGroup[] = [
                 title: 'Manajemen Berkas PT',
                 href: '/company-documents',
                 icon: Notebook,
+            },
+            {
+                title: 'Permintaan Barang (PPB)',
+                href: '/ppb',
+                icon: BookUp2 ,
+                permission: 'requests.view',
+            },
+        ]
+    },
+    {
+        label: "Perkebunan Karet",
+        items: [
+            {
+                title: 'Product / Barang',
+                href: '/products',
+                icon: PackageIcon,
+                permission: 'products.view',
+            },
+            {
+                title: 'Inventory / Gudang',
+                href: '/inventories',
+                icon: Archive,
+            },
+            {
+                title: 'Penoreh (Incisor)',
+                href: '/incisors',
+                icon: UsersRound,
+                permission: 'incisor.view',
+            },
+            {
+                title: 'Hasil Toreh',
+                href: '/inciseds',
+                icon: PackageOpen,
+                permission: 'incised.view',
+            },
+            {
+                title: 'Estimasi Penimbangan',
+                href: '/estimations',
+                icon: Calculator,
+                permission: 'requests.view',
             },
         ]
     },
@@ -280,7 +277,7 @@ export function AppSidebar() {
     const global_real_estate = props.global_real_estate || { projects: [], active_project_id: null };
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -292,29 +289,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                 </SidebarMenu>
                 
-                {global_real_estate.projects.length > 0 && (
-                    <div className="px-2 mt-3 mb-1">
-                        <Select 
-                            value={global_real_estate.active_project_id?.toString() || ''} 
-                            onValueChange={(val) => {
-                                router.post('/real-estate/housing-project/set-active', {
-                                    housing_project_id: val
-                                }, { preserveScroll: true, preserveState: false });
-                            }}
-                        >
-                            <SelectTrigger className="w-full h-9 text-xs font-semibold bg-emerald-50 border-emerald-500/30 shadow-sm text-emerald-900 rounded-lg">
-                                <SelectValue placeholder="Pilih Proyek Aktif" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {global_real_estate.projects.map((p) => (
-                                    <SelectItem key={p.id} value={p.id.toString()} className="text-xs">
-                                        {p.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+
             </SidebarHeader>
 
             <SidebarContent className="custom-scrollbar">
@@ -351,10 +326,10 @@ export function AppSidebar() {
                                     asChild
                                     isActive={isActive}
                                     tooltip={item.title}
-                                    className={`transition-all duration-300 rounded-xl mb-1 ${isActive ? 'font-medium text-emerald-700 bg-emerald-500/10 dark:bg-emerald-500/20 shadow-sm border border-emerald-500/10' : 'text-slate-800 font-medium hover:bg-slate-100 hover:text-emerald-700 dark:text-slate-300'}`}
+                                    className={`transition-all duration-300 rounded-xl mb-1 ${isActive ? 'font-medium text-indigo-700 bg-indigo-500/10 dark:text-indigo-400 dark:bg-indigo-500/20 shadow-sm border border-indigo-500/10' : 'text-slate-800 font-medium hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400'}`}
                                 >
                                     <Link href={item.href} className="flex items-center gap-3">
-                                        <item.icon className={isActive ? "text-emerald-600 drop-shadow-sm" : "text-slate-600"} strokeWidth={isActive ? 2.5 : 1.5} />
+                                        <item.icon className={isActive ? "text-indigo-600 dark:text-indigo-400 drop-shadow-sm" : "text-slate-600 dark:text-slate-400"} strokeWidth={isActive ? 2.5 : 1.5} />
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -369,9 +344,40 @@ export function AppSidebar() {
                             className="group/collapsible"
                         >
                             <SidebarGroup>
+                                {group.label === "Real Estate (Properti)" && global_real_estate.projects.length > 0 && (
+                                    <div className="px-2 mb-2 mt-0">
+                                        <Select 
+                                            value={global_real_estate.active_project_id?.toString() || ''} 
+                                            onValueChange={(val) => {
+                                                router.post('/real-estate/housing-project/set-active', {
+                                                    housing_project_id: val
+                                                }, { preserveScroll: true, preserveState: false });
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-full h-9 text-xs font-semibold bg-indigo-50 border-indigo-500/30 shadow-sm text-indigo-900 rounded-lg">
+                                                <SelectValue placeholder="Pilih Proyek Aktif" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {global_real_estate.projects.map((p) => (
+                                                    <SelectItem key={p.id} value={p.id.toString()} className="text-xs">
+                                                        {p.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
                                 {/* Label Kategori */}
-                                <SidebarGroupLabel asChild className="mb-1 text-[11px] font-bold text-slate-800 uppercase tracking-wider hover:bg-slate-200 hover:text-slate-900 cursor-pointer rounded-md transition-colors">
-                                    <CollapsibleTrigger>
+                                <SidebarGroupLabel asChild className="mb-1 text-[11px] font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white cursor-pointer rounded-md transition-colors">
+                                    <CollapsibleTrigger onClick={(e) => {
+                                        if (group.label === "Real Estate (Properti)" && (!global_real_estate || !global_real_estate.active_project_id)) {
+                                            e.preventDefault();
+                                            toast.warning("Pemilihan Proyek Belum Aktif", {
+                                                description: "Silakan pilih proyek terlebih dahulu di atas.",
+                                                duration: 3000
+                                            });
+                                        }
+                                    }}>
                                         {group.label}
                                         <ChevronDown className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                                     </CollapsibleTrigger>
@@ -388,7 +394,7 @@ export function AppSidebar() {
                                             <div className="flex flex-col mt-1">
                                                 {visibleSubGroups.map((subGroup, subIdx) => (
                                                     <div key={subIdx} className="mb-3">
-                                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-2 border-b border-slate-100 pb-1 mx-2">{subGroup.label}</div>
+                                                        <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 px-2 border-b border-slate-100 dark:border-slate-800 pb-1 mx-2">{subGroup.label}</div>
                                                         <SidebarMenu>
                                                             {subGroup.items.map(renderItem)}
                                                         </SidebarMenu>

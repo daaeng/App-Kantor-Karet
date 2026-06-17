@@ -128,27 +128,34 @@ export default function Index({ usermanagements, flash, filter }: PageProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="User Management" />
-
-            <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                {/* Header Section */}
-                <div className="sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <Heading
-                            title="User Management"
-                            description="Manage user accounts, assign roles, and monitor access."
-                        />
-                    </div>
-                    {can('usermanagements.create') && (
-                        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                            <Link href={route('usermanagements.create')}>
-                                <Button className="bg-emerald-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
-                                    <CirclePlus className="mr-2 h-4 w-4" />
-                                    Add New User
-                                </Button>
-                            </Link>
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Users className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+                                <p className="text-indigo-100 mt-1">Manage user accounts, assign roles, and monitor access.</p>
+                            </div>
                         </div>
-                    )}
+                        {can('usermanagements.create') && (
+                            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                                <Link href={route('usermanagements.create')}>
+                                    <Button className="bg-white text-indigo-700 hover:bg-indigo-50 border-0 shadow-lg font-bold">
+                                        <CirclePlus className="mr-2 h-4 w-4" />
+                                        Add New User
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
+            </div>
+
+            <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* Flash Message */}
                 {flash.message && (
@@ -283,6 +290,7 @@ export default function Index({ usermanagements, flash, filter }: PageProps) {
                     )}
                 </div>
             </div>
+            
         </AppLayout>
     );
 }

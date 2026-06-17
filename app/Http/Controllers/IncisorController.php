@@ -136,13 +136,24 @@ class IncisorController extends Controller
             ->orderBy('date', 'DESC')
             ->get();
 
+        if (request()->wantsJson()) {
+            return response()->json([
+                'incisor'              => $incisor,
+                'totalQtyKg'           => $totalQtyKg,
+                'dailyData'            => $dailyData,
+                'totalQtyKgThisMonth'  => $totalQtyKgThisMonth,
+                'pendapatanBulanIni'   => $pendapatanBulanIni,
+                'sisaKasbon'           => $sisaKasbon,
+            ]);
+        }
+
         return Inertia::render('Incisors/Show', [
-            'incisor' => $incisor, 
-            'totalQtyKg' => $totalQtyKg,
-            'dailyData' => $dailyData,
+            'incisor'             => $incisor,
+            'totalQtyKg'          => $totalQtyKg,
+            'dailyData'           => $dailyData,
             'totalQtyKgThisMonth' => $totalQtyKgThisMonth,
-            'pendapatanBulanIni' => $pendapatanBulanIni,
-            'sisaKasbon' => $sisaKasbon,
+            'pendapatanBulanIni'  => $pendapatanBulanIni,
+            'sisaKasbon'          => $sisaKasbon,
         ]);
     }
 

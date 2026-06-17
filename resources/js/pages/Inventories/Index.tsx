@@ -48,19 +48,31 @@ export default function Index({ inventories, users }: PageProps<{ inventories: I
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Office Inventory" />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Card>
+            <div className="relative overflow-hidden bg-gradient-to-r from-cyan-600 to-blue-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <PlusCircle className="h-8 w-8" /> 
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Office Inventory</h1>
+                                <p className="text-cyan-100 mt-1">Kelola stok gudang dan aset barang kantor.</p>
+                            </div>
+                        </div>
                         {can('usermanagements.create') && (
-                            <CardHeader>
-                                <div className="flex justify-between items-center">
-                                    <CardTitle>Inventory Items List</CardTitle>
-                                    <Button onClick={() => openModal('newItem')}>
-                                        <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
-                                    </Button>
-                                </div>
-                            </CardHeader>
+                            <Button onClick={() => openModal('newItem')} className="bg-white text-emerald-700 hover:bg-emerald-50 border-0 shadow-lg font-bold">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Add New Item
+                            </Button>
                         )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="px-6 w-full -mt-20 relative z-20 pb-12 space-y-6">
+                <div className="max-w-7xl mx-auto">
+                    <Card className="border-none shadow-sm rounded-xl overflow-hidden">
                         <CardContent>
                             <Table>
                                 <TableHeader>

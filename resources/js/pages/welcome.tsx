@@ -77,7 +77,16 @@ export default function Welcome() {
     ];
 
     return (
-        <div className="font-sans text-slate-300 bg-transparent overflow-x-hidden selection:bg-emerald-500 selection:text-white relative min-h-screen">
+        <div 
+            className="font-sans text-slate-300 overflow-x-hidden selection:bg-emerald-500 selection:text-white relative min-h-screen"
+            style={{
+                backgroundColor: '#020617',
+                backgroundImage: `linear-gradient(rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.6)), url('/assets/bghero.jpg')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+            }}
+        >
             <Head title="Welcome" />
 
             {/* MAIN CONTENT WRAPPER */}

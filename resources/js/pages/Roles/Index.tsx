@@ -1,20 +1,22 @@
-// ./resources/js/Pages/Roles/Index.tsx
-
-import Heading from '@/components/heading';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { can } from '@/lib/can';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { CheckCircle2, CirclePlus, Pencil, Shield, Trash2, Users } from 'lucide-react';
-import React from 'react';
+import { BreadcrumbItem } from '@/types';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import {
+    AlertTriangle,
+    CheckCircle2,
+    CirclePlus,
+    Pencil,
+    Shield,
+    Trash2,
+    Users,
+    X,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Roles',
-        href: '/roles',
-    },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Roles & Permissions', href: '/roles' },
 ];
 
 interface Permission {
@@ -29,125 +31,131 @@ interface Role {
 }
 
 interface PageProps {
-    flash: {
-        message?: string;
-    };
+    flash: { message?: string };
     roles: Role[];
 }
 
 export default function Index({ roles, flash }: PageProps) {
     const { processing, delete: destroy } = useForm();
+    const [flashVisible, setFlashVisible] = useState(!!flash?.message);
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number; name: string }>({ open: false, id: 0, name: '' });
 
-    const handleDelete = (id: number, name: string) => {
-        if (confirm(`Are you sure you want to delete the role: ${name}?`)) {
-            destroy(route('roles.destroy', id), {
-                preserveScroll: true,
-            });
+    useEffect(() => {
+        if (flash?.message) {
+            setFlashVisible(true);
+            const t = setTimeout(() => setFlashVisible(false), 4000);
+            return () => clearTimeout(t);
         }
+    }, [flash?.message]);
+
+    const confirmDelete = () => {
+        destroy(route('roles.destroy', deleteModal.id), {
+            preserveScroll: true,
+            onSuccess: () => setDeleteModal({ open: false, id: 0, name: '' }),
+        });
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Roles Management" />
 
-            <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                {/* Page Header */}
-                <div className="sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <Heading 
-                            title="Roles & Permissions" 
-                            description="Define roles and assign permissions to control access across the system."
-                        />
-                    </div>
-                    {can('roles.create') && (
-                        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            {/* BANNER */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Shield className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Roles & Permissions</h1>
+                                <p className="text-indigo-100 mt-1">Tentukan peran dan hak akses untuk setiap pengguna sistem.</p>
+                            </div>
+                        </div>
+                        {can('roles.create') && (
                             <Link href={route('roles.create')}>
-                                <Button className="bg-emerald-600 hover:bg-indigo-700 text-white shadow-sm transition-all duration-200">
-                                    <CirclePlus className="mr-2 h-4 w-4" />
-                                    Add New Role
-                                </Button>
+                                <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-indigo-700 hover:bg-indigo-50 font-bold rounded-xl shadow-lg transition-all w-full sm:w-auto justify-center">
+                                    <CirclePlus className="h-4 w-4" /> Tambah Role Baru
+                                </button>
                             </Link>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
+            </div>
 
-                {/* Flash Message - Clean Style */}
-                {flash.message && (
-                    <Alert className="bg-white dark:bg-gray-800 border-l-4 border-l-emerald-500 border-y border-r border-gray-200 dark:border-gray-700 shadow-sm">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                        <div className="ml-2">
-                            <AlertTitle className="text-gray-900 dark:text-gray-100 font-medium">Success</AlertTitle>
-                            <AlertDescription className="text-gray-600 dark:text-gray-400">
-                                {flash.message}
-                            </AlertDescription>
+            <div className="px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-12 space-y-5">
+
+                {/* Flash */}
+                {flashVisible && flash?.message && (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm animate-in slide-in-from-top-2 duration-300">
+                        <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex-shrink-0">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                    </Alert>
+                        <div className="flex-1">
+                            <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">Berhasil!</p>
+                            <p className="text-xs text-emerald-600 dark:text-emerald-400">{flash.message}</p>
+                        </div>
+                        <button onClick={() => setFlashVisible(false)} className="text-emerald-400 hover:text-emerald-600">
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
                 )}
 
-                {/* Main Content Card */}
-                <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden">
+                {/* Table Card */}
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+                        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Daftar Role</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">Total {roles.length} role terdaftar dalam sistem.</p>
+                    </div>
+
                     {roles.length > 0 ? (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <table className="min-w-full divide-y divide-slate-100 dark:divide-zinc-800">
+                                <thead className="bg-slate-50 dark:bg-zinc-800">
                                     <tr>
-                                        {/* <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 sm:pl-6 w-20">
-                                            ID
-                                        </th> */}
-                                        <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                            Role Name
-                                        </th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                            Permissions
-                                        </th>
-                                        <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                            Actions
-                                        </th>
+                                        <th className="px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Nama Role</th>
+                                        <th className="px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Permissions</th>
+                                        <th className="px-6 py-3.5 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
                                     {roles.map((role) => (
-                                        <tr key={role.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150">
-                                            {/* <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-400 sm:pl-6">
-                                                #{role.id}
-                                            </td> */}
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                                        <tr key={role.id} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-emerald-600 dark:text-indigo-400">
-                                                        <Shield className="h-4 w-4" />
+                                                    <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                                        <Shield className="h-4 w-4 text-indigo-500" />
                                                     </div>
-                                                    <span className="capitalize">{role.name}</span>
+                                                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-100 capitalize">{role.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                <div className="flex flex-wrap items-center gap-2 max-w-2xl">
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-wrap gap-1.5 max-w-2xl">
                                                     {role.permissions.length > 0 ? (
                                                         <>
-                                                            {role.permissions.slice(0, 4).map((permission) => (
-                                                                <span 
-                                                                    key={permission.id} 
-                                                                    className="inline-flex items-center rounded-md bg-gray-50 dark:bg-gray-700 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/10"
-                                                                >
-                                                                    {permission.name}
+                                                            {role.permissions.slice(0, 5).map((p) => (
+                                                                <span key={p.id} className="inline-flex items-center px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-xs font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800">
+                                                                    {p.name}
                                                                 </span>
                                                             ))}
-                                                            {role.permissions.length > 4 && (
-                                                                <span className="inline-flex items-center rounded-md bg-indigo-50 dark:bg-indigo-900/20 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-700/10">
-                                                                    +{role.permissions.length - 4} more
+                                                            {role.permissions.length > 5 && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-700 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                                                    +{role.permissions.length - 5} lainnya
                                                                 </span>
                                                             )}
                                                         </>
                                                     ) : (
-                                                        <span className="text-gray-400 italic text-xs">No specific permissions assigned</span>
+                                                        <span className="text-xs text-slate-400 italic">Tidak ada permission</span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                            <td className="px-6 py-4">
                                                 <div className="flex items-center justify-end gap-2">
                                                     {can('roles.edit') && (
-                                                        <Link 
+                                                        <Link
                                                             href={route('roles.edit', role.id)}
-                                                            className="text-gray-400 hover:text-emerald-600 dark:hover:text-indigo-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                                            className="p-2 rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                                                             title="Edit Role"
                                                         >
                                                             <Pencil className="h-4 w-4" />
@@ -155,10 +163,9 @@ export default function Index({ roles, flash }: PageProps) {
                                                     )}
                                                     {can('roles.delete') && (
                                                         <button
-                                                            onClick={() => handleDelete(role.id, role.name)}
-                                                            disabled={processing}
-                                                            className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
-                                                            title="Delete Role"
+                                                            onClick={() => setDeleteModal({ open: true, id: role.id, name: role.name })}
+                                                            className="p-2 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                            title="Hapus Role"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </button>
@@ -171,20 +178,16 @@ export default function Index({ roles, flash }: PageProps) {
                             </table>
                         </div>
                     ) : (
-                        // Empty State - Clean
-                        <div className="text-center py-24 bg-white dark:bg-gray-800">
-                            <div className="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600">
-                                <Users className="h-12 w-12" />
-                            </div>
-                            <h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No roles found</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating a new role.</p>
+                        <div className="text-center py-24">
+                            <Users className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                            <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Belum ada role</h3>
+                            <p className="text-sm text-slate-500 mt-1">Mulai dengan membuat role baru.</p>
                             {can('roles.create') && (
                                 <div className="mt-6">
                                     <Link href={route('roles.create')}>
-                                        <Button variant="outline" className="border-gray-300 dark:border-gray-600">
-                                            <CirclePlus className="mr-2 h-4 w-4" />
-                                            Create Role
-                                        </Button>
+                                        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
+                                            <CirclePlus className="h-4 w-4" /> Buat Role
+                                        </button>
                                     </Link>
                                 </div>
                             )}
@@ -192,6 +195,38 @@ export default function Index({ roles, flash }: PageProps) {
                     )}
                 </div>
             </div>
+
+            {/* Delete Modal */}
+            {deleteModal.open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                        <div className="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/20 rounded-xl"><AlertTriangle className="h-6 w-6 text-white" /></div>
+                                <h3 className="text-xl font-bold text-white">Hapus Role</h3>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <p className="text-slate-700 dark:text-slate-300 text-sm">Apakah Anda yakin ingin menghapus role berikut?</p>
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg flex-shrink-0">
+                                    <Shield className="h-5 w-5 text-red-600" />
+                                </div>
+                                <p className="font-bold text-red-800 dark:text-red-200 capitalize">{deleteModal.name}</p>
+                            </div>
+                            <p className="text-xs text-slate-500">⚠️ Semua user dengan role ini akan kehilangan aksesnya. Tindakan ini tidak dapat dibatalkan.</p>
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button onClick={() => setDeleteModal({ open: false, id: 0, name: '' })} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2">
+                                    <X className="h-4 w-4" /> Batal
+                                </button>
+                                <button onClick={confirmDelete} disabled={processing} className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors flex items-center gap-2 min-w-[120px] justify-center">
+                                    <Trash2 className="h-4 w-4" /> {processing ? 'Menghapus...' : 'Ya, Hapus'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

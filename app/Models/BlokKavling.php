@@ -15,6 +15,8 @@ class BlokKavling extends Model
         'status_jual',
         'status_konstruksi',
         'keterangan',
+        'x_coord',
+        'y_coord',
     ];
 
     public function housingProject()

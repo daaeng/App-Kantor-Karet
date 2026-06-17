@@ -44,21 +44,31 @@ export default function MasterProductIndex({ products, flash }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Master Data Produk" />
-
-            <div className="p-4 md:p-6 space-y-6 bg-gray-50 dark:bg-black min-h-screen">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold">Master Data Produk</h1>
-                        <p className="text-gray-500 text-sm">Kelola nama-nama barang yang terdaftar di sistem.</p>
+            <div className="relative overflow-hidden bg-gradient-to-r from-pink-600 to-rose-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <PackagePlus className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Master Data Produk</h1>
+                                <p className="text-pink-100 mt-1">Kelola nama-nama barang yang terdaftar di sistem.</p>
+                            </div>
+                        </div>
+                        <Link href={route('products.index')}>
+                            <Button className="bg-white text-orange-700 hover:bg-orange-50 border-0 shadow-lg font-bold"><Undo2 className="mr-2 h-4 w-4"/> Kembali</Button>
+                        </Link>
                     </div>
-                    <Link href={route('products.index')}>
-                        <Button variant="outline"><Undo2 className="mr-2 h-4 w-4"/> Kembali</Button>
-                    </Link>
                 </div>
+            </div>
+
+            <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* Notifikasi Sukses */}
                 {flash.message && (
-                    <Alert className="bg-green-50 border-green-200 text-green-800">
+                    <Alert className="bg-green-50 border-green-200 text-green-800 shadow-sm backdrop-blur-sm bg-white/95">
                         <CheckCircle2 className="h-4 w-4" />
                         <AlertTitle>Berhasil!</AlertTitle>
                         <AlertDescription>{flash.message}</AlertDescription>
@@ -179,7 +189,8 @@ export default function MasterProductIndex({ products, flash }: Props) {
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+                </div>
+            
         </AppLayout>
     );
 }

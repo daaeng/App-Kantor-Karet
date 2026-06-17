@@ -12,7 +12,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Plus, Search, Pencil, Trash, Download, Eye } from 'lucide-react';
+import { Plus, Search, Pencil, Trash, Download, Eye, Send } from 'lucide-react';
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -112,16 +112,32 @@ export default function OutgoingMailIndex({ outgoingMails, totalOutgoingMails, f
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Surat Keluar" />
-            <div className="p-6 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Surat Keluar</h1>
-                        <p className="text-muted-foreground">Kelola penomoran dan pengarsipan surat keluar.</p>
+
+            {/* BANNER */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-green-600 to-teal-700 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10" />
+                <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-black/10 rounded-full blur-2xl" />
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md shadow-inner">
+                                <Send className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Surat Keluar</h1>
+                                <p className="text-emerald-100 mt-1">Kelola penomoran dan pengarsipan seluruh surat keluar perusahaan.</p>
+                            </div>
+                        </div>
+                        <Button onClick={() => setIsCreateOpen(true)} className="bg-white text-emerald-700 hover:bg-emerald-50 font-bold shadow-lg">
+                            <Plus className="mr-2 h-4 w-4" /> Buat Surat Keluar
+                        </Button>
                     </div>
-                    <Button onClick={() => setIsCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
-                        <Plus className="mr-2 h-4 w-4" /> Buat Surat Keluar
-                    </Button>
                 </div>
+            </div>
+
+            {/* CONTENT */}
+            <div className="px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-12 space-y-6">
 
                 <Card className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border-white/30 shadow-xl">
                     <CardHeader>
@@ -341,6 +357,7 @@ export default function OutgoingMailIndex({ outgoingMails, totalOutgoingMails, f
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            </div>
         </AppLayout>
     );
 }

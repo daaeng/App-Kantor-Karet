@@ -92,7 +92,7 @@ const OwnerCell: React.FC<{ kasbon: KasbonGroup }> = ({ kasbon }) => {
         <div className="flex items-center gap-3">
             <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0",
-                isPegawai ? 'bg-gradient-to-r from-emerald-500 to-lime-500' : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                isPegawai ? 'bg-gradient-to-r from-violet-600 to-purple-800' : 'bg-gradient-to-r from-violet-600 to-purple-800'
             )}>
                 {isPegawai ? <User size={20} /> : <HardHat size={20} />}
             </div>
@@ -194,37 +194,47 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Rekapitulasi Kasbon" />
-            <div className="space-y-6 p-4 min-h-screen sm:p-8">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <Heading title="Dashboard Rekap Kasbon" description="Total kasbon yang dimiliki oleh setiap orang." />
-                     <div className="flex items-center gap-3 flex-wrap">
-                        {/* [MODIFIED] Pass all filters to the print route */}
-                        <Link href={route('kasbons.print', {
-                            search: search || undefined,
-                            // [MODIFIED] Send 'undefined' if type is 'all'
-                            type: type === 'all' ? undefined : type,
-                            location: location === 'all' ? undefined : location
-                         })} target="_blank">
-                             <Button variant="outline" className="shadow-sm">
-                                <Printer className="w-4 h-4 mr-2" />
-                                Cetak Laporan
-                            </Button>
-                        </Link>
+            <div className="relative overflow-hidden bg-gradient-to-r from-violet-600 to-purple-800 pb-32 pt-12">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <Wallet className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">Dashboard Rekap Kasbon</h1>
+                                    <p className="text-violet-100 mt-1">Total kasbon yang dimiliki oleh setiap orang.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <Link href={route('kasbons.print', {
+                                    search: search || undefined,
+                                    type: type === 'all' ? undefined : type,
+                                    location: location === 'all' ? undefined : location
+                                })} target="_blank">
+                                    <Button className="bg-white/20 hover:bg-white/30 text-white border-0 shadow-sm backdrop-blur-md">
+                                        <Printer className="w-4 h-4 mr-2" />
+                                        Cetak Laporan
+                                    </Button>
+                                </Link>
 
-                        {/* [MODIFICATION END] */}
-                        {can('kasbons.create') && (
-                            <Button onClick={() => setIsPenorehModalOpen(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
-                                <HardHat className="w-4 h-4 mr-2" /> Buat Kasbon Penoreh
-                            </Button>
-                        )}
-                        {can('kasbons.create') && (
-                            <Button onClick={() => setIsPegawaiModalOpen(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
-                                <User className="w-4 h-4 mr-2" /> Buat Kasbon Pegawai
-                            </Button>
-                        )}
-
+                                {can('kasbons.create') && (
+                                    <Button onClick={() => setIsPenorehModalOpen(true)} className="bg-white text-orange-700 hover:bg-orange-50 shadow-lg font-bold">
+                                        <HardHat className="w-4 h-4 mr-2" /> Buat Kasbon Penoreh
+                                    </Button>
+                                )}
+                                {can('kasbons.create') && (
+                                    <Button onClick={() => setIsPegawaiModalOpen(true)} className="bg-white text-orange-700 hover:bg-orange-50 shadow-lg font-bold">
+                                        <User className="w-4 h-4 mr-2" /> Buat Kasbon Pegawai
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <StatCard icon={Clock} title="Kasbon Pending" value={totalPendingKasbon} description="Menunggu persetujuan" gradient="from-yellow-400 to-orange-500" iconColor="text-orange-500"/>
@@ -338,8 +348,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                 </Card>
 
                 <Pagination links={kasbons.links} />
-
-            </div>
+                </div>
 
             <CreateKasbonPenorehModal 
                 isOpen={isPenorehModalOpen} 
@@ -354,6 +363,7 @@ export default function KasbonIndex({ kasbons, flash, filter, totalPendingKasbon
                 onClose={() => setIsPegawaiModalOpen(false)} 
                 employees={employees} 
             />
+            
         </AppLayout>
     );
 }

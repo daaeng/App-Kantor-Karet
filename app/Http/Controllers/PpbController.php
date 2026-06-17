@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PpbHeader;
+use App\Models\OutgoingMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -41,8 +42,15 @@ class PpbController extends Controller
         $totalApproved = PpbHeader::where('status', 'approved')->count();
         $sumApproved = PpbHeader::where('status', 'approved')->sum('grand_total');
 
+        // Generate Nomor Otomatis (Format: 01/PPB/GKA-NTN/VI/26)
+        $bulanRomawi = $this->getRomawi(date('n'));
+        $tahun2Digit = date('y');
+        $count = PpbHeader::whereYear('tanggal', date('Y'))->count() + 1;
+        $nomorOtomatis = sprintf("%02d/PPB/GKA-NTN/%s/%s", $count, $bulanRomawi, $tahun2Digit);
+
         return Inertia::render('Ppb/Index', [
             'ppbs' => $ppbs,
+            'nomorOtomatis' => $nomorOtomatis,
             'filters' => $request->only(['search']),
             'stats' => [
                 'total' => $totalPpb,
@@ -55,11 +63,11 @@ class PpbController extends Controller
 
     public function create(): Response
     {
-        // Generate Nomor Otomatis (Format: 001/PPB/GKA/I/2026)
+        // Generate Nomor Otomatis (Format: 01/PPB/GKA-NTN/VI/26)
         $bulanRomawi = $this->getRomawi(date('n'));
-        $tahun = date('Y');
-        $count = PpbHeader::whereYear('tanggal', $tahun)->count() + 1;
-        $nomorOtomatis = sprintf("%03d/PPB/GKA/%s/%s", $count, $bulanRomawi, $tahun);
+        $tahun2Digit = date('y');
+        $count = PpbHeader::whereYear('tanggal', date('Y'))->count() + 1;
+        $nomorOtomatis = sprintf("%02d/PPB/GKA-NTN/%s/%s", $count, $bulanRomawi, $tahun2Digit);
 
         return Inertia::render('Ppb/Create', [
             'nomorOtomatis' => $nomorOtomatis
@@ -114,6 +122,16 @@ class PpbController extends Controller
                     'keterangan' => $item['keterangan'] ?? '-',
                 ]);
             }
+
+            // Catat ke OutgoingMail
+            OutgoingMail::create([
+                'letter_number' => $ppb->nomor,
+                'division' => 'PPB',
+                'letter_date' => $ppb->tanggal,
+                'recipient' => $ppb->kepada_yth_nama,
+                'subject' => $ppb->perihal,
+                'notes' => 'Otomatis dari pembuatan PPB'
+            ]);
         });
 
         return redirect()->route('ppb.index')->with('message', 'Permohonan Pembelian berhasil dibuat.');

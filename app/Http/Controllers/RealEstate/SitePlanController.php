@@ -6,15 +6,66 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\BlokKavling;
+use App\Models\HousingProject;
 use Inertia\Inertia;
 
 class SitePlanController extends Controller
 {
     public function index()
     {
-        $kavlings = BlokKavling::with('tipeRumah')->get();
+        $activeProjectId = session('active_housing_project_id');
+        $query = BlokKavling::with('tipeRumah');
+        $activeProject = null;
+
+        if ($activeProjectId) {
+            $query->where('housing_project_id', $activeProjectId);
+            $activeProject = HousingProject::find($activeProjectId);
+        }
+
+        $kavlings = $query->get();
         return Inertia::render('RealEstate/SitePlan/Index', [
-            'kavlings' => $kavlings
+            'kavlings' => $kavlings,
+            'activeProject' => $activeProject
         ]);
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'site_plan_image' => 'required|mimes:jpeg,png,jpg,pdf|max:20480',
+        ]);
+
+        $activeProjectId = session('active_housing_project_id');
+        if (!$activeProjectId) {
+            return redirect()->back()->with('error', 'Silakan pilih proyek aktif terlebih dahulu.');
+        }
+
+        $project = HousingProject::find($activeProjectId);
+        if ($project) {
+            if ($project->site_plan_image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($project->site_plan_image);
+            }
+            $project->site_plan_image = $request->file('site_plan_image')->store('site-plans', 'public');
+            $project->save();
+        }
+
+        return redirect()->back()->with('success', 'Gambar denah berhasil diunggah.');
+    }
+
+    public function deleteImage(Request $request)
+    {
+        $activeProjectId = session('active_housing_project_id');
+        if (!$activeProjectId) {
+            return redirect()->back()->with('error', 'Silakan pilih proyek aktif terlebih dahulu.');
+        }
+
+        $project = HousingProject::find($activeProjectId);
+        if ($project && $project->site_plan_image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($project->site_plan_image);
+            $project->site_plan_image = null;
+            $project->save();
+        }
+
+        return redirect()->back()->with('success', 'Gambar denah berhasil dihapus.');
     }
 }

@@ -214,17 +214,31 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
 
             {can('incised.view') && (
                 <>
-                    <div className="min-h-screen bg-transparent p-4 md:p-8 pb-24">
-                        <div className="flex justify-between items-center mb-6">
-                            <Heading title="Data Hasil Toreh" description="Rekapitulasi hasil kerja harian penoreh." />
-                            {can('incised.create') && (
-                                <Link href={route('inciseds.create')}>
-                                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 border-0">
-                                        <CirclePlus className="w-4 h-4 mr-2" /> Input Data Baru
-                                    </Button>
-                                </Link>
-                            )}
+                    <div className="relative overflow-hidden bg-gradient-to-r from-amber-600 to-orange-800 pb-32 pt-12">
+                            <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                            <div className="relative z-10 px-6 w-full">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4 text-white mb-2">
+                                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                            <FaSeedling className="h-8 w-8" />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-3xl font-bold tracking-tight">Data Hasil Toreh</h1>
+                                            <p className="text-amber-100 mt-1">Rekapitulasi hasil kerja harian penoreh.</p>
+                                        </div>
+                                    </div>
+                                    {can('incised.create') && (
+                                        <Link href={route('inciseds.create')}>
+                                            <Button className="bg-white text-teal-700 hover:bg-teal-50 border-0 shadow-lg font-bold">
+                                                <CirclePlus className="w-4 h-4 mr-2" /> Input Data Baru
+                                            </Button>
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
                         </div>
+
+                        <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12">
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <StatCard icon={FaSeedling} title="Total Karet" value={`${totalKebunA + totalKebunB} Kg`} subtitle={`${totalKebunA_keping + totalKebunB_keping} Keping - Akumulasi Temadu & Sebayar`} gradient="from-amber-500 to-orange-600" />
@@ -481,6 +495,7 @@ export default function Admin({ inciseds, flash, filter, totalKebunA, totalKebun
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
+                    
                 </>
             )}
         </AppLayout>

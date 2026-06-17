@@ -3,22 +3,16 @@ import AppLayout from '@/layouts/app-layout';
 import { can } from '@/lib/can';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Building2, CirclePlus, Eye, Pencil, Search, Trash, Undo2,
-    CalendarDays, Filter, ArrowDownLeft, Coins, Scale, Layers, Package,
-    Briefcase
+    ArrowDownLeft, CirclePlus, Eye, Pencil, Search, Trash, Undo2,
+    CalendarDays, Coins, Scale, Layers, Package, ArrowDown, Briefcase, Filter,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -96,39 +90,44 @@ export default function Tsa({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Stok Masuk (TSA)" />
+            <Head title="Stok Masuk Karet (TSA)" />
 
-            <div className="min-h-screen bg-gray-50/50 dark:bg-black py-8">
-                <div className="w-full px-4 sm:px-6 lg:px-8">
-
-                    {/* HEADER SECTION (Nuansa Biru) */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-800 border-t-4 border-t-blue-600">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                                    <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                Stok Masuk Karet
-                            </h1>
-                            <p className="text-gray-500 mt-1 ml-14">
-                                Monitoring pembelian karet dan penerimaan barang Temadu ~ Sebayar.
-                            </p>
+            {/* BANNER */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-700 to-violet-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10" />
+                <div className="absolute -top-10 -right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-1/4 w-48 h-48 bg-black/10 rounded-full blur-2xl" />
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md shadow-inner">
+                                <ArrowDown className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Stok Masuk Karet</h1>
+                                <p className="text-blue-100 mt-1">Monitoring pembelian karet dan penerimaan barang Temadu ~ Sebayar.</p>
+                            </div>
                         </div>
-                        <div className="flex gap-2 ml-auto md:ml-0">
+                        <div className="flex gap-2">
                             <Link href={route('products.index')}>
-                                <Button variant="outline" className="shadow-sm border-gray-300 hover:bg-gray-50">
-                                    <Undo2 size={16} className="mr-2"/> Kembali
+                                <Button className="bg-white/10 hover:bg-white/20 border-0 text-white font-semibold backdrop-blur-md">
+                                    <Undo2 size={16} className="mr-2" /> Kembali
                                 </Button>
                             </Link>
                             {can('products.create') && (
                                 <Link href={route('incoming.create')}>
-                                    <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all hover:-translate-y-0.5">
+                                    <Button className="bg-white text-blue-700 hover:bg-blue-50 font-bold shadow-lg">
                                         <CirclePlus size={18} className="mr-2" /> Input Stok Baru
                                     </Button>
                                 </Link>
                             )}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* MAIN CONTENT */}
+            <div className="px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-12 space-y-6">
 
                     {/* STATS CARDS (Warna Perusahaan: Biru, Kuning, Merah) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -345,7 +344,6 @@ export default function Tsa({
                         </CardContent>
                     </Card>
 
-                </div>
             </div>
         </AppLayout>
     );

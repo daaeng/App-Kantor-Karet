@@ -56,7 +56,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
             </div>
 
             {/* === FLOATING GLASS CARD === */}
-            <div className="relative z-10 w-full max-w-[420px] px-6">
+            <div className="relative z-10 w-full max-w-[420px] px-6 animate-in zoom-in-95 fade-in duration-500 ease-out">
                 <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-8 md:p-10 shadow-2xl relative overflow-hidden">
                     {/* Subtle internal top glow */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent blur-sm"></div>

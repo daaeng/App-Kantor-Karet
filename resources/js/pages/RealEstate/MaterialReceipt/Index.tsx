@@ -96,9 +96,9 @@ export default function Index({ receipts, suppliers, phases }: { receipts: any[]
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Nota Bon Material" />
             
-            <div className="relative overflow-hidden bg-gradient-to-r from-red-600 to-rose-900 pb-32 pt-12">
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 to-indigo-800 pb-32 pt-12">
                 <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
-                <div className="relative z-10 px-6 max-w-7xl mx-auto">
+                <div className="relative z-10 px-6 w-full">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 text-white mb-2">
                             <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
@@ -106,7 +106,7 @@ export default function Index({ receipts, suppliers, phases }: { receipts: any[]
                             </div>
                             <div>
                                 <h1 className="text-3xl font-bold tracking-tight">Nota Bon & Penerimaan</h1>
-                                <p className="text-red-100 mt-1">Catat struk/nota bon dari toko material, melacak hutang otomatis per toko.</p>
+                                <p className="text-blue-100 mt-1">Catat struk/nota bon dari toko material, melacak hutang otomatis per toko.</p>
                             </div>
                         </div>
                         <Button onClick={openAddModal} className="bg-white text-red-700 hover:bg-red-50 border-0 shadow-lg">
@@ -116,7 +116,7 @@ export default function Index({ receipts, suppliers, phases }: { receipts: any[]
                 </div>
             </div>
 
-            <div className="px-6 max-w-7xl mx-auto -mt-20 relative z-20 pb-12">
+            <div className="px-6 w-full -mt-20 relative z-20 pb-12">
                 <Card className="shadow-xl border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/95">
                     <CardHeader className="border-b bg-slate-50/50">
                         <div className="flex items-center justify-between">

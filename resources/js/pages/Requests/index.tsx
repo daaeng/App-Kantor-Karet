@@ -124,10 +124,24 @@ export default function Index({ requests, flash, filter, totalPending, totalAppr
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard Pengajuan" />
-            <div className="p-4 md:p-6 min-h-screen">
-                <div className="flex justify-between items-center mb-6">
-                    <Heading title="Dashboard Pengajuan" description="Monitor dan kelola semua pengajuan dana." />
+            <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-fuchsia-800 pb-32 pt-12">
+                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                    <div className="relative z-10 px-6 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-white mb-2">
+                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                    <FileText className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold tracking-tight">Dashboard Pengajuan</h1>
+                                    <p className="text-purple-100 mt-1">Monitor dan kelola semua pengajuan dana.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* Grid Kartu Statistik */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -218,7 +232,8 @@ export default function Index({ requests, flash, filter, totalPending, totalAppr
                     </div>
                     {requests.data.length > 0 && renderPagination(requests.links)}
                 </div>
-            </div>
+                </div>
+            
         </AppLayout>
     );
 }

@@ -38,7 +38,7 @@ export default function EditAttendancePage({ attendance, employees }: PageProps)
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit Absensi - ${attendance.employee.name}`} />
 
-            <div className="p-4 md:p-8 min-h-screen bg-gray-50/50 dark:bg-black font-sans pb-24">
+            <div className="min-h-screen bg-gray-50/50 dark:bg-black font-sans pb-24">
 
                 <div className="max-w-3xl mx-auto mb-6 flex items-center gap-4">
                     <Link href={route('attendances.index')}><Button variant="outline" size="icon" className="rounded-full shadow-sm bg-white"><ArrowLeft className="w-4 h-4" /></Button></Link>

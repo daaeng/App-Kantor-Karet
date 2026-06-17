@@ -25,16 +25,16 @@ const getTodayDate = () => {
     return `${yyyy}-${mm}-${dd}`;
 };
 
-const defaultParagraph = `Bersama surat ini kami Temadu Sebayar Agro mengajukan permohonan dana untuk keperluan pembelian barang lapangan/kantor, guna kelancaran kami dalam berkegiatan di lapangan/kantor. Adapun rincian pengajuan sebagai berikut:`;
+const defaultParagraph = `Bersama surat ini kami PT Garuda Karya Amanat mengajukan permohonan dana untuk keperluan pembelian barang lapangan/kantor, guna kelancaran kami dalam berkegiatan di lapangan/kantor. Adapun rincian pengajuan sebagai berikut:`;
 
-export default function CreatePpbModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function CreatePpbModal({ isOpen, onClose, nomorOtomatis }: { isOpen: boolean; onClose: () => void; nomorOtomatis: string }) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         tanggal: getTodayDate(),
-        nomor: '',
+        nomor: nomorOtomatis || '',
         lampiran: '-',
         perihal: 'Pengajuan Permintaan Barang',
         kepada_yth_jabatan: 'Direktur Keuangan',
-        kepada_yth_nama: 'Temadu Sebayar Agro',
+        kepada_yth_nama: 'PT Garuda Karya Amanat',
         kepada_yth_lokasi: 'di - Tempat',
         paragraf_pembuka: defaultParagraph,
         dibuat_oleh_nama: 'Daeng Muh. Nur H.',
@@ -95,7 +95,6 @@ export default function CreatePpbModal({ isOpen, onClose }: { isOpen: boolean; o
         });
     };
 
-    // Saat ditutup tapi nggak disubmit, mau ngereset? Opsional.
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             clearErrors();
@@ -105,29 +104,32 @@ export default function CreatePpbModal({ isOpen, onClose }: { isOpen: boolean; o
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-[95vw] md:max-w-5xl w-full max-h-[90vh] overflow-y-auto bg-gray-50 dark:bg-zinc-900 border-none rounded-2xl shadow-2xl">
-                <DialogHeader className="bg-white dark:bg-zinc-800 p-6 -mx-6 -mt-6 rounded-t-2xl border-b border-gray-100 dark:border-zinc-800 sticky top-0 z-10 shadow-sm">
-                    <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Buat Formulir PPB Baru</DialogTitle>
-                    <DialogDescription className="text-gray-500 dark:text-gray-400">Isi detail surat dan rincian pengajuan barang di bawah ini.</DialogDescription>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-[95vw] md:max-w-5xl w-full p-0 overflow-hidden bg-gray-50 dark:bg-zinc-900 border-none rounded-2xl shadow-2xl">
+                <div className="flex flex-col max-h-[90vh]">
+                    <DialogHeader className="bg-white dark:bg-zinc-800 p-6 border-b border-gray-100 dark:border-zinc-800 shrink-0 relative">
+                        <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100 pr-8">Buat Formulir PPB Baru</DialogTitle>
+                        <DialogDescription className="text-gray-500 dark:text-gray-400">Isi detail surat dan rincian pengajuan barang di bawah ini.</DialogDescription>
+                    </DialogHeader>
 
-                {Object.keys(errors).length > 0 && (
-                    <Alert variant="destructive" className="mt-4 mx-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Terjadi Kesalahan</AlertTitle>
-                        <AlertDescription>
-                            <ul className="list-disc pl-5">
-                                {Object.values(errors).map((message, index) => (
-                                    <li key={index}>{message}</li>
-                                ))}
-                            </ul>
-                        </AlertDescription>
-                    </Alert>
-                )}
+                    <div className="overflow-y-auto p-6 space-y-6">
 
-                <form onSubmit={handleSubmit} className="p-2 space-y-6">
-                    {/* Header Surat */}
-                    <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-6 rounded-xl shadow-sm">
+                    {Object.keys(errors).length > 0 && (
+                        <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Terjadi Kesalahan</AlertTitle>
+                            <AlertDescription>
+                                <ul className="list-disc pl-5">
+                                    {Object.values(errors).map((message, index) => (
+                                        <li key={index}>{message}</li>
+                                    ))}
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Header Surat */}
+                        <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-6 rounded-xl shadow-sm">
                         <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400 flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Informasi Surat</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -272,13 +274,16 @@ export default function CreatePpbModal({ isOpen, onClose }: { isOpen: boolean; o
                         </div>
                     </div>
 
-                    <DialogFooter className="bg-gray-50 dark:bg-zinc-800/50 p-6 -mx-6 -mb-6 rounded-b-2xl border-t border-gray-100 dark:border-zinc-800 sticky bottom-0 z-10 flex justify-end gap-2 mt-8">
-                        <Button type="button" variant="outline" onClick={onClose} disabled={processing}>Batal</Button>
-                        <Button type="submit" disabled={processing} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-6 shadow-md shadow-cyan-500/20">
-                            {processing ? 'Menyimpan...' : 'Simpan Pengajuan PPB'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                        <DialogFooter className="pt-4 pb-2">
+                            <Button type="button" variant="outline" onClick={handleOpenChange} disabled={processing} className="dark:border-slate-600">
+                                Batal
+                            </Button>
+                            <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[120px]">
+                                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </div>
             </DialogContent>
         </Dialog>
     );

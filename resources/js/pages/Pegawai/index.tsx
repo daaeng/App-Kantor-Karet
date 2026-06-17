@@ -137,18 +137,27 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Manajemen Pegawai" />
-
-            <div className="p-4 md:p-8 space-y-6 bg-transparent min-h-screen font-sans pb-24">
-
-                {/* 1. Header Section */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                     <div>
-                        <Heading title="Data Kepegawaian" description="Kelola daftar pegawai, profil, jabatan, dan basis gaji bulanan." />
+            <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white mb-2">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Users className="h-8 w-8" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Data Kepegawaian</h1>
+                                <p className="text-emerald-100 mt-1">Kelola daftar pegawai, profil, jabatan, dan basis gaji bulanan.</p>
+                            </div>
+                        </div>
+                        <Button onClick={handleAdd} className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 w-full sm:w-auto rounded-full px-6 border-0 font-bold">
+                            <CirclePlus className="mr-2 h-4 w-4" /> Tambah Pegawai Baru
+                        </Button>
                     </div>
-                    <Button onClick={handleAdd} className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all hover:-translate-y-0.5 w-full sm:w-auto rounded-full px-6 border-0">
-                        <CirclePlus className="mr-2 h-4 w-4" /> Tambah Pegawai Baru
-                    </Button>
                 </div>
+            </div>
+
+            <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6 font-sans">
 
                 {/* 2. Stats Cards (Konsisten dengan halaman Administrasi) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -382,6 +391,7 @@ export default function Index({ pegawai }: { pegawai: Pegawai[] }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            
         </AppLayout>
     );
 }

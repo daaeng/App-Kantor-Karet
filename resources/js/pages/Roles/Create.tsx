@@ -1,29 +1,110 @@
-// ./resources/js/Pages/Roles/Create.tsx
-
-import Heading from '@/components/heading';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { CircleAlert, Save, Shield, Undo2 } from 'lucide-react';
+import {
+    CheckSquare2,
+    ChevronRight,
+    CircleAlert,
+    Save,
+    Shield,
+    Square,
+    Undo2,
+} from 'lucide-react';
 import React from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Roles',
-        href: '/roles',
-    },
-    {
-        title: 'Create',
-        href: '/roles/create',
-    },
+    { title: 'Roles', href: '/roles' },
+    { title: 'Tambah Role', href: '/roles/create' },
 ];
 
 interface Props {
     permissions: string[];
+}
+
+// Grouping permission per modul/kategori
+const PERMISSION_GROUPS: { label: string; color: string; prefixes: string[] }[] = [
+    {
+        label: 'Platform',
+        color: 'bg-fuchsia-50 border-fuchsia-200 dark:bg-fuchsia-900/20 dark:border-fuchsia-800',
+        prefixes: ['dashboard', 'customers'],
+    },
+    {
+        label: 'SDM & Manajemen User',
+        color: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
+        prefixes: ['pegawai', 'attendances', 'usermanagements', 'roles'],
+    },
+    {
+        label: 'Keuangan & Administrasi',
+        color: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800',
+        prefixes: ['notas', 'kasbons', 'administrasis', 'payroll'],
+    },
+    {
+        label: 'Pemberkasan & Surat',
+        color: 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800',
+        prefixes: ['incoming-mails', 'outgoing-mails', 'company-documents'],
+    },
+    {
+        label: 'Perkebunan Karet',
+        color: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800',
+        prefixes: ['products', 'inventories', 'incisor', 'incised', 'requests', 'estimations'],
+    },
+    {
+        label: 'Real Estate (Properti)',
+        color: 'bg-violet-50 border-violet-200 dark:bg-violet-900/20 dark:border-violet-800',
+        prefixes: [
+            'housing-projects', 'site-plan', 'tipe-rumah', 'blok-kavling',
+            'project-phases', 'konsumens', 'penjualan-kavling',
+            'toko-material', 'material-receipts', 'transaksi-keuangan',
+        ],
+    },
+];
+
+const MODULE_LABELS: Record<string, string> = {
+    'dashboard': 'Dashboard',
+    'customers': 'Customer / Client',
+    'pegawai': 'Data Pegawai',
+    'attendances': 'Absensi',
+    'usermanagements': 'User Management',
+    'roles': 'Role & Permission',
+    'notas': 'Invoice / Nota',
+    'kasbons': 'Kasbon & Piutang',
+    'administrasis': 'Administrasi (Karet)',
+    'payroll': 'Payroll / Penggajian',
+    'incoming-mails': 'Surat Masuk',
+    'outgoing-mails': 'Surat Keluar',
+    'company-documents': 'Manajemen Berkas PT',
+    'products': 'Product / Barang',
+    'inventories': 'Inventory / Gudang',
+    'incisor': 'Penoreh (Incisor)',
+    'incised': 'Hasil Toreh',
+    'requests': 'Permintaan Barang (PPB)',
+    'estimations': 'Estimasi Penimbangan',
+    'housing-projects': 'Data Proyek Perumahan',
+    'site-plan': 'Site Plan (Denah)',
+    'tipe-rumah': 'Master Tipe Rumah',
+    'blok-kavling': 'Blok & Kavling',
+    'project-phases': 'Fase Pembangunan',
+    'konsumens': 'Data Konsumen',
+    'penjualan-kavling': 'Penjualan & KPR',
+    'toko-material': 'Supplier Material',
+    'material-receipts': 'Nota Penerimaan Material',
+    'transaksi-keuangan': 'Keuangan Properti',
+};
+
+const ACTION_COLORS: Record<string, string> = {
+    'view':   'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700',
+    'create': 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-700',
+    'edit':   'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-700',
+    'delete': 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700',
+};
+
+function groupPermissions(allPerms: string[], prefixes: string[]) {
+    const grouped: Record<string, string[]> = {};
+    for (const prefix of prefixes) {
+        const matched = allPerms.filter(p => p.startsWith(prefix + '.'));
+        if (matched.length > 0) grouped[prefix] = matched;
+    }
+    return grouped;
 }
 
 export default function Create({ permissions }: Props) {
@@ -32,11 +113,27 @@ export default function Create({ permissions }: Props) {
         permissions: [] as string[],
     });
 
-    const handleCheckBox = (permissionName: string, checked: boolean) => {
-        if (checked) {
-            setData('permissions', [...data.permissions, permissionName]);
+    const toggle = (perm: string, checked: boolean) => {
+        setData('permissions', checked
+            ? [...data.permissions, perm]
+            : data.permissions.filter(p => p !== perm)
+        );
+    };
+
+    const toggleGroup = (perms: string[], allSelected: boolean) => {
+        if (allSelected) {
+            setData('permissions', data.permissions.filter(p => !perms.includes(p)));
         } else {
-            setData('permissions', data.permissions.filter((name) => name !== permissionName));
+            const merged = Array.from(new Set([...data.permissions, ...perms]));
+            setData('permissions', merged);
+        }
+    };
+
+    const toggleAll = () => {
+        if (data.permissions.length === permissions.length) {
+            setData('permissions', []);
+        } else {
+            setData('permissions', [...permissions]);
         }
     };
 
@@ -45,124 +142,170 @@ export default function Create({ permissions }: Props) {
         post(route('roles.store'));
     };
 
+    const allSelected = data.permissions.length === permissions.length && permissions.length > 0;
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create New Role" />
+            <Head title="Tambah Role Baru" />
 
-            <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                {/* Header Section */}
-                <div className="sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <Heading 
-                            title="Create New Role" 
-                            description="Establish a new role identity and configure its initial access privileges."
-                        />
-                    </div>
-                    <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-800 pb-32 pt-12">
+                <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
+                <div className="relative z-10 px-6 w-full">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 text-white">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md"><Shield className="h-8 w-8" /></div>
+                            <div>
+                                <h1 className="text-3xl font-bold">Tambah Role Baru</h1>
+                                <p className="text-indigo-100 mt-1">Tentukan nama dan hak akses untuk role baru.</p>
+                            </div>
+                        </div>
                         <Link href={route('roles.index')}>
-                            <Button variant="outline" className="border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <Undo2 className="mr-2 h-4 w-4" />
-                                Back to List
-                            </Button>
+                            <button className="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl transition-all">
+                                <Undo2 className="h-4 w-4" /> Kembali
+                            </button>
                         </Link>
                     </div>
                 </div>
+            </div>
 
-                {/* Form Card */}
-                <div className="bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden">
+            <div className="px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-12">
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-800 overflow-hidden">
                     <div className="p-6 md:p-8">
-                        {/* Error Alert */}
+
+                        {/* Error */}
                         {Object.keys(errors).length > 0 && (
-                            <Alert className="mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
-                                <CircleAlert className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                <AlertTitle>Validation Error</AlertTitle>
-                                <AlertDescription>
-                                    <ul className="list-disc list-inside text-sm opacity-90">
-                                        {Object.entries(errors).map(([key, message]) => (
-                                            <li key={key}>{message as string}</li>
-                                        ))}
-                                    </ul>
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            {/* Role Name Input */}
-                            <div className="space-y-4 max-w-2xl">
-                                <Label htmlFor="name" className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    <Shield className="w-4 h-4 text-indigo-500" />
-                                    Role Name
-                                </Label>
-                                <Input
-                                    id="name"
-                                    placeholder="e.g., 'Super Admin' or 'Content Editor'"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    className="max-w-md bg-gray-50 border-gray-200 focus:bg-white focus:ring-indigo-500 dark:bg-gray-900 dark:border-gray-700 dark:focus:bg-gray-900"
-                                />
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    The display name for this role. Make it descriptive and unique.
-                                </p>
-                            </div>
-
-                            <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-                                <Label className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 block">
-                                    Permissions Configuration
-                                </Label>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                    Select the capabilities to grant to users with this role.
-                                </p>
-                                
-                                {/* Permissions Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                    {permissions.map((permission) => (
-                                        <label 
-                                            key={permission} 
-                                            className={`
-                                                relative flex items-start p-3 rounded-lg border transition-all duration-200 cursor-pointer
-                                                ${data.permissions.includes(permission) 
-                                                    ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800' 
-                                                    : 'bg-white border-gray-200 hover:border-indigo-300 dark:bg-gray-900 dark:border-gray-700 dark:hover:border-indigo-700'}
-                                            `}
-                                        >
-                                            <div className="flex items-center h-5">
-                                                <input
-                                                    type="checkbox"
-                                                    id={permission}
-                                                    checked={data.permissions.includes(permission)}
-                                                    onChange={(e) => handleCheckBox(permission, e.target.checked)}
-                                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 dark:border-gray-600 dark:bg-gray-800 dark:checked:bg-indigo-500"
-                                                />
-                                            </div>
-                                            <div className="ml-3 text-sm">
-                                                <span className={`font-medium ${data.permissions.includes(permission) ? 'text-indigo-900 dark:text-indigo-200' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                    {permission}
-                                                </span>
-                                            </div>
-                                        </label>
+                            <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                                <CircleAlert className="h-4 w-4 text-red-500 flex-shrink-0" />
+                                <div>
+                                    {Object.entries(errors).map(([k, v]) => (
+                                        <p key={k} className="text-sm text-red-700 dark:text-red-300">{v as string}</p>
                                     ))}
                                 </div>
                             </div>
+                        )}
 
-                            {/* Actions Footer */}
-                            <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
-                                <Link href={route('roles.index')}>
-                                    <Button variant="ghost" type="button">Cancel</Button>
-                                </Link>
-                                <Button 
-                                    type="submit" 
-                                    disabled={processing}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm min-w-[120px]"
-                                >
-                                    {processing ? (
-                                        <span className="flex items-center gap-2">Processing...</span>
-                                    ) : (
-                                        <span className="flex items-center gap-2">
-                                            <Save className="w-4 h-4" />
-                                            Save Role
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Role Name */}
+                            <div className="max-w-md space-y-2">
+                                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    <Shield className="w-4 h-4 text-indigo-500" /> Nama Role <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Contoh: Accounting, HRD, Manager..."
+                                    value={data.name}
+                                    onChange={e => setData('name', e.target.value)}
+                                    className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+                                    autoFocus
+                                />
+                            </div>
+
+                            {/* Permissions */}
+                            <div className="border-t border-slate-100 dark:border-zinc-800 pt-6">
+                                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                                    <div>
+                                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Konfigurasi Permission</h3>
+                                        <p className="text-xs text-slate-500 mt-0.5">Pilih hak akses yang akan diberikan kepada role ini.</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                                            {data.permissions.length} / {permissions.length} dipilih
                                         </span>
-                                    )}
-                                </Button>
+                                        <button
+                                            type="button"
+                                            onClick={toggleAll}
+                                            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20 transition-colors"
+                                        >
+                                            {allSelected ? <CheckSquare2 className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+                                            {allSelected ? 'Batalkan Semua' : 'Pilih Semua'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5">
+                                    {PERMISSION_GROUPS.map(group => {
+                                        const grouped = groupPermissions(permissions, group.prefixes);
+                                        if (Object.keys(grouped).length === 0) return null;
+                                        const allGroupPerms = Object.values(grouped).flat();
+                                        const allGroupSelected = allGroupPerms.every(p => data.permissions.includes(p));
+
+                                        return (
+                                            <div key={group.label} className={`rounded-xl border p-4 ${group.color}`}>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <ChevronRight className="h-4 w-4 text-slate-500" />
+                                                        <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">{group.label}</h4>
+                                                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-white/60 dark:bg-black/20 text-slate-600 dark:text-slate-300 font-medium">
+                                                            {allGroupPerms.filter(p => data.permissions.includes(p)).length}/{allGroupPerms.length}
+                                                        </span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleGroup(allGroupPerms, allGroupSelected)}
+                                                        className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/70 dark:bg-black/20 hover:bg-white dark:hover:bg-black/30 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-1"
+                                                    >
+                                                        {allGroupSelected ? <CheckSquare2 className="h-3 w-3" /> : <Square className="h-3 w-3" />}
+                                                        {allGroupSelected ? 'Batal Semua' : 'Pilih Semua'}
+                                                    </button>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {Object.entries(grouped).map(([prefix, perms]) => (
+                                                        <div key={prefix}>
+                                                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 ml-1">
+                                                                {MODULE_LABELS[prefix] || prefix}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {perms.map(perm => {
+                                                                    const action = perm.split('.')[1] || 'view';
+                                                                    const isChecked = data.permissions.includes(perm);
+                                                                    const colorClass = ACTION_COLORS[action] || ACTION_COLORS['view'];
+                                                                    return (
+                                                                        <label
+                                                                            key={perm}
+                                                                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all text-xs font-semibold select-none ${
+                                                                                isChecked ? colorClass : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-500 hover:border-slate-300'
+                                                                            }`}
+                                                                        >
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={isChecked}
+                                                                                onChange={e => toggle(perm, e.target.checked)}
+                                                                                className="sr-only"
+                                                                            />
+                                                                            {isChecked
+                                                                                ? <CheckSquare2 className="h-3.5 w-3.5 flex-shrink-0" />
+                                                                                : <Square className="h-3.5 w-3.5 flex-shrink-0" />
+                                                                            }
+                                                                            {action}
+                                                                        </label>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 dark:border-zinc-800">
+                                <Link href={route('roles.index')}>
+                                    <button type="button" className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-2">
+                                        <Undo2 className="h-4 w-4" /> Batal
+                                    </button>
+                                </Link>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-6 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 rounded-lg shadow transition-all flex items-center gap-2 min-w-[140px] justify-center"
+                                >
+                                    <Save className="h-4 w-4" />
+                                    {processing ? 'Menyimpan...' : 'Simpan Role'}
+                                </button>
                             </div>
                         </form>
                     </div>
