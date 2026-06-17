@@ -375,6 +375,7 @@ class IncisedController extends Controller
         // JIKA ADA SISA UANG YANG DITERIMA PENOREH, CATAT PENGELUARAN KAS
         if ($sisaUang > 0) {
             FinancialTransaction::create([
+                'business_unit' => FinancialTransaction::BUSINESS_KARET,
                 'type' => 'expense',
                 'source' => 'cash',
                 'category' => 'Pembayaran Penoreh',

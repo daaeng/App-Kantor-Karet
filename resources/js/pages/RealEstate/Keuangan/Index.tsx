@@ -10,7 +10,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MoreHorizontal, Plus, Search, Landmark, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 
@@ -20,8 +19,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Keuangan Proyek', href: '/real-estate/transaksi-keuangan' },
 ];
 
+const INCOME_CATEGORIES = ['Booking Fee', 'DP Kavling', 'Cicilan DP', 'Pencairan KPR', 'Pendapatan Lain'];
+const EXPENSE_CATEGORIES = ['Pelunasan Material', 'Upah Tukang', 'Material Bangunan', 'Overhead Proyek', 'Marketing', 'Administrasi'];
+
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+};
+
+const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 export default function Index({ transaksis, projects, penjualans, receipts }: { transaksis: any[], projects: any[], penjualans: any[], receipts: any[] }) {
@@ -31,17 +38,20 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
 
     const { data, setData, post, put, delete: destroy, reset, processing } = useForm({
         housing_project_id: '',
-        tipe_transaksi: 'Pemasukan',
-        kategori: '',
-        tanggal: '',
-        nominal: '',
-        keterangan: '',
+        type: 'income',
+        source: 'cash',
+        category: '',
+        transaction_date: new Date().toISOString().split('T')[0],
+        amount: '',
+        description: '',
+        counterparty: '',
         penjualan_kavling_id: '',
         material_receipt_id: '',
     });
 
     const openAddModal = () => {
         reset();
+        setData('transaction_date', new Date().toISOString().split('T')[0]);
         setIsAddOpen(true);
     };
 
@@ -49,11 +59,13 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
         setEditingId(t.id);
         setData({
             housing_project_id: t.housing_project_id ? t.housing_project_id.toString() : 'none',
-            tipe_transaksi: t.tipe_transaksi,
-            kategori: t.kategori,
-            tanggal: t.tanggal,
-            nominal: t.nominal.toString(),
-            keterangan: t.keterangan || '',
+            type: t.type,
+            source: t.source || 'cash',
+            category: t.category,
+            transaction_date: t.transaction_date,
+            amount: t.amount.toString(),
+            description: t.description || '',
+            counterparty: t.counterparty || '',
             penjualan_kavling_id: t.penjualan_kavling_id ? t.penjualan_kavling_id.toString() : 'none',
             material_receipt_id: t.material_receipt_id ? t.material_receipt_id.toString() : 'none',
         });
@@ -66,15 +78,17 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
         }
     };
 
+    const transformPayload = (formData: typeof data) => ({
+        ...formData,
+        housing_project_id: formData.housing_project_id === 'none' ? null : formData.housing_project_id,
+        penjualan_kavling_id: formData.penjualan_kavling_id === 'none' ? null : formData.penjualan_kavling_id,
+        material_receipt_id: formData.material_receipt_id === 'none' ? null : formData.material_receipt_id,
+    });
+
     const handleAddSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/real-estate/transaksi-keuangan', {
-            transform: (data) => ({
-                ...data,
-                housing_project_id: data.housing_project_id === 'none' ? null : data.housing_project_id,
-                penjualan_kavling_id: data.penjualan_kavling_id === 'none' ? null : data.penjualan_kavling_id,
-                material_receipt_id: data.material_receipt_id === 'none' ? null : data.material_receipt_id,
-            }),
+            transform: transformPayload,
             onSuccess: () => {
                 setIsAddOpen(false);
                 reset();
@@ -85,12 +99,7 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         put(`/real-estate/transaksi-keuangan/${editingId}`, {
-            transform: (data) => ({
-                ...data,
-                housing_project_id: data.housing_project_id === 'none' ? null : data.housing_project_id,
-                penjualan_kavling_id: data.penjualan_kavling_id === 'none' ? null : data.penjualan_kavling_id,
-                material_receipt_id: data.material_receipt_id === 'none' ? null : data.material_receipt_id,
-            }),
+            transform: transformPayload,
             onSuccess: () => {
                 setIsEditOpen(false);
                 reset();
@@ -98,16 +107,16 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
         });
     };
 
-    // Kalkulasi saldo berjalan
-    let saldoBerjalan = 0;
-    const totalPemasukan = transaksis.filter(t => t.tipe_transaksi === 'Pemasukan').reduce((acc, t) => acc + parseFloat(t.nominal), 0);
-    const totalPengeluaran = transaksis.filter(t => t.tipe_transaksi === 'Pengeluaran').reduce((acc, t) => acc + parseFloat(t.nominal), 0);
-    saldoBerjalan = totalPemasukan - totalPengeluaran;
+    const totalPemasukan = transaksis.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+    const totalPengeluaran = transaksis.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+    const saldoBerjalan = totalPemasukan - totalPengeluaran;
+
+    const categoryOptions = data.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Keuangan Properti" />
-            
+
             <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 to-indigo-800 pb-32 pt-12">
                 <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
                 <div className="relative z-10 px-6 w-full">
@@ -125,7 +134,7 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                             <Plus className="mr-2 h-4 w-4" /> Catat Transaksi Keuangan
                         </Button>
                     </div>
-                    
+
                     <div className="grid grid-cols-3 gap-4 mt-8">
                         <Card className="bg-white/10 border-0 text-white backdrop-blur-sm">
                             <CardContent className="p-4">
@@ -179,18 +188,22 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                                 ) : (
                                     transaksis.map((t) => (
                                         <TableRow key={t.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <TableCell className="pl-6 font-medium text-slate-700">{t.tanggal}</TableCell>
+                                            <TableCell className="pl-6 font-medium text-slate-700">{formatDate(t.transaction_date)}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2 font-bold">
-                                                    {t.tipe_transaksi === 'Pemasukan' ? <ArrowDownCircle className="w-4 h-4 text-emerald-600"/> : <ArrowUpCircle className="w-4 h-4 text-rose-600"/>}
-                                                    <span className={t.tipe_transaksi === 'Pemasukan' ? 'text-emerald-700' : 'text-rose-700'}>
-                                                        {t.kategori}
+                                                    {t.type === 'income' ? <ArrowDownCircle className="w-4 h-4 text-emerald-600"/> : <ArrowUpCircle className="w-4 h-4 text-rose-600"/>}
+                                                    <span className={t.type === 'income' ? 'text-emerald-700' : 'text-rose-700'}>
+                                                        {t.category}
                                                     </span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 mt-1">
+                                                    {t.source === 'bank' ? 'Bank' : 'Kas'} · {t.transaction_code && t.transaction_number ? `${t.transaction_code}-${t.transaction_number}` : '-'}
                                                 </div>
                                                 {t.housing_project && <div className="text-xs text-slate-500 mt-1">Proyek: {t.housing_project.nama_proyek}</div>}
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-slate-900">{t.keterangan || '-'}</div>
+                                                <div className="text-slate-900">{t.description || '-'}</div>
+                                                {t.counterparty && <div className="text-xs text-slate-500 mt-1">{t.type === 'income' ? 'Dari' : 'Ke'}: {t.counterparty}</div>}
                                                 {t.penjualan_kavling && (
                                                     <div className="text-xs text-emerald-600 mt-1">Terkait: DP/Cicilan dari {t.penjualan_kavling.konsumen?.nama_lengkap}</div>
                                                 )}
@@ -198,8 +211,8 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                                                     <div className="text-xs text-rose-600 mt-1">Terkait: Pelunasan Nota Bon ({t.material_receipt.toko_material?.nama_toko})</div>
                                                 )}
                                             </TableCell>
-                                            <TableCell className={`text-right font-bold ${t.tipe_transaksi === 'Pemasukan' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                {t.tipe_transaksi === 'Pemasukan' ? '+' : '-'}{formatCurrency(t.nominal)}
+                                            <TableCell className={`text-right font-bold ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                {t.type === 'income' ? '+' : '-'}{formatCurrency(parseFloat(t.amount))}
                                             </TableCell>
                                             <TableCell className="text-right pr-6">
                                                 <DropdownMenu>
@@ -224,9 +237,8 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                     </CardContent>
                 </Card>
 
-                {/* Modal Tambah/Edit */}
                 <Dialog open={isAddOpen || isEditOpen} onOpenChange={(open) => {
-                    if(!open) { setIsAddOpen(false); setIsEditOpen(false); }
+                    if (!open) { setIsAddOpen(false); setIsEditOpen(false); }
                 }}>
                     <DialogContent className="bg-white dark:bg-slate-900 border dark:border-slate-800 shadow-xl sm:max-w-[600px] overflow-y-auto max-h-[90vh]">
                         <form onSubmit={isAddOpen ? handleAddSubmit : handleEditSubmit}>
@@ -236,43 +248,66 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                             <div className="grid gap-4 py-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="tipe_transaksi">Tipe Arus Kas</Label>
-                                        <Select onValueChange={(val) => setData('tipe_transaksi', val)} value={data.tipe_transaksi}>
-                                            <SelectTrigger className={data.tipe_transaksi === 'Pemasukan' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}>
+                                        <Label>Tipe Arus Kas</Label>
+                                        <Select onValueChange={(val) => setData({ ...data, type: val, category: '' })} value={data.type}>
+                                            <SelectTrigger className={data.type === 'income' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Pemasukan">Pemasukan (Uang Masuk)</SelectItem>
-                                                <SelectItem value="Pengeluaran">Pengeluaran (Uang Keluar)</SelectItem>
+                                                <SelectItem value="income">Pemasukan (Uang Masuk)</SelectItem>
+                                                <SelectItem value="expense">Pengeluaran (Uang Keluar)</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="tanggal">Tanggal Transaksi</Label>
-                                        <Input id="tanggal" type="date" value={data.tanggal} onChange={(e) => setData('tanggal', e.target.value)} required />
+                                        <Label>Sumber Dana</Label>
+                                        <Select onValueChange={(val) => setData('source', val)} value={data.source}>
+                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="cash">Kas Tunai</SelectItem>
+                                                <SelectItem value="bank">Rekening Bank</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="nominal">Nominal (Rp)</Label>
-                                        <Input id="nominal" type="number" value={data.nominal} onChange={(e) => setData('nominal', e.target.value)} required />
+                                        <Label>Tanggal Transaksi</Label>
+                                        <Input type="date" value={data.transaction_date} onChange={(e) => setData('transaction_date', e.target.value)} required />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="kategori">Kategori Transaksi</Label>
-                                        <Input id="kategori" value={data.kategori} onChange={(e) => setData('kategori', e.target.value)} required placeholder="Contoh: Booking Fee, Gaji Tukang" />
+                                        <Label>Nominal (Rp)</Label>
+                                        <Input type="number" value={data.amount} onChange={(e) => setData('amount', e.target.value)} required />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label>Kategori Transaksi</Label>
+                                        <Select onValueChange={(val) => setData('category', val)} value={data.category}>
+                                            <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
+                                            <SelectContent>
+                                                {categoryOptions.map((cat) => (
+                                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>{data.type === 'income' ? 'Diterima Dari' : 'Dibayarkan Ke'}</Label>
+                                        <Input value={data.counterparty} onChange={(e) => setData('counterparty', e.target.value)} placeholder="Nama pihak terkait" />
                                     </div>
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="keterangan">Keterangan / Rincian</Label>
-                                    <Input id="keterangan" value={data.keterangan} onChange={(e) => setData('keterangan', e.target.value)} />
+                                    <Label>Keterangan / Rincian</Label>
+                                    <Input value={data.description} onChange={(e) => setData('description', e.target.value)} />
                                 </div>
 
                                 <div className="border-t mt-2 pt-4">
                                     <Label className="mb-3 block text-slate-600">Alokasi & Keterkaitan (Opsional)</Label>
-                                    
+
                                     <div className="grid gap-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="housing_project_id" className="text-xs">Alokasi ke Proyek</Label>
+                                            <Label className="text-xs">Alokasi ke Proyek</Label>
                                             <Select onValueChange={(val) => setData('housing_project_id', val)} value={data.housing_project_id || 'none'}>
                                                 <SelectTrigger><SelectValue placeholder="Pilih Proyek" /></SelectTrigger>
                                                 <SelectContent>
@@ -282,9 +317,9 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                                             </Select>
                                         </div>
 
-                                        {data.tipe_transaksi === 'Pemasukan' && (
+                                        {data.type === 'income' && (
                                             <div className="grid gap-2 p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                                                <Label htmlFor="penjualan_kavling_id" className="text-xs text-emerald-800">Tautkan dengan Pembayaran Konsumen</Label>
+                                                <Label className="text-xs text-emerald-800">Tautkan dengan Pembayaran Konsumen</Label>
                                                 <Select onValueChange={(val) => setData('penjualan_kavling_id', val)} value={data.penjualan_kavling_id || 'none'}>
                                                     <SelectTrigger><SelectValue placeholder="Pilih Transaksi Penjualan" /></SelectTrigger>
                                                     <SelectContent>
@@ -296,9 +331,9 @@ export default function Index({ transaksis, projects, penjualans, receipts }: { 
                                             </div>
                                         )}
 
-                                        {data.tipe_transaksi === 'Pengeluaran' && (
+                                        {data.type === 'expense' && (
                                             <div className="grid gap-2 p-3 bg-rose-50/50 rounded-lg border border-rose-100">
-                                                <Label htmlFor="material_receipt_id" className="text-xs text-rose-800">Tautkan Pelunasan Nota Bon</Label>
+                                                <Label className="text-xs text-rose-800">Tautkan Pelunasan Nota Bon</Label>
                                                 <Select onValueChange={(val) => setData('material_receipt_id', val)} value={data.material_receipt_id || 'none'}>
                                                     <SelectTrigger><SelectValue placeholder="Pilih Nota Bon Belum Lunas" /></SelectTrigger>
                                                     <SelectContent>

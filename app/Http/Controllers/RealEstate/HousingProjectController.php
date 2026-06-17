@@ -27,14 +27,16 @@ class HousingProjectController extends Controller
                 
                 $totalKonsumen = \App\Models\Konsumen::where('housing_project_id', $activeProjectId)->count();
                 
-                $totalRevenue = \App\Models\TransaksiKeuangan::where('housing_project_id', $activeProjectId)
-                    ->where('tipe_transaksi', 'Pemasukan')
-                    ->where('kategori', '!=', 'Pelunasan Nota Toko')
-                    ->sum('nominal');
-                    
-                $totalExpense = \App\Models\TransaksiKeuangan::where('housing_project_id', $activeProjectId)
-                    ->where('tipe_transaksi', 'Pengeluaran')
-                    ->sum('nominal');
+                $totalRevenue = \App\Models\FinancialTransaction::realEstate()
+                    ->where('housing_project_id', $activeProjectId)
+                    ->where('type', 'income')
+                    ->where('category', '!=', 'Pelunasan Nota Toko')
+                    ->sum('amount');
+
+                $totalExpense = \App\Models\FinancialTransaction::realEstate()
+                    ->where('housing_project_id', $activeProjectId)
+                    ->where('type', 'expense')
+                    ->sum('amount');
 
                 $stats = [
                     'project' => $activeProject,

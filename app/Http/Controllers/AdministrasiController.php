@@ -54,7 +54,7 @@ class AdministrasiController extends Controller
         }
 
         if ($data['printType'] === 'jurnal' || $data['printType'] === 'all') {
-            $trxQuery = FinancialTransaction::query();
+            $trxQuery = FinancialTransaction::karet();
             $timePeriod = $request->input('time_period', 'this-month');
             $selectedMonth = $request->input('month', Carbon::now()->month);
             $selectedYear = $request->input('year', Carbon::now()->year);
@@ -101,7 +101,7 @@ class AdministrasiController extends Controller
 
         $outgoingQuery = OutgoingStock::query();
         $incomingQuery = IncomingStock::query();
-        $trxQuery = FinancialTransaction::query();
+        $trxQuery = FinancialTransaction::karet();
         $kasbonQuery = Kasbon::query();
 
         $payrollQuery = Payroll::whereIn('status', ['final', 'paid']);
@@ -189,15 +189,15 @@ class AdministrasiController extends Controller
         $totalKasOut = $kasOut_BayarPenoreh + $kasOut_BeliKaretManual + $kasOut_Pegawai + $kasOut_Penoreh + $kasOut_Lainnya;
         $saldoKasPeriod = $totalKasIn - $totalKasOut;
 
-        $accPenarikanTunai = FinancialTransaction::where('category', 'Penarikan Tunai dari Bank')->sum('amount');
-        $accBankIn = OutgoingStock::sum('grand_total') + FinancialTransaction::where('source', 'bank')->where('type', 'income')->sum('amount');
-        $accBankOut = Payroll::whereIn('status', ['final', 'paid'])->sum('gaji_bersih') + FinancialTransaction::where('source', 'bank')->where('type', 'expense')->sum('amount') + $accPenarikanTunai;
+        $accPenarikanTunai = FinancialTransaction::karet()->where('category', 'Penarikan Tunai dari Bank')->sum('amount');
+        $accBankIn = OutgoingStock::sum('grand_total') + FinancialTransaction::karet()->where('source', 'bank')->where('type', 'income')->sum('amount');
+        $accBankOut = Payroll::whereIn('status', ['final', 'paid'])->sum('gaji_bersih') + FinancialTransaction::karet()->where('source', 'bank')->where('type', 'expense')->sum('amount') + $accPenarikanTunai;
         $saldoBankAccumulated = $accBankIn - $accBankOut;
 
-        $accKasInManual = FinancialTransaction::where('source', 'cash')->where('type', 'income')->where('category', '!=', 'Penarikan Tunai dari Bank')->sum('amount');
+        $accKasInManual = FinancialTransaction::karet()->where('source', 'cash')->where('type', 'income')->where('category', '!=', 'Penarikan Tunai dari Bank')->sum('amount');
         $accKasIn = $accKasInManual + $accPenarikanTunai;
 
-        $accKasOut = Kasbon::sum('kasbon') + FinancialTransaction::where('source', 'cash')->where('type', 'expense')->sum('amount');
+        $accKasOut = Kasbon::sum('kasbon') + FinancialTransaction::karet()->where('source', 'cash')->where('type', 'expense')->sum('amount');
         $saldoKasAccumulated = $accKasIn - $accKasOut;
 
         $totalKasbonAll = Kasbon::sum('kasbon');
@@ -389,7 +389,7 @@ class AdministrasiController extends Controller
         $startYear = $request->input('start_year', Carbon::now()->year);
         $endYear = $request->input('end_year', Carbon::now()->year);
 
-        $query = FinancialTransaction::query();
+        $query = FinancialTransaction::karet();
 
         if ($timePeriod === 'specific-month') {
             $query->whereMonth('transaction_date', $selectedMonth)->whereYear('transaction_date', $selectedYear);
@@ -452,7 +452,7 @@ class AdministrasiController extends Controller
 
         $transactionCode = $prefix . '-' . $monthYear;
 
-        $lastTrx = FinancialTransaction::where('transaction_code', $transactionCode)
+        $lastTrx = FinancialTransaction::karet()->where('transaction_code', $transactionCode)
             ->orderByRaw('CAST(transaction_number AS UNSIGNED) DESC')
             ->first();
 
@@ -463,6 +463,7 @@ class AdministrasiController extends Controller
         $transactionNumber = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
 
         FinancialTransaction::create([
+            'business_unit' => FinancialTransaction::BUSINESS_KARET,
             'type' => $request->type,
             'source' => $request->source,
             'category' => $request->kategori,
@@ -488,7 +489,7 @@ class AdministrasiController extends Controller
             'tanggal' => 'required|date',
         ]);
 
-        $transaction = FinancialTransaction::findOrFail($id);
+        $transaction = FinancialTransaction::karet()->findOrFail($id);
         $transaction->update([
             'type' => $request->type,
             'source' => $request->source,
@@ -505,7 +506,7 @@ class AdministrasiController extends Controller
 
     public function destroyTransaction($id)
     {
-        FinancialTransaction::findOrFail($id)->delete();
+        FinancialTransaction::karet()->findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Transaksi dihapus!');
     }
 
@@ -538,14 +539,14 @@ class AdministrasiController extends Controller
         $periodString = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
 
         $revenue_karet = OutgoingStock::whereMonth('date', $month)->whereYear('date', $year)->sum('grand_total') ?? 0;
-        $revenue_lain = FinancialTransaction::where('type', 'income')
+        $revenue_lain = FinancialTransaction::karet()->where('type', 'income')
             ->where('category', 'Pendapatan Lain (Bank)')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)
             ->sum('amount') ?? 0;
         $revenue_total = $revenue_karet + $revenue_lain;
 
         $cogs_incised = Incised::whereMonth('date', $month)->whereYear('date', $year)->sum('net_received') ?? 0;
-        $cogs_manual = FinancialTransaction::where('source', 'cash')
+        $cogs_manual = FinancialTransaction::karet()->where('source', 'cash')
             ->where('type', 'expense')->where('category', 'Pembelian Karet')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)
             ->sum('amount') ?? 0;
@@ -555,22 +556,22 @@ class AdministrasiController extends Controller
         $opex_gaji = Payroll::whereIn('status', ['final', 'paid'])
             ->where('payroll_period', $periodString)->sum('gaji_bersih') ?? 0;
 
-        $opex_lapangan = FinancialTransaction::where('category', 'Operasional Lapangan')
+        $opex_lapangan = FinancialTransaction::karet()->where('category', 'Operasional Lapangan')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
 
-        $opex_kantor = FinancialTransaction::where('category', 'Operasional Kantor')
+        $opex_kantor = FinancialTransaction::karet()->where('category', 'Operasional Kantor')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
 
-        $opex_bpjs = FinancialTransaction::where('category', 'BPJS Ketenagakerjaan')
+        $opex_bpjs = FinancialTransaction::karet()->where('category', 'BPJS Ketenagakerjaan')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
 
-        $opex_kapal_truck = FinancialTransaction::whereIn('category', ['Pembayaran Kapal', 'Pembayaran Truck'])
+        $opex_kapal_truck = FinancialTransaction::karet()->whereIn('category', ['Pembayaran Kapal', 'Pembayaran Truck'])
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
 
-        $opex_makan_mandor = FinancialTransaction::where('category', 'Uang Makan Mandor')
+        $opex_makan_mandor = FinancialTransaction::karet()->where('category', 'Uang Makan Mandor')
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
 
-        $opex_lainnya = FinancialTransaction::where('type', 'expense')
+        $opex_lainnya = FinancialTransaction::karet()->where('type', 'expense')
             ->whereNotIn('category', [
                 'Pembelian Karet', 'Penarikan Bank', 'Penarikan Tunai dari Bank',
                 'Pembayaran Penoreh', 'Bayar Hutang', 'Operasional Lapangan',

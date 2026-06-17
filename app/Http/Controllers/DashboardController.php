@@ -10,7 +10,7 @@ use App\Models\Requested;
 use App\Models\Nota;
 use App\Models\User;
 use App\Models\HousingProject;
-use App\Models\TransaksiKeuangan;
+use App\Models\FinancialTransaction;
 use App\Models\BlokKavling;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -88,7 +88,9 @@ class DashboardController extends Controller
              // fallback just in case
              $reProyekAktif = HousingProject::count();
         }
-        $reDanaMasuk = TransaksiKeuangan::where('tipe_transaksi', 'Pemasukan')->sum('nominal');
+        $reDanaMasuk = FinancialTransaction::realEstate()
+            ->where('type', 'income')
+            ->sum('amount');
         $reKavlingTersedia = BlokKavling::where('status_jual', 'Tersedia')->orWhere('status_jual', 'Available')->count();
         $reValuasiAset = BlokKavling::sum('harga_jual_final');
 
