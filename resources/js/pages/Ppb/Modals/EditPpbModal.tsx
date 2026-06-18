@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,60 +13,41 @@ interface PpbItemForm {
     jumlah: number;
     satuan: string;
     harga_satuan: number;
-    harga_total?: number;
+    harga_total: number;
     keterangan: string;
 }
 
-export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean; onClose: () => void; ppb: any }) {
-    const { data, setData, put, processing, errors, reset, clearErrors } = useForm({
-        tanggal: '',
-        nomor: '',
+const getTodayDate = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const defaultParagraph = `Bersama surat ini kami PT Garuda Karya Amanat mengajukan permohonan dana untuk keperluan pembelian barang lapangan/kantor, guna kelancaran kami dalam berkegiatan di lapangan/kantor. Adapun rincian pengajuan sebagai berikut:`;
+
+export default function CreatePpbModal({ isOpen, onClose, nomorOtomatis }: { isOpen: boolean; onClose: () => void; nomorOtomatis: string }) {
+    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+        tanggal: getTodayDate(),
+        nomor: nomorOtomatis || '',
         lampiran: '-',
-        perihal: '',
-        kepada_yth_nama: '',
-        kepada_yth_jabatan: '',
-        kepada_yth_lokasi: '',
-        paragraf_pembuka: '',
-        dibuat_oleh_nama: '',
-        dibuat_oleh_jabatan: '',
-        menyetujui_1_nama: '',
-        menyetujui_1_jabatan: '',
-        menyetujui_2_nama: '',
-        menyetujui_2_jabatan: '',
-        items: [] as PpbItemForm[],
+        perihal: 'Pengajuan Permintaan Barang',
+        kepada_yth_jabatan: 'Direktur Keuangan',
+        kepada_yth_nama: 'PT Garuda Karya Amanat',
+        kepada_yth_lokasi: 'di - Tempat',
+        paragraf_pembuka: defaultParagraph,
+        dibuat_oleh_nama: 'Daeng Muh. Nur H.',
+        dibuat_oleh_jabatan: 'Operasional',
+        menyetujui_1_nama: 'Rosita Asnur',
+        menyetujui_1_jabatan: 'P. Keuangan',
+        menyetujui_2_nama: 'Orista Miranti',
+        menyetujui_2_jabatan: 'Direktur Keuangan',
+        items: [{ nama_barang: '', jumlah: 1, satuan: 'pcs', harga_satuan: 0, harga_total: 0, keterangan: '' }] as PpbItemForm[],
     });
 
-    useEffect(() => {
-        if (ppb && isOpen) {
-            setData({
-                tanggal: ppb.tanggal || '',
-                nomor: ppb.nomor || '',
-                lampiran: ppb.lampiran || '-',
-                perihal: ppb.perihal || '',
-                kepada_yth_nama: ppb.kepada_yth_nama || '',
-                kepada_yth_jabatan: ppb.kepada_yth_jabatan || '',
-                kepada_yth_lokasi: ppb.kepada_yth_lokasi || '',
-                paragraf_pembuka: ppb.paragraf_pembuka || '',
-                dibuat_oleh_nama: ppb.dibuat_oleh_nama || '',
-                dibuat_oleh_jabatan: ppb.dibuat_oleh_jabatan || '',
-                menyetujui_1_nama: ppb.menyetujui_1_nama || '',
-                menyetujui_1_jabatan: ppb.menyetujui_1_jabatan || '',
-                menyetujui_2_nama: ppb.menyetujui_2_nama || '',
-                menyetujui_2_jabatan: ppb.menyetujui_2_jabatan || '',
-                items: ppb.items.map((item: any) => ({
-                    nama_barang: item.nama_barang,
-                    jumlah: item.jumlah,
-                    satuan: item.satuan,
-                    harga_satuan: item.harga_satuan,
-                    harga_total: item.jumlah * item.harga_satuan,
-                    keterangan: item.keterangan || '-'
-                }))
-            });
-        }
-    }, [ppb, isOpen]);
-
     const grandTotal = useMemo(() => {
-        return data.items.reduce((total, item) => total + ((item.jumlah * item.harga_satuan) || 0), 0);
+        return data.items.reduce((total, item) => total + (item.harga_total || 0), 0);
     }, [data.items]);
 
     const handleItemChange = (index: number, field: keyof PpbItemForm, value: string | number) => {
@@ -89,7 +70,7 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
     const addItem = () => {
         setData('items', [
             ...data.items,
-            { nama_barang: '', jumlah: 1, satuan: 'pcs', harga_satuan: 0, harga_total: 0, keterangan: '-' }
+            { nama_barang: '', jumlah: 1, satuan: 'pcs', harga_satuan: 0, harga_total: 0, keterangan: '' }
         ]);
     };
 
@@ -104,7 +85,7 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('ppb.update', ppb.id), {
+        post(route('ppb.store'), {
             onSuccess: () => {
                 reset();
                 clearErrors();
@@ -126,8 +107,8 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
             <DialogContent className="sm:max-w-[95vw] md:max-w-5xl w-full p-0 overflow-hidden bg-gray-50 dark:bg-zinc-900 border-none rounded-2xl shadow-2xl">
                 <div className="flex flex-col max-h-[90vh]">
                     <DialogHeader className="bg-white dark:bg-zinc-800 p-6 border-b border-gray-100 dark:border-zinc-800 shrink-0 relative">
-                        <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100 pr-8">Edit Permintaan Barang</DialogTitle>
-                        <DialogDescription className="text-gray-500 dark:text-gray-400">Ubah rincian dokumen PPB di bawah ini.</DialogDescription>
+                        <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100 pr-8">Buat Formulir PPB Baru</DialogTitle>
+                        <DialogDescription className="text-gray-500 dark:text-gray-400">Isi detail surat dan rincian pengajuan barang di bawah ini.</DialogDescription>
                     </DialogHeader>
 
                     <div className="overflow-y-auto p-6 space-y-6">
@@ -156,7 +137,7 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
                                     </div>
                                     <div>
                                         <Label htmlFor="nomor">Nomor Surat</Label>
-                                        <Input id="nomor" value={data.nomor} onChange={(e) => setData('nomor', e.target.value)} className="mt-1" />
+                                        <Input id="nomor" value={data.nomor} onChange={(e) => setData('nomor', e.target.value)} className="mt-1" placeholder="cth: 001/PPB/TSA-NTN/XI/25" />
                                     </div>
                                     <div>
                                         <Label htmlFor="lampiran">Lampiran</Label>
@@ -169,16 +150,16 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
                                 </div>
                             </div>
 
-                            {/* Tujuan & Isi Surat */}
+                            {/* Tujuan */}
                             <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-6 rounded-xl shadow-sm">
-                                <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400 flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Tujuan & Isi Surat</h3>
+                                <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Tujuan & Isi Surat</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <Label htmlFor="kepada_yth_jabatan">Kepada Yth. (Jabatan)</Label>
                                         <Input id="kepada_yth_jabatan" value={data.kepada_yth_jabatan} onChange={(e) => setData('kepada_yth_jabatan', e.target.value)} className="mt-1" />
                                     </div>
                                     <div>
-                                        <Label htmlFor="kepada_yth_nama">Kepada Yth. (Nama/Perusahaan)</Label>
+                                        <Label htmlFor="kepada_yth_nama">Kepada Yth. (Nama)</Label>
                                         <Input id="kepada_yth_nama" value={data.kepada_yth_nama} onChange={(e) => setData('kepada_yth_nama', e.target.value)} className="mt-1" />
                                     </div>
                                     <div>
@@ -188,77 +169,106 @@ export default function EditPpbModal({ isOpen, onClose, ppb }: { isOpen: boolean
                                 </div>
                                 <div className="mt-4">
                                     <Label htmlFor="paragraf_pembuka">Paragraf Pembuka</Label>
-                                    <Textarea id="paragraf_pembuka" value={data.paragraf_pembuka} onChange={(e) => setData('paragraf_pembuka', e.target.value)} className="mt-1 min-h-[100px]" />
+                                    <Textarea id="paragraf_pembuka" value={data.paragraf_pembuka} onChange={(e) => setData('paragraf_pembuka', e.target.value)} className="mt-1 min-h-[80px]" />
                                 </div>
                             </div>
 
                             {/* Rincian Barang */}
                             <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-6 rounded-xl shadow-sm">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-semibold text-cyan-600 dark:text-cyan-400 flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Rincian Barang</h3>
-                                    <Button type="button" size="sm" variant="outline" onClick={addItem} className="dark:border-slate-600">
-                                        <Plus className="w-4 h-4 mr-2" /> Tambah Baris
-                                    </Button>
+                                <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Rincian Barang</h3>
+                                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-zinc-700">
+                                    <table className="w-full min-w-[800px]">
+                                        <thead className="bg-gray-50 dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-700">
+                                            <tr>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama Barang</th>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">Jumlah</th>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">Satuan</th>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-40">Harga Satuan</th>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-40">Harga Total</th>
+                                                <th className="p-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Keterangan</th>
+                                                <th className="p-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-16">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.items.map((item, index) => (
+                                                <tr key={index} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50/50 dark:hover:bg-zinc-900/50">
+                                                    <td className="p-2">
+                                                        <Input value={item.nama_barang} onChange={(e) => handleItemChange(index, 'nama_barang', e.target.value)} placeholder="cth: Senter" className="h-9" />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <Input type="number" value={item.jumlah} onChange={(e) => handleItemChange(index, 'jumlah', Number(e.target.value))} className="h-9" />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <Input value={item.satuan} onChange={(e) => handleItemChange(index, 'satuan', e.target.value)} placeholder="pcs" className="h-9" />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <Input type="number" value={item.harga_satuan} onChange={(e) => handleItemChange(index, 'harga_satuan', Number(e.target.value))} className="h-9" />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <Input value={formatCurrency(item.harga_total)} readOnly className="h-9 bg-gray-100 dark:bg-zinc-700 font-semibold text-gray-700 dark:text-gray-200" />
+                                                    </td>
+                                                    <td className="p-2">
+                                                        <Input value={item.keterangan} onChange={(e) => handleItemChange(index, 'keterangan', e.target.value)} placeholder="opsional" className="h-9" />
+                                                    </td>
+                                                    <td className="p-2 text-center">
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(index)} disabled={data.items.length <= 1} className="text-red-500 hover:bg-red-50 hover:text-red-600 h-9 w-9">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-
-                                <div className="space-y-4">
-                                    {data.items.map((item, index) => (
-                                        <div key={index} className="flex flex-col md:flex-row gap-3 items-end bg-gray-50 dark:bg-slate-900 p-3 rounded-lg border dark:border-slate-800">
-                                            <div className="flex-1 space-y-1 w-full">
-                                                <Label className="text-xs">Nama Barang</Label>
-                                                <Input value={item.nama_barang} onChange={e => handleItemChange(index, 'nama_barang', e.target.value)} />
-                                            </div>
-                                            <div className="w-20 space-y-1">
-                                                <Label className="text-xs">Qty</Label>
-                                                <Input type="number" value={item.jumlah} onChange={e => handleItemChange(index, 'jumlah', parseFloat(e.target.value))} />
-                                            </div>
-                                            <div className="w-24 space-y-1">
-                                                <Label className="text-xs">Satuan</Label>
-                                                <Input value={item.satuan} onChange={e => handleItemChange(index, 'satuan', e.target.value)} />
-                                            </div>
-                                            <div className="w-32 space-y-1">
-                                                <Label className="text-xs">Harga (@)</Label>
-                                                <Input type="number" value={item.harga_satuan} onChange={e => handleItemChange(index, 'harga_satuan', parseFloat(e.target.value))} />
-                                            </div>
-                                            <div className="w-32 text-right pb-2 font-bold text-sm">
-                                                {formatCurrency(item.jumlah * item.harga_satuan)}
-                                            </div>
-                                            <Button type="button" size="icon" variant="ghost" className="text-red-500 hover:text-red-700" onClick={() => removeItem(index)} disabled={data.items.length <= 1}>
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                            <div className="flex-col space-y-1 w-full">
-                                                <Label className="text-xs">Keterangan</Label>
-                                                <Input value={item.keterangan} onChange={e => handleItemChange(index, 'keterangan', e.target.value)} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <div className="flex justify-end pt-4 border-t dark:border-slate-800">
-                                        <div className="text-right">
-                                            <p className="text-sm text-gray-500 dark:text-slate-400">Total Estimasi</p>
-                                            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(grandTotal)}</p>
+                                <div className="flex justify-between items-center mt-4">
+                                    <Button type="button" variant="outline" onClick={addItem} className="border-cyan-500 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20">
+                                        <Plus className="h-4 w-4 mr-2" /> Tambah Barang
+                                    </Button>
+                                    <div className="text-right">
+                                        <Label className="text-gray-500 dark:text-gray-400">Grand Total</Label>
+                                        <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 mt-1">
+                                            {formatCurrency(grandTotal)}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Penanda Tangan */}
+                            {/* Penandatangan */}
                             <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-6 rounded-xl shadow-sm">
-                                <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400 flex items-center"><Sparkles className="w-4 h-4 mr-2" /> Penanda Tangan</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-2 border dark:border-zinc-700 p-3 rounded-lg">
-                                        <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">Dibuat Oleh</p>
-                                        <Input placeholder="Nama" value={data.dibuat_oleh_nama} onChange={(e) => setData('dibuat_oleh_nama', e.target.value)} />
-                                        <Input placeholder="Jabatan" value={data.dibuat_oleh_jabatan} onChange={(e) => setData('dibuat_oleh_jabatan', e.target.value)} />
+                                <h3 className="text-lg font-semibold mb-4 text-cyan-600 dark:text-cyan-400">Penandatangan</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="space-y-3">
+                                        <Label className="text-gray-500 dark:text-gray-400 uppercase text-xs font-semibold tracking-wider">Dibuat Oleh</Label>
+                                        <div>
+                                            <Label htmlFor="dibuat_oleh_nama">Nama</Label>
+                                            <Input id="dibuat_oleh_nama" value={data.dibuat_oleh_nama} onChange={(e) => setData('dibuat_oleh_nama', e.target.value)} className="mt-1" />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="dibuat_oleh_jabatan">Jabatan</Label>
+                                            <Input id="dibuat_oleh_jabatan" value={data.dibuat_oleh_jabatan} onChange={(e) => setData('dibuat_oleh_jabatan', e.target.value)} className="mt-1" />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2 border dark:border-zinc-700 p-3 rounded-lg bg-gray-50 dark:bg-zinc-800/50">
-                                        <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">Mengetahui (1)</p>
-                                        <Input placeholder="Nama" value={data.menyetujui_1_nama} onChange={(e) => setData('menyetujui_1_nama', e.target.value)} />
-                                        <Input placeholder="Jabatan" value={data.menyetujui_1_jabatan} onChange={(e) => setData('menyetujui_1_jabatan', e.target.value)} />
+                                    <div className="space-y-3">
+                                        <Label className="text-gray-500 dark:text-gray-400 uppercase text-xs font-semibold tracking-wider">Mengetahui</Label>
+                                        <div>
+                                            <Label htmlFor="menyetujui_1_nama">Nama</Label>
+                                            <Input id="menyetujui_1_nama" value={data.menyetujui_1_nama} onChange={(e) => setData('menyetujui_1_nama', e.target.value)} className="mt-1" />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="menyetujui_1_jabatan">Jabatan</Label>
+                                            <Input id="menyetujui_1_jabatan" value={data.menyetujui_1_jabatan} onChange={(e) => setData('menyetujui_1_jabatan', e.target.value)} className="mt-1" />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2 border dark:border-zinc-700 p-3 rounded-lg bg-gray-50 dark:bg-zinc-800/50">
-                                        <p className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">Menyetujui (2)</p>
-                                        <Input placeholder="Nama" value={data.menyetujui_2_nama} onChange={(e) => setData('menyetujui_2_nama', e.target.value)} />
-                                        <Input placeholder="Jabatan" value={data.menyetujui_2_jabatan} onChange={(e) => setData('menyetujui_2_jabatan', e.target.value)} />
+                                    <div className="space-y-3">
+                                        <Label className="text-gray-500 dark:text-gray-400 uppercase text-xs font-semibold tracking-wider">Menyetujui</Label>
+                                        <div>
+                                            <Label htmlFor="menyetujui_2_nama">Nama</Label>
+                                            <Input id="menyetujui_2_nama" value={data.menyetujui_2_nama} onChange={(e) => setData('menyetujui_2_nama', e.target.value)} className="mt-1" />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="menyetujui_2_jabatan">Jabatan</Label>
+                                            <Input id="menyetujui_2_jabatan" value={data.menyetujui_2_jabatan} onChange={(e) => setData('menyetujui_2_jabatan', e.target.value)} className="mt-1" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
