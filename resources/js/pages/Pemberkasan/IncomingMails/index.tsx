@@ -364,7 +364,6 @@ export default function IncomingMailIndex({ incomingMails, totalIncomingMails, f
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            </div>
         </AppLayout>
     );
 }

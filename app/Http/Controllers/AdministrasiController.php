@@ -271,10 +271,15 @@ class AdministrasiController extends Controller
                 'BPJS Ketenagakerjaan',
                 'Pembayaran Kapal',
                 'Pembayaran Truck',
-                'Uang Makan Mandor'
+                'Uang Makan Mandor',
+                'Kasbon Pegawai',
+                'Kasbon Penoreh',
+                'Pembayaran Kasbon'
             ])->sum('amount') ?? 0;
 
-        $operatingExpenses = $opex_gaji + $opex_lapangan + $opex_kantor + $opex_bpjs +
+        $opex_upah_penoreh = $trxQuery->clone()->where('category', 'Pembayaran Penoreh')->sum('amount') ?? 0;
+
+        $operatingExpenses = $opex_gaji + $opex_upah_penoreh + $opex_lapangan + $opex_kantor + $opex_bpjs +
                            $opex_kapal_truck + $opex_lainnya + $opex_makan_mandor;
 
         $netProfit = $grossProfit - $operatingExpenses;
@@ -353,6 +358,7 @@ class AdministrasiController extends Controller
                         "cogs" => (float) $cogs,
                         "gross_profit" => (float) $grossProfit,
                         "opex_gaji" => (float) $opex_gaji,
+                        "opex_upah_penoreh" => (float) $opex_upah_penoreh,
                         "opex_lapangan" => (float) $opex_lapangan,
                         "opex_kantor" => (float) $opex_kantor,
                         "opex_bpjs" => (float) $opex_bpjs,
@@ -410,12 +416,12 @@ class AdministrasiController extends Controller
             $query->whereBetween('transaction_date', [$sDate, $eDate]);
         }
 
-        $paginator = $query->orderBy('transaction_date', 'DESC')->paginate($perPage, ['*'], 'page', $page);
+        $data = $query->orderBy('transaction_date', 'DESC')->orderBy('id', 'DESC')->get();
 
         return response()->json([
-            'data' => $paginator->items(),
+            'data' => $data,
             'links' => [],
-            'meta' => ['current_page' => $paginator->currentPage(), 'last_page' => $paginator->lastPage(), 'per_page' => $paginator->perPage(), 'total' => $paginator->total()]
+            'meta' => ['current_page' => 1, 'last_page' => 1, 'per_page' => count($data), 'total' => count($data)]
         ]);
     }
 
@@ -576,12 +582,16 @@ class AdministrasiController extends Controller
                 'Pembelian Karet', 'Penarikan Bank', 'Penarikan Tunai dari Bank',
                 'Pembayaran Penoreh', 'Bayar Hutang', 'Operasional Lapangan',
                 'Operasional Kantor', 'BPJS Ketenagakerjaan', 'Pembayaran Kapal',
-                'Pembayaran Truck', 'Uang Makan Mandor'
+                'Pembayaran Truck', 'Uang Makan Mandor', 'Kasbon Pegawai',
+                'Kasbon Penoreh', 'Pembayaran Kasbon'
             ])
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)
             ->sum('amount') ?? 0;
 
-        $opex_total = $opex_gaji + $opex_lapangan + $opex_kantor + $opex_bpjs +
+        $opex_upah_penoreh = FinancialTransaction::karet()->where('category', 'Pembayaran Penoreh')
+            ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)->sum('amount') ?? 0;
+
+        $opex_total = $opex_gaji + $opex_upah_penoreh + $opex_lapangan + $opex_kantor + $opex_bpjs +
                       $opex_kapal_truck + $opex_makan_mandor + $opex_lainnya;
 
         $net_profit = $gross_profit - $opex_total;
@@ -604,6 +614,7 @@ class AdministrasiController extends Controller
             'cogs'                 => (float) $cogs,
             'gross_profit'         => (float) $gross_profit,
             'opex_gaji'            => (float) $opex_gaji,
+            'opex_upah_penoreh'    => (float) $opex_upah_penoreh,
             'opex_lapangan'        => (float) $opex_lapangan,
             'opex_kantor'          => (float) $opex_kantor,
             'opex_bpjs'            => (float) $opex_bpjs,
@@ -692,7 +703,8 @@ class AdministrasiController extends Controller
                 $writeRow('LABA KOTOR (GROSS PROFIT)', 'gross_profit', $periods);
 
                 $writeRow('BIAYA OPERASIONAL (OPEX)', 'opex_total', $periods);
-                $writeRow('Biaya Gaji & Upah Pegawai', 'opex_gaji', $periods, true);
+                $writeRow('Biaya Gaji Karyawan', 'opex_gaji', $periods, true);
+                $writeRow('Upah Penoreh (Manual)', 'opex_upah_penoreh', $periods, true);
                 $writeRow('Biaya Operasional Lapangan', 'opex_lapangan', $periods, true);
                 $writeRow('Biaya Operasional Kantor', 'opex_kantor', $periods, true);
                 $writeRow('Biaya Ekspedisi (Kapal & Truck)', 'opex_kapal_truck', $periods, true);
@@ -720,7 +732,8 @@ class AdministrasiController extends Controller
                 $writeRow('LABA KOTOR (GROSS PROFIT)', 'gross_profit');
 
                 $writeRow('BIAYA OPERASIONAL (OPEX)', 'opex_total');
-                $writeRow('Biaya Gaji & Upah Pegawai', 'opex_gaji', null, true);
+                $writeRow('Biaya Gaji Karyawan', 'opex_gaji', null, true);
+                $writeRow('Upah Penoreh (Manual)', 'opex_upah_penoreh', null, true);
                 $writeRow('Biaya Operasional Lapangan', 'opex_lapangan', null, true);
                 $writeRow('Biaya Operasional Kantor', 'opex_kantor', null, true);
                 $writeRow('Biaya Ekspedisi (Kapal & Truck)', 'opex_kapal_truck', null, true);

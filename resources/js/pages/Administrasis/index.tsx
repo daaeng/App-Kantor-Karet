@@ -519,56 +519,63 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                     </tr>
 
                                                     <tr className="bg-slate-50/30 font-bold">
-                                                        <td className="p-3">BIAYA OPERASIONAL (OPEX)</td>
+                                                        <td className="p-3">BEBAN OPERASIONAL (OPEX)</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.opex_total)}</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('opex_total'))}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya Gaji & Upah Pegawai</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Gaji Karyawan</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_gaji)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya Operasional Lapangan</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Upah Penoreh (Manual)</td>
+                                                        {profitLossPeriods.map((p, i) => (
+                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_upah_penoreh)})</td>
+                                                        ))}
+                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_upah_penoreh'))})</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Operasional Lapangan</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lapangan)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_lapangan'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya Operasional Kantor</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Operasional Kantor</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kantor)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kantor'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya Ekspedisi (Kapal & Truck)</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Ekspedisi (Kapal & Truck)</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kapal_truck)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kapal_truck'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya BPJS Ketenagakerjaan</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban BPJS Ketenagakerjaan</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_bpjs)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_bpjs'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Uang Makan Mandor</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Uang Makan Mandor</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_makan_mandor)})</td>
                                                         ))}
                                                         <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_makan_mandor'))})</td>
                                                     </tr>
                                                     <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Biaya Rupa-Rupa Lainnya</td>
+                                                        <td className="p-3 pl-6 text-slate-600">Beban Rupa-Rupa Lainnya</td>
                                                         {profitLossPeriods.map((p, i) => (
                                                             <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lainnya)})</td>
                                                         ))}
@@ -590,7 +597,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         </td>
                                                     </tr>
 
-                                                    <tr><td colSpan={profitLossPeriods.length + 2} className="p-4 border-b"></td></tr>
+                                                    {/* <tr><td colSpan={profitLossPeriods.length + 2} className="p-4 border-b"></td></tr>
                                                     <tr className="font-bold bg-slate-100/50 dark:bg-zinc-900/50 text-slate-500">
                                                         <td colSpan={profitLossPeriods.length + 2} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
                                                     </tr>
@@ -604,7 +611,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                                         <td className="p-3 text-right font-mono text-amber-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">
                                                             {formatCurrency(getPeriodSum('kasbon_keluar_period'))}
                                                         </td>
-                                                    </tr>
+                                                    </tr> */}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -632,21 +639,22 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     <LedgerItem label="Pembelian Bahan Baku Karet" value={summary.reports.profit_loss.cogs} isIndent />
                                     <LedgerTotal label="Laba Kotor (Gross Profit)" value={summary.reports.profit_loss.gross_profit} />
                                     <div className="mt-6"></div>
-                                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 pb-1 mb-2 text-sm uppercase tracking-wider">BIAYA OPERASIONAL (OPEX)</h4>
-                                    <LedgerItem label="Biaya Gaji & Upah Pegawai" value={summary.reports.profit_loss.opex_gaji} isIndent isMinus />
-                                    <LedgerItem label="Biaya Operasional Lapangan" value={summary.reports.profit_loss.opex_lapangan} isIndent isMinus />
-                                    <LedgerItem label="Biaya Operasional Kantor" value={summary.reports.profit_loss.opex_kantor} isIndent isMinus />
-                                    <LedgerItem label="Biaya Ekspedisi (Kapal & Truck)" value={summary.reports.profit_loss.opex_kapal_truck} isIndent isMinus />
-                                    <LedgerItem label="Biaya BPJS Ketenagakerjaan" value={summary.reports.profit_loss.opex_bpjs} isIndent isMinus />
-                                    <LedgerItem label="Biaya Rupa-Rupa Lainnya" value={summary.reports.profit_loss.opex_lainnya} isIndent isMinus />
-                                    <LedgerTotal label="Total Biaya Operasional" value={summary.reports.profit_loss.opex_total} />
+                                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 pb-1 mb-2 text-sm uppercase tracking-wider">BEBAN OPERASIONAL (OPEX)</h4>
+                                    <LedgerItem label="Beban Gaji Karyawan" value={summary.reports.profit_loss.opex_gaji} isIndent isMinus />
+                                    <LedgerItem label="Beban Upah Penoreh" value={summary.reports.profit_loss.opex_upah_penoreh} isIndent isMinus />
+                                    <LedgerItem label="Beban Operasional Lapangan" value={summary.reports.profit_loss.opex_lapangan} isIndent isMinus />
+                                    <LedgerItem label="Beban Operasional Kantor" value={summary.reports.profit_loss.opex_kantor} isIndent isMinus />
+                                    <LedgerItem label="Beban Ekspedisi (Kapal & Truck)" value={summary.reports.profit_loss.opex_kapal_truck} isIndent isMinus />
+                                    <LedgerItem label="Beban BPJS Ketenagakerjaan" value={summary.reports.profit_loss.opex_bpjs} isIndent isMinus />
+                                    <LedgerItem label="Beban Rupa-Rupa Lainnya" value={summary.reports.profit_loss.opex_lainnya} isIndent isMinus />
+                                    <LedgerTotal label="Total Beban Operasional" value={summary.reports.profit_loss.opex_total} />
                                     <div className="mt-8"></div>
                                     <LedgerTotal label="LABA BERSIH (NET PROFIT)" value={summary.reports.profit_loss.net_profit} isGrandTotal />
 
-                                    <div className="mt-8 pt-4 border-t border-dashed border-slate-300 dark:border-zinc-700">
+                                    {/* <div className="mt-8 pt-4 border-t border-dashed border-slate-300 dark:border-zinc-700">
                                         <h4 className="font-bold text-slate-500 text-xs uppercase tracking-wider mb-2">Informasi Tambahan (Non-P&L)</h4>
                                         <LedgerItem label="Total Uang Kasbon Keluar" value={summary.reports.profit_loss.kasbon_keluar_period} isIndent={false} isMinus={false} />
-                                    </div>
+                                    </div> */}
                                 </CardContent>
                             </Card>
                         )}
@@ -683,23 +691,59 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                             <CardHeader><CardTitle>Buku Jurnal Umum</CardTitle><CardDescription>Riwayat pencatatan transaksi manual</CardDescription></CardHeader>
                             <CardContent className="p-0">
                                 <Table>
-                                    <TableHeader><TableRow><TableHead>Tanggal</TableHead><TableHead>Sumber</TableHead><TableHead>No. Referensi</TableHead><TableHead>Kategori</TableHead><TableHead>Keterangan</TableHead><TableHead>Posisi</TableHead><TableHead className="text-right">Nominal</TableHead><TableHead className="text-center">Aksi</TableHead></TableRow></TableHeader>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-28">Tanggal</TableHead>
+                                            <TableHead className="w-24">No. Referensi</TableHead>
+                                            <TableHead>Keterangan</TableHead>
+                                            <TableHead className="w-48">Akun</TableHead>
+                                            <TableHead className="w-32 text-right">Debit</TableHead>
+                                            <TableHead className="w-32 text-right">Kredit</TableHead>
+                                            <TableHead className="w-16 text-center">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
                                     <TableBody>
-                                        {trxData.data.map(item => (
-                                            <TableRow key={item.id}>
-                                                <TableCell>{formatDate(item.transaction_date)}</TableCell>
-                                                <TableCell><Badge className={item.source==='bank'?'bg-blue-100 text-blue-700':'bg-amber-100 text-amber-700'}>{item.source==='bank'?'Bank':'Kas'}</Badge></TableCell>
-                                                <TableCell><div><span className="font-mono text-xs">{item.transaction_code}</span><br/><span className="text-[10px]">{item.transaction_number}</span></div></TableCell>
-                                                <TableCell><span className={`text-xs font-semibold ${item.type==='income'?'text-emerald-600':'text-rose-600'}`}>{item.type==='income'?'(+) ':'(-) '}{item.category}</span></TableCell>
-                                                <TableCell className="max-w-[200px] truncate">{item.description||'-'}</TableCell>
-                                                <TableCell><Badge variant="outline" className={item.db_cr==='debit'?'border-emerald-200 bg-emerald-50 text-emerald-700':'border-rose-200 bg-rose-50 text-rose-700'}>{item.db_cr}</Badge></TableCell>
-                                                <TableCell className="text-right font-mono font-bold">{formatCurrency(item.amount)}</TableCell>
-                                                <TableCell className="text-center"><Button variant="ghost" size="icon" onClick={()=>handleEditTransaction(item)}><Pencil className="h-4 w-4"/></Button><Button variant="ghost" size="icon" onClick={()=>{setTransactionToDelete(item.id); setIsDeleteAlertOpen(true);}}><Trash2 className="h-4 w-4"/></Button></TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {trxData.data.map(item => {
+                                            const sourceAccount = item.source === 'bank' ? 'Kas di Bank' : 'Kas Tunai';
+                                            const categoryAccount = item.category;
+
+                                            const debitAccount = item.type === 'expense' ? categoryAccount : sourceAccount;
+                                            const creditAccount = item.type === 'expense' ? sourceAccount : categoryAccount;
+
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    {/* DEBIT ROW */}
+                                                    <TableRow className="border-b-0 hover:bg-transparent">
+                                                        <TableCell className="align-top py-2" rowSpan={2}>{formatDate(item.transaction_date)}</TableCell>
+                                                        <TableCell className="align-top py-2" rowSpan={2}>
+                                                            <div><span className="font-mono text-xs font-semibold">{item.transaction_code}</span><br/><span className="text-[10px] text-slate-500">{item.transaction_number}</span></div>
+                                                        </TableCell>
+                                                        <TableCell className="align-top py-2 max-w-[200px]" rowSpan={2}>{item.description || '-'}</TableCell>
+
+                                                        {/* Akun Debit */}
+                                                        <TableCell className="py-2"><span className="font-semibold text-slate-700">{debitAccount}</span></TableCell>
+                                                        <TableCell className="py-2 text-right font-mono font-medium text-slate-800">{formatCurrency(item.amount)}</TableCell>
+                                                        <TableCell className="py-2 text-right font-mono text-slate-400">-</TableCell>
+
+                                                        <TableCell className="align-top text-center py-2" rowSpan={2}>
+                                                            <div className="flex justify-center flex-col gap-1">
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>handleEditTransaction(item)}><Pencil className="h-3 w-3"/></Button>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={()=>{setTransactionToDelete(item.id); setIsDeleteAlertOpen(true);}}><Trash2 className="h-3 w-3"/></Button>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    {/* KREDIT ROW */}
+                                                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                                                        {/* Indent account name */}
+                                                        <TableCell className="py-2 pl-8"><span className="text-slate-600 italic">{creditAccount}</span></TableCell>
+                                                        <TableCell className="py-2 text-right font-mono text-slate-400">-</TableCell>
+                                                        <TableCell className="py-2 text-right font-mono font-medium text-slate-800">{formatCurrency(item.amount)}</TableCell>
+                                                    </TableRow>
+                                                </React.Fragment>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
-                                <div className="flex justify-center py-4 gap-4"><Button variant="outline" onClick={()=>setTrxPage(p=>Math.max(1,p-1))} disabled={trxData.meta.current_page===1}>Prev</Button><span>Hal {trxData.meta.current_page} dari {trxData.meta.last_page}</span><Button variant="outline" onClick={()=>setTrxPage(p=>Math.min(trxData.meta.last_page,p+1))} disabled={trxData.meta.current_page===trxData.meta.last_page}>Next</Button></div>
                             </CardContent>
                         </Card>
                     </TabsContent>

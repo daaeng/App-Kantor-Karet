@@ -7,6 +7,7 @@ use App\Models\Incisor;
 use App\Models\Incised;
 use App\Models\Kasbon;
 use App\Models\KasbonPayment;
+use App\Models\FinancialTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -306,7 +307,9 @@ class KasbonController extends Controller
                  return back()->withErrors(['amount' => 'Jumlah pembayaran melebihi sisa utang.'])->withInput();
             }
 
-            $kasbon->payments()->create($validated);
+            $payment = $kasbon->payments()->create($validated);
+
+            $this->syncKasbonPaymentToJournal($payment);
 
             $this->updateKasbonPaymentStatus($kasbon);
 
@@ -343,6 +346,8 @@ class KasbonController extends Controller
             }
 
             $payment->update($validated);
+            
+            $this->syncKasbonPaymentToJournal($payment);
 
             $this->updateKasbonPaymentStatus($kasbon);
 
@@ -361,6 +366,7 @@ class KasbonController extends Controller
         try {
             $kasbon = $payment->kasbon;
             $payment->delete();
+            $this->syncKasbonPaymentToJournal($payment, true);
             $this->updateKasbonPaymentStatus($kasbon);
             DB::commit();
             return back()->with('message', 'Data pembayaran berhasil dihapus.');
@@ -432,7 +438,9 @@ class KasbonController extends Controller
         $dataToCreate['month'] = Carbon::parse($validated['transaction_date'])->month;
         $dataToCreate['year'] = Carbon::parse($validated['transaction_date'])->year;
 
-        Kasbon::create($dataToCreate);
+        $kasbon = Kasbon::create($dataToCreate);
+        
+        $this->syncKasbonToJournal($kasbon);
 
         return redirect()->route('kasbons.index')->with('message', 'Kasbon pegawai berhasil dibuat.');
     }
@@ -480,7 +488,9 @@ class KasbonController extends Controller
             $dataToCreate['kasbonable_type'] = Incisor::class;
             $dataToCreate['kasbonable_id'] = $validated['incisor_id'];
 
-            Kasbon::create($dataToCreate);
+            $kasbon = Kasbon::create($dataToCreate);
+            
+            $this->syncKasbonToJournal($kasbon);
 
             DB::commit();
             return redirect()->route('kasbons.index')->with('message', 'Kasbon Penoreh berhasil dibuat.');
@@ -562,6 +572,7 @@ class KasbonController extends Controller
                 $dataToUpdate['gaji'] = $employee->salary;
 
                 $kasbon->update($dataToUpdate);
+                $this->syncKasbonToJournal($kasbon);
 
             } else {
                 $validated = $request->validate([
@@ -591,6 +602,7 @@ class KasbonController extends Controller
                 $dataToUpdate['gaji'] = $gaji;
 
                 $kasbon->update($dataToUpdate);
+                $this->syncKasbonToJournal($kasbon);
             }
 
             return redirect()->route('kasbons.index')->with('message', 'Kasbon berhasil diperbarui.');
@@ -604,7 +616,108 @@ class KasbonController extends Controller
     public function destroy(Kasbon $kasbon)
     {
         $kasbon->delete();
+        $this->syncKasbonToJournal($kasbon, true);
         return redirect()->route('kasbons.index')->with('message', 'Kasbon berhasil dihapus.');
+    }
+
+    private function syncKasbonToJournal(Kasbon $kasbon, $isDeleted = false)
+    {
+        $refString = "Auto-Kasbon Ref: {$kasbon->id} - Pencairan Kasbon";
+        $transaction = FinancialTransaction::where('description', 'like', "Auto-Kasbon Ref: {$kasbon->id} -%")->first();
+
+        if ($isDeleted || $kasbon->status !== 'Approved') {
+            if ($transaction) {
+                $transaction->delete();
+            }
+            return;
+        }
+
+        $category = $kasbon->kasbonable_type === 'App\Models\Employee' ? 'Kasbon Pegawai' : 'Kasbon Penoreh';
+        $txDate = $kasbon->transaction_date ? Carbon::parse($kasbon->transaction_date) : $kasbon->created_at;
+
+        if ($transaction) {
+            $transaction->update([
+                'amount' => $kasbon->kasbon,
+                'transaction_date' => $txDate,
+                'category' => $category,
+            ]);
+        } else {
+            $monthYear = $txDate->format('my');
+            $transactionCode = 'KSB-' . $monthYear;
+
+            $lastTrx = FinancialTransaction::where('business_unit', FinancialTransaction::BUSINESS_KARET)
+                ->where('transaction_code', $transactionCode)
+                ->orderByRaw('CAST(transaction_number AS UNSIGNED) DESC')
+                ->first();
+
+            $nextSeq = 1;
+            if ($lastTrx && is_numeric($lastTrx->transaction_number)) {
+                $nextSeq = intval($lastTrx->transaction_number) + 1;
+            }
+            $transactionNumber = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+
+            FinancialTransaction::create([
+                'business_unit' => FinancialTransaction::BUSINESS_KARET,
+                'type' => 'expense',
+                'source' => 'cash',
+                'category' => $category,
+                'description' => $refString,
+                'amount' => $kasbon->kasbon,
+                'transaction_date' => $txDate,
+                'transaction_code' => $transactionCode,
+                'transaction_number' => $transactionNumber,
+                'db_cr' => 'debit',
+            ]);
+        }
+    }
+
+    private function syncKasbonPaymentToJournal(KasbonPayment $payment, $isDeleted = false)
+    {
+        $refString = "Auto-KasbonPayment Ref: {$payment->id} - Pembayaran Kasbon";
+        $transaction = FinancialTransaction::where('description', 'like', "Auto-KasbonPayment Ref: {$payment->id} -%")->first();
+
+        if ($isDeleted) {
+            if ($transaction) {
+                $transaction->delete();
+            }
+            return;
+        }
+
+        $txDate = $payment->payment_date ? Carbon::parse($payment->payment_date) : $payment->created_at;
+
+        if ($transaction) {
+            $transaction->update([
+                'amount' => $payment->amount,
+                'transaction_date' => $txDate,
+            ]);
+        } else {
+            $monthYear = $txDate->format('my');
+            $transactionCode = 'PKB-' . $monthYear;
+
+            $lastTrx = FinancialTransaction::where('business_unit', FinancialTransaction::BUSINESS_KARET)
+                ->where('transaction_code', $transactionCode)
+                ->orderByRaw('CAST(transaction_number AS UNSIGNED) DESC')
+                ->first();
+
+            $nextSeq = 1;
+            if ($lastTrx && is_numeric($lastTrx->transaction_number)) {
+                $nextSeq = intval($lastTrx->transaction_number) + 1;
+            }
+            $transactionNumber = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+
+            FinancialTransaction::create([
+                'business_unit' => FinancialTransaction::BUSINESS_KARET,
+                'type' => 'income',
+                'source' => 'cash',
+                'category' => 'Pembayaran Kasbon',
+                'description' => $refString,
+                'amount' => $payment->amount,
+                'transaction_date' => $txDate,
+                'transaction_code' => $transactionCode,
+                'transaction_number' => $transactionNumber,
+                'db_cr' => 'debit',
+            ]);
+        }
     }
 
     public function getIncisorData(Request $request)

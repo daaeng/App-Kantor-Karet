@@ -318,7 +318,6 @@ export default function CompanyDocumentIndex({ companyDocuments, filters }: any)
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            </div>
         </AppLayout>
     );
 }

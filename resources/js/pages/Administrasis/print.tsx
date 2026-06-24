@@ -229,11 +229,18 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                             <td className="py-2 pt-4 text-right border-l border-gray-300">{formatCurrency(getPeriodSum('opex_total'))}</td>
                                         </tr>
                                         <tr>
-                                            <td className="py-1 pl-4 text-gray-700">Biaya Gaji & Upah Pegawai</td>
+                                            <td className="py-1 pl-4 text-gray-700">Biaya Gaji Karyawan</td>
                                             {profitLossPeriods.map((p, i) => (
                                                 <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_gaji)})</td>
                                             ))}
                                             <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-1 pl-4 text-gray-700">Upah Penoreh (Manual)</td>
+                                            {profitLossPeriods.map((p, i) => (
+                                                <td key={i} className="py-1 text-right text-red-600">({formatCurrency(p.opex_upah_penoreh)})</td>
+                                            ))}
+                                            <td className="py-1 text-right text-red-600 border-l border-gray-300">({formatCurrency(getPeriodSum('opex_upah_penoreh'))})</td>
                                         </tr>
                                         <tr>
                                             <td className="py-1 pl-4 text-gray-700">Biaya Operasional Lapangan</td>
@@ -340,8 +347,12 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                 <h3 className="font-bold text-[13px] mt-5 mb-2 border-b border-gray-300 pb-1">BIAYA OPERASIONAL (OPEX)</h3>
                                 <div className="space-y-1 text-[12px]">
                                     <div className="flex justify-between">
-                                        <span>Biaya Gaji & Upah Pegawai</span>
+                                        <span>Biaya Gaji Karyawan</span>
                                         <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_gaji)})</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Upah Penoreh (Manual)</span>
+                                        <span className="text-red-600">({formatCurrency(summary.reports.profit_loss.opex_upah_penoreh)})</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Biaya Operasional Lapangan</span>
@@ -433,37 +444,52 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                             <table className="w-full text-[11px] border-collapse">
                                 <thead className="border-y-2 border-black bg-gray-100">
                                     <tr>
-                                        <th className="p-2 text-left w-24">TANGGAL</th>
-                                        <th className="p-2 text-left">NO. TRX</th>
-                                        <th className="p-2 text-left">KETERANGAN / KATEGORI</th>
-                                        <th className="p-2 text-left">RELA/PARTY</th>
-                                        <th className="p-2 text-right w-28">DEBIT (Rp)</th>
-                                        <th className="p-2 text-right w-28">KREDIT (Rp)</th>
+                                        <th className="p-2 text-left w-24 border-b border-gray-400">TANGGAL</th>
+                                        <th className="p-2 text-left border-b border-gray-400">NO. TRX</th>
+                                        <th className="p-2 text-left border-b border-gray-400">KETERANGAN</th>
+                                        <th className="p-2 text-left border-b border-gray-400">NAMA AKUN</th>
+                                        <th className="p-2 text-right w-24 border-b border-gray-400">DEBIT (Rp)</th>
+                                        <th className="p-2 text-right w-24 border-b border-gray-400">KREDIT (Rp)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {jurnal_transactions.map((trx, i) => (
-                                        <tr key={i} className="border-b border-dashed border-gray-300">
-                                            <td className="p-2">{new Date(trx.transaction_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                                            <td className="p-2 font-mono">{trx.transaction_code}-{trx.transaction_number}</td>
-                                            <td className="p-2">
-                                                <div className="font-bold">{trx.category}</div>
-                                                {trx.description && <div className="text-[10px] text-gray-600 mt-1 italic">{trx.description}</div>}
-                                            </td>
-                                            <td className="p-2 text-gray-700">{trx.counterparty || '-'}</td>
-                                            <td className="p-2 text-right text-emerald-600">{trx.type === 'income' ? formatCurrency(trx.amount) : '-'}</td>
-                                            <td className="p-2 text-right text-red-600">{trx.type === 'expense' ? formatCurrency(trx.amount) : '-'}</td>
-                                        </tr>
-                                    ))}
+                                    {jurnal_transactions.map((trx, i) => {
+                                        const sourceAccount = trx.source === 'bank' ? 'Kas di Bank' : 'Kas Tunai';
+                                        const categoryAccount = trx.category;
+
+                                        const debitAccount = trx.type === 'expense' ? categoryAccount : sourceAccount;
+                                        const creditAccount = trx.type === 'expense' ? sourceAccount : categoryAccount;
+                                        
+                                        return (
+                                            <React.Fragment key={i}>
+                                                <tr className="border-t border-dashed border-gray-300">
+                                                    <td className="p-2 align-top" rowSpan={2}>{new Date(trx.transaction_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                                                    <td className="p-2 align-top font-mono" rowSpan={2}>{trx.transaction_code}-{trx.transaction_number}</td>
+                                                    <td className="p-2 align-top" rowSpan={2}>
+                                                        {trx.description || '-'}
+                                                        {trx.counterparty && <div className="text-[10px] text-gray-500 italic mt-1">Pihak Terkait: {trx.counterparty}</div>}
+                                                    </td>
+                                                    <td className="p-2 font-bold">{debitAccount}</td>
+                                                    <td className="p-2 text-right">{formatCurrency(trx.amount)}</td>
+                                                    <td className="p-2 text-right text-gray-400">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="p-2 pl-6 italic">{creditAccount}</td>
+                                                    <td className="p-2 text-right text-gray-400">-</td>
+                                                    <td className="p-2 text-right">{formatCurrency(trx.amount)}</td>
+                                                </tr>
+                                            </React.Fragment>
+                                        );
+                                    })}
                                 </tbody>
                                 <tfoot className="border-t-2 border-black bg-gray-100 font-bold">
                                     <tr>
-                                        <td colSpan={4} className="p-2 text-right">TOTAL MUTASI JURNAL:</td>
+                                        <td colSpan={4} className="p-2 text-right">TOTAL MUTASI DEBIT / KREDIT:</td>
                                         <td className="p-2 text-right text-emerald-700">
-                                            {formatCurrency(jurnal_transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0))}
+                                            {formatCurrency(jurnal_transactions.reduce((sum, t) => sum + Number(t.amount), 0))}
                                         </td>
-                                        <td className="p-2 text-right text-red-700">
-                                            {formatCurrency(jurnal_transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0))}
+                                        <td className="p-2 text-right text-emerald-700">
+                                            {formatCurrency(jurnal_transactions.reduce((sum, t) => sum + Number(t.amount), 0))}
                                         </td>
                                     </tr>
                                 </tfoot>
