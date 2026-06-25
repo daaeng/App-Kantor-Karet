@@ -45,7 +45,9 @@ import {
     Users as UsersIcon,
     Handshake,
     Landmark,
-    ChevronDown
+    ChevronDown,
+    Building2,
+    Leaf,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -93,7 +95,6 @@ const groupedNavItems: NavGroup[] = [
             },
         ]
     },
-    // [PINDAH KE ATAS] SDM & Manajemen User
     {
         label: "SDM & Manajemen User",
         items: [
@@ -139,7 +140,7 @@ const groupedNavItems: NavGroup[] = [
                 permission: 'kasbons.view',
             },
             {
-                title: 'Administrasi (Karet)',
+                title: 'Administrasi',
                 href: '/administrasis',
                 icon: ChartArea,
                 permission: 'administrasis.view',
@@ -149,6 +150,12 @@ const groupedNavItems: NavGroup[] = [
                 href: '/payroll',
                 icon: Banknote,
                 permission: 'payroll.view',
+            },
+            {
+                title: 'Keuangan Properti',
+                href: '/real-estate/transaksi-keuangan',
+                icon: Landmark,
+                permission: 'transaksi-keuangan.view',
             },
         ]
     },
@@ -175,6 +182,23 @@ const groupedNavItems: NavGroup[] = [
                 href: '/ppb',
                 icon: BookUp2 ,
                 permission: 'requests.view',
+            },
+        ]
+    },
+    {
+        label: "Supplier & Pembelian",
+        items: [
+            {
+                title: 'Supplier',
+                href: '/real-estate/toko-material',
+                icon: Store,
+                permission: 'toko-material.view',
+            },
+            {
+                title: 'Nota Penerimaan',
+                href: '/real-estate/material-receipt',
+                icon: ReceiptIcon,
+                permission: 'material-receipts.view',
             },
         ]
     },
@@ -250,21 +274,6 @@ const groupedNavItems: NavGroup[] = [
                 href: '/real-estate/penjualan-kavling',
                 icon: Handshake,
             },
-            {
-                title: 'Supplier Material',
-                href: '/real-estate/toko-material',
-                icon: Store,
-            },
-            {
-                title: 'Nota Penerimaan',
-                href: '/real-estate/material-receipt',
-                icon: ReceiptIcon,
-            },
-            {
-                title: 'Keuangan Properti',
-                href: '/real-estate/transaksi-keuangan',
-                icon: Landmark,
-            },
         ]
     }
 ];
@@ -288,7 +297,7 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                
+
 
             </SidebarHeader>
 
@@ -312,7 +321,7 @@ export function AppSidebar() {
                     if (visibleItems.length === 0 && visibleSubGroups.length === 0) return null;
 
                     // Apakah salah satu item di grup ini sedang aktif?
-                    const isGroupActive = visibleItems.some(item => currentUrl.startsWith(item.href)) || 
+                    const isGroupActive = visibleItems.some(item => currentUrl.startsWith(item.href)) ||
                                           visibleSubGroups.some(sub => sub.items.some((item: any) => currentUrl.startsWith(item.href)));
 
                     // Default terbuka jika grupnya aktif atau Dashboard
@@ -346,8 +355,8 @@ export function AppSidebar() {
                             <SidebarGroup>
                                 {group.label === "Real Estate (Properti)" && global_real_estate.projects.length > 0 && (
                                     <div className="px-2 mb-2 mt-0">
-                                        <Select 
-                                            value={global_real_estate.active_project_id?.toString() || ''} 
+                                        <Select
+                                            value={global_real_estate.active_project_id?.toString() || ''}
                                             onValueChange={(val) => {
                                                 router.post('/real-estate/housing-project/set-active', {
                                                     housing_project_id: val
@@ -382,7 +391,7 @@ export function AppSidebar() {
                                         <ChevronDown className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                                     </CollapsibleTrigger>
                                 </SidebarGroupLabel>
-                                
+
                                 <CollapsibleContent>
                                     <SidebarGroupContent>
                                         {visibleItems.length > 0 && (

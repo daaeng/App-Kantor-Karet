@@ -11,8 +11,9 @@ class TokoMaterialController extends Controller
 {
     public function index()
     {
+        // Ambil semua supplier, dikelompokkan by business_unit
         $suppliers = TokoMaterial::latest()->get();
-        return Inertia::render('RealEstate/TokoMaterial/Index', [
+        return Inertia::render('Supplier/Index', [
             'suppliers' => $suppliers
         ]);
     }
@@ -20,30 +21,32 @@ class TokoMaterialController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_toko' => 'required|string|max:255',
-            'nomor_telepon' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
+            'business_unit'  => 'required|in:properti,karet',
+            'nama_toko'      => 'required|string|max:255',
+            'nomor_telepon'  => 'nullable|string|max:255',
+            'alamat'         => 'nullable|string',
         ]);
 
         TokoMaterial::create($validated);
-        return redirect()->back()->with('success', 'Supplier / Toko Material berhasil ditambahkan.');
+        return redirect()->back()->with('success', 'Supplier berhasil ditambahkan.');
     }
 
     public function update(Request $request, TokoMaterial $tokoMaterial)
     {
         $validated = $request->validate([
-            'nama_toko' => 'required|string|max:255',
-            'nomor_telepon' => 'nullable|string|max:255',
-            'alamat' => 'nullable|string',
+            'business_unit'  => 'required|in:properti,karet',
+            'nama_toko'      => 'required|string|max:255',
+            'nomor_telepon'  => 'nullable|string|max:255',
+            'alamat'         => 'nullable|string',
         ]);
 
         $tokoMaterial->update($validated);
-        return redirect()->back()->with('success', 'Supplier / Toko Material berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Supplier berhasil diperbarui.');
     }
 
     public function destroy(TokoMaterial $tokoMaterial)
     {
         $tokoMaterial->delete();
-        return redirect()->back()->with('success', 'Supplier / Toko Material berhasil dihapus.');
+        return redirect()->back()->with('success', 'Supplier berhasil dihapus.');
     }
 }

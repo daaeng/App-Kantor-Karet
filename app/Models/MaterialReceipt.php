@@ -10,6 +10,7 @@ class MaterialReceipt extends Model
     use HasFactory;
 
     protected $fillable = [
+        'business_unit',
         'toko_material_id',
         'project_phase_id',
         'nomor_nota',
@@ -18,6 +19,19 @@ class MaterialReceipt extends Model
         'status_pembayaran',
         'keterangan'
     ];
+
+    public const UNIT_PROPERTI = 'properti';
+    public const UNIT_KARET   = 'karet';
+
+    public function scopeProperti($query)
+    {
+        return $query->where('business_unit', self::UNIT_PROPERTI);
+    }
+
+    public function scopeKaret($query)
+    {
+        return $query->where('business_unit', self::UNIT_KARET);
+    }
 
     public function tokoMaterial()
     {

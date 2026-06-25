@@ -23,7 +23,7 @@ class TransaksiKeuanganController extends Controller
 
         $projects = HousingProject::all();
         $penjualans = PenjualanKavling::with(['konsumen', 'blokKavling.tipeRumah'])->get();
-        $receipts = MaterialReceipt::with(['tokoMaterial'])->whereIn('status_pembayaran', ['Belum Lunas', 'Sebagian'])->get();
+        $receipts = MaterialReceipt::with(['tokoMaterial'])->where('business_unit', 'properti')->whereIn('status_pembayaran', ['Belum Lunas', 'Sebagian'])->get();
 
         return Inertia::render('RealEstate/Keuangan/Index', [
             'transaksis' => $transaksis,

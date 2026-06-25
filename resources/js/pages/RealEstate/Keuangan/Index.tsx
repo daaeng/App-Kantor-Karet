@@ -15,8 +15,8 @@ import { MoreHorizontal, Plus, Search, Landmark, ArrowDownCircle, ArrowUpCircle 
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Real Estate', href: '#' },
-    { title: 'Keuangan Proyek', href: '/real-estate/transaksi-keuangan' },
+    { title: 'Keuangan & Administrasi', href: '#' },
+    { title: 'Keuangan Properti', href: '/real-estate/transaksi-keuangan' },
 ];
 
 const INCOME_CATEGORIES = ['Booking Fee', 'DP Kavling', 'Cicilan DP', 'Pencairan KPR', 'Pendapatan Lain'];
