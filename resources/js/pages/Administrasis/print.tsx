@@ -297,7 +297,7 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                 {formatCurrency(getPeriodSum('net_profit'))}
                                             </td>
                                         </tr>
-                                        <tr><td colSpan={profitLossPeriods.length + 2} className="py-2"></td></tr>
+                                        {/* <tr><td colSpan={profitLossPeriods.length + 2} className="py-2"></td></tr>
                                         <tr className="border-t border-gray-400 font-bold bg-gray-100">
                                             <td colSpan={profitLossPeriods.length + 2} className="py-1 pl-2 text-[11px] uppercase text-gray-700">INFORMASI TAMBAHAN (NON-P&L)</td>
                                         </tr>
@@ -307,7 +307,7 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                                 <td key={i} className="py-1 text-right text-amber-700">{formatCurrency(p.kasbon_keluar_period)}</td>
                                             ))}
                                             <td className="py-1 text-right text-amber-700 border-l border-gray-300">{formatCurrency(getPeriodSum('kasbon_keluar_period'))}</td>
-                                        </tr>
+                                        </tr> */}
                                     </tbody>
                                 </table>
                             </div>
@@ -387,14 +387,14 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
                                         <span>{formatCurrency(summary.reports.profit_loss.net_profit)}</span>
                                     </div>
                                 </div>
-                                
-                                <h3 className="font-bold text-[11px] uppercase mt-5 mb-2 border-b border-gray-300 pb-1 text-gray-600 bg-gray-100 px-1">INFORMASI TAMBAHAN (NON-P&L)</h3>
+
+                                {/* <h3 className="font-bold text-[11px] uppercase mt-5 mb-2 border-b border-gray-300 pb-1 text-gray-600 bg-gray-100 px-1">INFORMASI TAMBAHAN (NON-P&L)</h3>
                                 <div className="space-y-1 text-[12px]">
                                     <div className="flex justify-between">
                                         <span>Total Uang Kasbon Keluar</span>
                                         <span className="text-amber-700">{formatCurrency(summary.reports.profit_loss.kasbon_keluar_period)}</span>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         )}
                     </section>
@@ -459,7 +459,7 @@ const PrintPage = ({ summary, printType, currentMonth, currentYear, current_filt
 
                                         const debitAccount = trx.type === 'expense' ? categoryAccount : sourceAccount;
                                         const creditAccount = trx.type === 'expense' ? sourceAccount : categoryAccount;
-                                        
+
                                         return (
                                             <React.Fragment key={i}>
                                                 <tr className="border-t border-dashed border-gray-300">
