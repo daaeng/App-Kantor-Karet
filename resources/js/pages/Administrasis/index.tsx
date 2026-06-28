@@ -316,30 +316,35 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Sistem Akuntansi & Keuangan" />
-            <div className="min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100 bg-transparent">
+            <div className="min-h-screen font-sans pb-24 text-slate-900 dark:text-slate-100 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
                 <Tabs defaultValue="dashboard" className="w-full" onValueChange={setActiveTab}>
                 {/* HEADER */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-sky-600 to-blue-800 pb-16 pt-12">
-                    <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
-                    <div className="relative z-10 px-6 w-full">
-                        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 flex-wrap">
-                            <div className="flex items-center gap-4 text-white mb-2">
-                                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
-                                    <Landmark className="h-8 w-8" />
+                <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 pb-20 pt-14 shadow-2xl">
+                    <div className="absolute inset-0 opacity-20">
+                        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-white/20 blur-3xl"></div>
+                        <div className="absolute -bottom-40 -right-40 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
+                    </div>
+                    <div className="relative z-10 px-6 w-full max-w-7xl mx-auto">
+                        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 flex-wrap">
+                            <div className="flex items-center gap-5 text-white mb-2">
+                                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-xl border border-white/30 shadow-lg">
+                                    <Landmark className="h-10 w-10" />
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl font-bold tracking-tight">General Ledger & Finance</h1>
-                                    <p className="text-sky-100 mt-1">Sistem Akuntansi Terpadu PT. GKA</p>
+                                    <h1 className="text-4xl font-extrabold tracking-tight leading-tight">General Ledger & Finance</h1>
+                                    <p className="text-indigo-100 mt-2 text-lg">Sistem Akuntansi Terpadu PT. GKA</p>
                                 </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex items-center bg-white dark:bg-zinc-900 p-1 rounded-lg border border-slate-200 dark:border-zinc-800 shadow-sm text-slate-700">
-                                    <Filter className="w-4 h-4 text-emerald-600 mx-2" />
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex items-center bg-white/95 dark:bg-slate-900/95 p-2 rounded-2xl border border-white/30 dark:border-slate-700/50 shadow-xl text-slate-700 dark:text-slate-200 backdrop-blur-sm">
+                                    <div className="p-2 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-xl mr-2 shadow-lg">
+                                        <Filter className="w-5 h-5 text-white" />
+                                    </div>
                                     <Select value={timePeriod} onValueChange={handleTimePeriodChange}>
-                                        <SelectTrigger className="w-[140px] border-none shadow-none h-8 bg-transparent focus:ring-0 text-sm font-medium text-slate-700">
+                                        <SelectTrigger className="w-[150px] border-none shadow-none h-10 bg-transparent focus:ring-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
                                             <SelectValue placeholder="Pilih Periode" />
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-lg">
+                                        <SelectContent className="rounded-2xl border-none shadow-2xl">
                                             <SelectItem value="this-month">Bulan Berjalan</SelectItem>
                                             <SelectItem value="last-month">Bulan Lalu</SelectItem>
                                             <SelectItem value="this-year">Tahun Berjalan</SelectItem>
@@ -351,38 +356,38 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                                     {timePeriod === 'specific-month' && (
                                         <>
-                                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
+                                            <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2" />
                                             <Select value={selectedMonth} onValueChange={(v) => { setSelectedMonth(v); applyFilter(timePeriod, v, selectedYear, startYear, endYear); }}>
-                                                <SelectTrigger className="w-[120px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
-                                                <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                <SelectTrigger className="w-[130px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-2xl border-none shadow-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                                             </Select>
                                             <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); applyFilter(timePeriod, selectedMonth, v, startYear, endYear); }}>
-                                                <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
-                                                <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                                <SelectTrigger className="w-[90px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue /></SelectTrigger>
+                                                <SelectContent className="rounded-2xl border-none shadow-2xl">{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
                                             </Select>
                                         </>
                                     )}
 
                                     {timePeriod === 'range-month' && (
                                         <>
-                                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 mx-1" />
-                                            <div className="flex items-center gap-1">
+                                            <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2" />
+                                            <div className="flex items-center gap-2">
                                                 <Select value={startMonth} onValueChange={(v) => { setStartMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, v, endMonth); }}>
-                                                    <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue placeholder="Bulan Awal" /></SelectTrigger>
-                                                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                    <SelectTrigger className="w-[110px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue placeholder="Bulan Awal" /></SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-none shadow-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                                 <Select value={startYear} onValueChange={(v) => { setStartYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, v, endYear, startMonth, endMonth); }}>
-                                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                                    <SelectTrigger className="w-[90px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-none shadow-2xl">{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                                 <span className="text-slate-400 mx-1">→</span>
                                                 <Select value={endMonth} onValueChange={(v) => { setEndMonth(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, endYear, startMonth, v); }}>
-                                                    <SelectTrigger className="w-[100px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue placeholder="Bulan Akhir" /></SelectTrigger>
-                                                    <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                                    <SelectTrigger className="w-[110px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue placeholder="Bulan Akhir" /></SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-none shadow-2xl">{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                                 <Select value={endYear} onValueChange={(v) => { setEndYear(v); applyFilter(timePeriod, selectedMonth, selectedYear, startYear, v, startMonth, endMonth); }}>
-                                                    <SelectTrigger className="w-[80px] border-none shadow-none h-8 bg-transparent text-slate-700"><SelectValue /></SelectTrigger>
-                                                    <SelectContent>{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
+                                                    <SelectTrigger className="w-[90px] border-none shadow-none h-10 bg-transparent text-slate-700 dark:text-slate-200"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-none shadow-2xl">{years.map(y => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}</SelectContent>
                                                 </Select>
                                             </div>
                                         </>
@@ -391,227 +396,303 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-lg gap-2 rounded-lg border-0 font-bold"><Printer className="w-4 h-4" /> Cetak Laporan</Button>
+                                        <Button className="bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 text-indigo-700 dark:text-indigo-300 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-800 shadow-2xl gap-3 rounded-2xl px-6 h-11 font-bold border border-white/50 dark:border-slate-700/50 transition-all hover:-translate-y-1">
+                                            <Printer className="w-5 h-5" /> Cetak Laporan
+                                        </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="rounded-xl">
-                                        <DropdownMenuItem onClick={() => handlePrint('all')}>Semua Laporan</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePrint('profit_loss')}>Cetak Laba Rugi</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={handleExportExcel} className="text-emerald-600 font-medium">Export Laba Rugi (Excel)</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePrint('neraca')}>Cetak Neraca</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePrint('bank')}>Cetak Arus Bank</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePrint('kas')}>Cetak Arus Kas</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePrint('jurnal')}>Cetak Buku Jurnal</DropdownMenuItem>
+                                    <DropdownMenuContent align="end" className="rounded-2xl border-none shadow-2xl p-2">
+                                        <DropdownMenuItem onClick={() => handlePrint('all')} className="rounded-xl py-2.5">Semua Laporan</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('profit_loss')} className="rounded-xl py-2.5">Cetak Laba Rugi</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handleExportExcel} className="text-emerald-600 font-bold rounded-xl py-2.5">Export Laba Rugi (Excel)</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('neraca')} className="rounded-xl py-2.5">Cetak Neraca</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('bank')} className="rounded-xl py-2.5">Cetak Arus Bank</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('kas')} className="rounded-xl py-2.5">Cetak Arus Kas</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePrint('jurnal')} className="rounded-xl py-2.5">Cetak Buku Jurnal</DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
                         </div>
 
                         {/* TABS LIST INSIDE BANNER */}
-                        <div className="flex flex-col xl:flex-row justify-between xl:items-center mt-4 gap-4">
-                            <TabsList className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg overflow-x-auto flex-wrap h-auto justify-start shadow-sm">
-                                <TabsTrigger value="dashboard" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Executive Dashboard</TabsTrigger>
-                                <TabsTrigger value="profit_loss" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Laba Rugi (P&L)</TabsTrigger>
-                                <TabsTrigger value="neraca" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Neraca Keuangan</TabsTrigger>
-                                <TabsTrigger value="cashflow" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Arus Kas & Bank</TabsTrigger>
-                                <TabsTrigger value="expenses" className="rounded-md text-slate-600 data-[state=active]:bg-white data-[state=active]:text-sky-700 data-[state=active]:shadow-sm">Buku Jurnal</TabsTrigger>
+                        <div className="flex flex-col xl:flex-row justify-between xl:items-center mt-8 gap-6">
+                            <TabsList className="bg-white/90 dark:bg-slate-900/90 border border-white/30 dark:border-slate-700/50 p-2 rounded-2xl overflow-x-auto flex-wrap h-auto justify-start shadow-2xl backdrop-blur-xl">
+                                <TabsTrigger value="dashboard" className="rounded-xl text-slate-600 dark:text-slate-300 data-[state=active]:bg-gradient-to-r from-indigo-500 to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:font-bold px-5 py-3 transition-all">Executive Dashboard</TabsTrigger>
+                                <TabsTrigger value="profit_loss" className="rounded-xl text-slate-600 dark:text-slate-300 data-[state=active]:bg-gradient-to-r from-indigo-500 to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:font-bold px-5 py-3 transition-all">Laba Rugi (P&L)</TabsTrigger>
+                                <TabsTrigger value="neraca" className="rounded-xl text-slate-600 dark:text-slate-300 data-[state=active]:bg-gradient-to-r from-indigo-500 to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:font-bold px-5 py-3 transition-all">Neraca Keuangan</TabsTrigger>
+                                <TabsTrigger value="cashflow" className="rounded-xl text-slate-600 dark:text-slate-300 data-[state=active]:bg-gradient-to-r from-indigo-500 to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:font-bold px-5 py-3 transition-all">Arus Kas & Bank</TabsTrigger>
+                                <TabsTrigger value="expenses" className="rounded-xl text-slate-600 dark:text-slate-300 data-[state=active]:bg-gradient-to-r from-indigo-500 to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:font-bold px-5 py-3 transition-all">Buku Jurnal</TabsTrigger>
                             </TabsList>
-                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] rounded-lg px-5 h-9 font-medium border-0" onClick={openTransactionModal}>
-                                <PlusCircle className="w-4 h-4 mr-2" /> Jurnal Manual
+                            <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-2xl shadow-emerald-500/30 rounded-2xl px-7 h-12 font-bold border-0 transition-all hover:-translate-y-1" onClick={openTransactionModal}>
+                                <PlusCircle className="w-5 h-5 mr-2" /> Jurnal Manual
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-10 relative z-20 pb-12">
+                <div className="px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto -mt-10 relative z-20 pb-16">
 
 
                     {/* DASHBOARD */}
-                    <TabsContent value="dashboard" className="space-y-6 animate-in fade-in duration-500">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <Card className="border-l-4 border-l-emerald-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Net Profit<TrendingUp className="w-4 h-4 text-emerald-500" /></CardTitle></CardHeader><CardContent><div className={`text-xl md:text-2xl font-black truncate ${summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(summary.reports.profit_loss.net_profit)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-blue-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Total Revenue<Landmark className="w-4 h-4 text-blue-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black truncate">{formatCurrency(summary.reports.profit_loss.revenue_total)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-amber-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Likuiditas (Kas+Bank)<Wallet className="w-4 h-4 text-amber-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black truncate">{formatCurrency(summary.reports.neraca.assets.kas_period + summary.reports.neraca.assets.bank_period)}</div></CardContent></Card>
-                            <Card className="border-l-4 border-l-rose-500"><CardHeader className="pb-2"><CardTitle className="text-xs uppercase tracking-wider flex justify-between">Piutang Karyawan<UserCircle className="w-4 h-4 text-rose-500" /></CardTitle></CardHeader><CardContent><div className="text-xl md:text-2xl font-black text-rose-600 truncate">{formatCurrency(summary.reports.neraca.assets.piutang)}</div></CardContent></Card>
+                    <TabsContent value="dashboard" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <Card className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border-0 shadow-2xl hover:shadow-emerald-500/20 transition-all duration-500 hover:-translate-y-2">
+                                <CardHeader className="pb-4 pt-6 px-6">
+                                    <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-emerald-700 dark:text-emerald-300 font-extrabold">
+                                        Net Profit
+                                        <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
+                                            <TrendingUp className="w-6 h-6 text-emerald-500" />
+                                        </div>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-6 pb-6">
+                                    <div className={`text-3xl lg:text-4xl font-black tracking-tight ${summary.reports.profit_loss.net_profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {formatCurrency(summary.reports.profit_loss.net_profit)}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-0 shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 hover:-translate-y-2">
+                                <CardHeader className="pb-4 pt-6 px-6">
+                                    <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-blue-700 dark:text-blue-300 font-extrabold">
+                                        Total Revenue
+                                        <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
+                                            <Landmark className="w-6 h-6 text-blue-500" />
+                                        </div>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-6 pb-6">
+                                    <div className="text-3xl lg:text-4xl font-black tracking-tight text-blue-700 dark:text-blue-400">
+                                        {formatCurrency(summary.reports.profit_loss.revenue_total)}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="group bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border-0 shadow-2xl hover:shadow-amber-500/20 transition-all duration-500 hover:-translate-y-2">
+                                <CardHeader className="pb-4 pt-6 px-6">
+                                    <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-amber-700 dark:text-amber-300 font-extrabold">
+                                        Likuiditas (Kas+Bank)
+                                        <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
+                                            <Wallet className="w-6 h-6 text-amber-500" />
+                                        </div>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-6 pb-6">
+                                    <div className="text-3xl lg:text-4xl font-black tracking-tight text-amber-700 dark:text-amber-400">
+                                        {formatCurrency(summary.reports.neraca.assets.kas_period + summary.reports.neraca.assets.bank_period)}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className="group bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/50 dark:to-pink-950/50 border-0 shadow-2xl hover:shadow-rose-500/20 transition-all duration-500 hover:-translate-y-2">
+                                <CardHeader className="pb-4 pt-6 px-6">
+                                    <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-rose-700 dark:text-rose-300 font-extrabold">
+                                        Piutang Karyawan
+                                        <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg group-hover:scale-110 transition-transform">
+                                            <UserCircle className="w-6 h-6 text-rose-500" />
+                                        </div>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-6 pb-6">
+                                    <div className="text-3xl lg:text-4xl font-black tracking-tight text-rose-600 dark:text-rose-400">
+                                        {formatCurrency(summary.reports.neraca.assets.piutang)}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
-                        <Card><CardHeader><CardTitle>Visualisasi Cashflow</CardTitle></CardHeader><CardContent className="h-[400px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis tickFormatter={(val) => `${val/1000}k`} /><Tooltip formatter={(val:number)=>formatCurrency(val)} /><Legend /><Bar dataKey="Pemasukan" fill="#10b981" barSize={30} /><Bar dataKey="Pengeluaran" fill="#f43f5e" barSize={30} /></BarChart></ResponsiveContainer></CardContent></Card>
+                        <Card className="border-0 shadow-2xl overflow-hidden">
+                            <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700 pb-6 pt-6 px-8">
+                                <CardTitle className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">Visualisasi Cashflow</CardTitle>
+                            </CardHeader>
+                            <CardContent className="h-[450px] p-8 bg-white dark:bg-slate-950">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                        <XAxis dataKey="name" tick={{ fill: '#475569', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                                        <YAxis tickFormatter={(val) => `${val/1000}k`} tick={{ fill: '#475569', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                                        <Tooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: 'white', 
+                                                borderRadius: '16px', 
+                                                border: 'none', 
+                                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' 
+                                            }} 
+                                            formatter={(val:number)=>formatCurrency(val)}
+                                        />
+                                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                        <Bar dataKey="Pemasukan" fill="url(#colorPemasukan)" barSize={40} radius={[8, 8, 0, 0]} />
+                                        <Bar dataKey="Pengeluaran" fill="url(#colorPengeluaran)" barSize={40} radius={[8, 8, 0, 0]} />
+                                        <defs>
+                                            <linearGradient id="colorPemasukan" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#10b981" stopOpacity={1}/>
+                                                <stop offset="100%" stopColor="#059669" stopOpacity={0.8}/>
+                                            </linearGradient>
+                                            <linearGradient id="colorPengeluaran" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#f43f5e" stopOpacity={1}/>
+                                                <stop offset="100%" stopColor="#e11d48" stopOpacity={0.8}/>
+                                            </linearGradient>
+                                        </defs>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
                     </TabsContent>
 
                     {/* PROFIT & LOSS */}
-                    <TabsContent value="profit_loss" className="animate-in fade-in duration-500">
+                    <TabsContent value="profit_loss" className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {timePeriod === 'range-month' ? (
                             isPlPeriodsLoading ? (
-                                <div className="flex justify-center py-10"><Loader2 className="animate-spin h-8 w-8 text-slate-400" /></div>
+                                <div className="flex justify-center py-20"><Loader2 className="animate-spin h-12 w-12 text-indigo-500" /></div>
                             ) : profitLossPeriods.length > 0 ? (
                                 (() => {
                                     const getPeriodSum = (key: string) => profitLossPeriods.reduce((acc, p) => acc + (Number(p[key]) || 0), 0);
                                     return (
-                                <Card className="max-w-7xl mx-auto shadow-sm border border-slate-200 dark:border-zinc-800 border-t-8 border-t-emerald-600 bg-white dark:bg-zinc-950">
-                                    <CardHeader className="text-center border-b border-slate-100 dark:border-zinc-800 pb-6">
-                                        <h2 className="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white">PT. Garuda Karya Amanat</h2>
-                                        <h3 className="text-base font-semibold text-emerald-700 dark:text-emerald-500">Laporan Laba Rugi (Profit & Loss)</h3>
-                                        <p className="text-xs text-slate-500 uppercase mt-2 font-medium">{getPeriodLabel()}</p>
-                                    </CardHeader>
-                                    <CardContent>
-
-                                        <div className="overflow-x-auto border rounded-lg bg-white dark:bg-zinc-950 shadow-sm">
+                                <Card className="max-w-7xl mx-auto border-0 shadow-2xl overflow-hidden bg-white dark:bg-slate-950">
+                                    <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-10 py-8 text-center">
+                                        <h2 className="text-2xl font-black uppercase tracking-widest text-white drop-shadow-lg">PT. Garuda Karya Amanat</h2>
+                                        <h3 className="text-lg font-semibold text-emerald-50 mt-2">Laporan Laba Rugi (Profit & Loss)</h3>
+                                        <p className="text-sm text-emerald-100 uppercase mt-4 font-extrabold tracking-wider">{getPeriodLabel()}</p>
+                                    </div>
+                                    <CardContent className="p-8">
+                                        <div className="overflow-x-auto border-2 border-slate-100 dark:border-slate-800 rounded-3xl bg-slate-50 dark:bg-slate-900 shadow-inner">
                                             <table className="w-full text-sm border-collapse">
-                                                <thead className="bg-slate-50 dark:bg-zinc-900 border-b">
+                                                <thead className="bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-900">
                                                     <tr>
-                                                        <th className="p-3 text-left font-semibold text-slate-600 dark:text-zinc-300">Nama Akun</th>
+                                                        <th className="p-5 text-left font-black text-slate-700 dark:text-slate-200 text-base">Nama Akun</th>
                                                         {profitLossPeriods.map((p, idx) => (
-                                                            <th key={idx} className="p-3 text-right font-semibold text-slate-600 dark:text-zinc-300 min-w-[140px]">
+                                                            <th key={idx} className="p-5 text-right font-black text-slate-700 dark:text-slate-200 min-w-[160px] text-base">
                                                                 {p.period_label}
                                                             </th>
                                                         ))}
-                                                        <th className="p-3 text-right font-bold text-slate-800 dark:text-zinc-100 min-w-[140px] border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">
+                                                        <th className="p-5 text-right font-black text-white min-w-[160px] border-l-4 border-slate-300 dark:border-slate-700 bg-gradient-to-r from-indigo-500 to-violet-600 text-base">
                                                             Total
                                                         </th>
                                                     </tr>
                                                 </thead>
-                                                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                                                    <tr className="bg-slate-50/30 font-bold">
-                                                        <td className="p-3">PENDAPATAN</td>
+                                                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                                                    <tr className="bg-white dark:bg-slate-950 font-bold">
+                                                        <td className="p-5 text-lg">PENDAPATAN</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_total)}</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-lg">{formatCurrency(p.revenue_total)}</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_total'))}</td>
+                                                        <td className="p-5 text-right font-mono text-lg border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('revenue_total'))}</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Penjualan Bersih (Karet)</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Penjualan Bersih (Karet)</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_karet)}</td>
+                                                            <td key={i} className="p-5 text-right font-mono">{formatCurrency(p.revenue_karet)}</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_karet'))}</td>
+                                                        <td className="p-5 text-right font-mono border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('revenue_karet'))}</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Pendapatan Lain-Lain</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Pendapatan Lain-Lain</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.revenue_lain)}</td>
+                                                            <td key={i} className="p-5 text-right font-mono">{formatCurrency(p.revenue_lain)}</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('revenue_lain'))}</td>
-                                                    </tr>
-
-                                                    <tr className="bg-slate-50/30 font-bold">
-                                                        <td className="p-3">HARGA POKOK PENJUALAN (COGS)</td>
-                                                        {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.cogs)}</td>
-                                                        ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('cogs'))}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Pembelian Bahan Baku Karet</td>
-                                                        {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.cogs)}</td>
-                                                        ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('cogs'))}</td>
+                                                        <td className="p-5 text-right font-mono border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('revenue_lain'))}</td>
                                                     </tr>
 
-                                                    <tr className="font-bold">
-                                                        <td className="p-3">LABA KOTOR (GROSS PROFIT)</td>
+                                                    <tr className="bg-white dark:bg-slate-950 font-bold mt-4">
+                                                        <td className="p-5 text-lg">HARGA POKOK PENJUALAN (COGS)</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className={`p-3 text-right font-mono font-bold ${p.gross_profit < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                            <td key={i} className="p-5 text-right font-mono text-lg">{formatCurrency(p.cogs)}</td>
+                                                        ))}
+                                                        <td className="p-5 text-right font-mono text-lg border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('cogs'))}</td>
+                                                    </tr>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Pembelian Bahan Baku Karet</td>
+                                                        {profitLossPeriods.map((p, i) => (
+                                                            <td key={i} className="p-5 text-right font-mono">{formatCurrency(p.cogs)}</td>
+                                                        ))}
+                                                        <td className="p-5 text-right font-mono border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('cogs'))}</td>
+                                                    </tr>
+
+                                                    <tr className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 font-extrabold border-t-2 border-b-2 border-amber-200 dark:border-amber-800">
+                                                        <td className="p-5 text-lg">LABA KOTOR (GROSS PROFIT)</td>
+                                                        {profitLossPeriods.map((p, i) => (
+                                                            <td key={i} className={`p-5 text-right font-mono text-lg ${p.gross_profit < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                                                 {formatCurrency(p.gross_profit)}
                                                             </td>
                                                         ))}
-                                                        <td className={`p-3 text-right font-mono font-bold border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50 ${getPeriodSum('gross_profit') < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                        <td className={`p-5 text-right font-mono text-lg border-l-4 border-slate-300 dark:border-slate-700 bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30 ${getPeriodSum('gross_profit') < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                                             {formatCurrency(getPeriodSum('gross_profit'))}
                                                         </td>
                                                     </tr>
 
-                                                    <tr className="bg-slate-50/30 font-bold">
-                                                        <td className="p-3">BEBAN OPERASIONAL (OPEX)</td>
+                                                    <tr className="bg-white dark:bg-slate-950 font-bold">
+                                                        <td className="p-5 text-lg">BEBAN OPERASIONAL (OPEX)</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono">{formatCurrency(p.opex_total)}</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-lg">{formatCurrency(p.opex_total)}</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">{formatCurrency(getPeriodSum('opex_total'))}</td>
+                                                        <td className="p-5 text-right font-mono text-lg border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">{formatCurrency(getPeriodSum('opex_total'))}</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Gaji Karyawan</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Gaji Karyawan</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_gaji)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_gaji)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_gaji'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Upah Penoreh (Manual)</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Upah Penoreh (Manual)</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_upah_penoreh)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_upah_penoreh)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_upah_penoreh'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_upah_penoreh'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Operasional Lapangan</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Operasional Lapangan</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lapangan)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_lapangan)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_lapangan'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_lapangan'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Operasional Kantor</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Operasional Kantor</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kantor)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_kantor)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kantor'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_kantor'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Ekspedisi (Kapal & Truck)</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Ekspedisi (Kapal & Truck)</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_kapal_truck)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_kapal_truck)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_kapal_truck'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_kapal_truck'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban BPJS Ketenagakerjaan</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban BPJS Ketenagakerjaan</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_bpjs)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_bpjs)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_bpjs'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_bpjs'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Uang Makan Mandor</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Uang Makan Mandor</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_makan_mandor)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_makan_mandor)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_makan_mandor'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_makan_mandor'))})</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Beban Rupa-Rupa Lainnya</td>
+                                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                                        <td className="p-5 pl-10 text-slate-600 dark:text-slate-400 text-base">Beban Rupa-Rupa Lainnya</td>
                                                         {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-rose-600">({formatCurrency(p.opex_lainnya)})</td>
+                                                            <td key={i} className="p-5 text-right font-mono text-rose-600 dark:text-rose-400">({formatCurrency(p.opex_lainnya)})</td>
                                                         ))}
-                                                        <td className="p-3 text-right font-mono text-rose-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">({formatCurrency(getPeriodSum('opex_lainnya'))})</td>
+                                                        <td className="p-5 text-right font-mono text-rose-600 dark:text-rose-400 border-l-4 border-slate-300 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/50">({formatCurrency(getPeriodSum('opex_lainnya'))})</td>
                                                     </tr>
 
-                                                    <tr className="border-t-2 border-double font-black text-base bg-slate-50/50">
-                                                        <td className="p-3">LABA BERSIH (NET PROFIT)</td>
+                                                    <tr className="bg-gradient-to-r from-emerald-500 to-teal-600 font-black text-xl border-t-4 border-b-4 border-emerald-700">
+                                                        <td className="p-6 text-white">LABA BERSIH (NET PROFIT)</td>
                                                         {profitLossPeriods.map((p, i) => {
                                                             const isNeg = p.net_profit < 0;
                                                             return (
-                                                                <td key={i} className={`p-3 text-right font-mono font-black ${isNeg ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                                <td key={i} className={`p-6 text-right font-mono ${isNeg ? 'text-yellow-200' : 'text-white'}`}>
                                                                     {formatCurrency(p.net_profit)}
                                                                 </td>
                                                             );
                                                         })}
-                                                        <td className={`p-3 text-right font-mono font-black border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50 ${getPeriodSum('net_profit') < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                                                        <td className={`p-6 text-right font-mono border-l-4 border-white bg-gradient-to-r from-emerald-600 to-teal-700 ${getPeriodSum('net_profit') < 0 ? 'text-yellow-200' : 'text-white'}`}>
                                                             {formatCurrency(getPeriodSum('net_profit'))}
                                                         </td>
                                                     </tr>
-
-                                                    {/* <tr><td colSpan={profitLossPeriods.length + 2} className="p-4 border-b"></td></tr>
-                                                    <tr className="font-bold bg-slate-100/50 dark:bg-zinc-900/50 text-slate-500">
-                                                        <td colSpan={profitLossPeriods.length + 2} className="p-2 pl-3 text-xs uppercase tracking-wider">INFORMASI TAMBAHAN (NON-P&L)</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td className="p-3 pl-6 text-slate-600">Total Uang Kasbon Keluar</td>
-                                                        {profitLossPeriods.map((p, i) => (
-                                                            <td key={i} className="p-3 text-right font-mono text-amber-600">
-                                                                {formatCurrency(p.kasbon_keluar_period)}
-                                                            </td>
-                                                        ))}
-                                                        <td className="p-3 text-right font-mono text-amber-600 border-l-2 border-slate-200 dark:border-zinc-700 bg-slate-100/50 dark:bg-zinc-800/50">
-                                                            {formatCurrency(getPeriodSum('kasbon_keluar_period'))}
-                                                        </td>
-                                                    </tr> */}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -620,26 +701,26 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                 );
                                 })()
                             ) : (
-                                <div className="text-center py-10 text-slate-400">Tidak ada data untuk rentang bulan yang dipilih.</div>
+                                <div className="text-center py-20 text-slate-400 text-xl">Tidak ada data untuk rentang bulan yang dipilih.</div>
                             )
                         ) : (
-                            <Card className="max-w-4xl mx-auto shadow-sm border border-slate-200 dark:border-zinc-800 border-t-8 border-t-emerald-600 bg-white dark:bg-zinc-950">
-                                <CardHeader className="text-center border-b border-slate-100 dark:border-zinc-800 pb-6">
-                                    <h2 className="text-xl font-black uppercase tracking-widest text-slate-900 dark:text-white">PT. Garuda Karya Amanat</h2>
-                                    <h3 className="text-base font-semibold text-emerald-700 dark:text-emerald-500">Laporan Laba Rugi (Profit & Loss)</h3>
-                                    <p className="text-xs text-slate-500 uppercase mt-2 font-medium">{getPeriodLabel()}</p>
-                                </CardHeader>
-                                <CardContent className="pt-6 px-10 pb-10 space-y-2">
-                                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 pb-1 mb-2 text-sm uppercase tracking-wider">PENDAPATAN (REVENUE)</h4>
+                            <Card className="max-w-4xl mx-auto border-0 shadow-2xl overflow-hidden bg-white dark:bg-slate-950">
+                                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-10 py-8 text-center">
+                                    <h2 className="text-2xl font-black uppercase tracking-widest text-white drop-shadow-lg">PT. Garuda Karya Amanat</h2>
+                                    <h3 className="text-lg font-semibold text-emerald-50 mt-2">Laporan Laba Rugi (Profit & Loss)</h3>
+                                    <p className="text-sm text-emerald-100 uppercase mt-4 font-extrabold tracking-wider">{getPeriodLabel()}</p>
+                                </div>
+                                <CardContent className="pt-10 px-12 pb-12 space-y-3">
+                                    <h4 className="font-black text-slate-800 dark:text-slate-100 border-b-3 border-emerald-500 pb-3 mb-4 text-lg uppercase tracking-wider">PENDAPATAN (REVENUE)</h4>
                                     <LedgerItem label="Penjualan Bersih (Karet)" value={summary.reports.profit_loss.revenue_karet} isIndent />
                                     <LedgerItem label="Pendapatan Lain-Lain" value={summary.reports.profit_loss.revenue_lain} isIndent />
                                     <LedgerTotal label="Total Pendapatan" value={summary.reports.profit_loss.revenue_total} />
-                                    <div className="mt-6"></div>
-                                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 pb-1 mb-2 text-sm uppercase tracking-wider">HARGA POKOK PENJUALAN (COGS)</h4>
+                                    <div className="mt-8"></div>
+                                    <h4 className="font-black text-slate-800 dark:text-slate-100 border-b-3 border-amber-500 pb-3 mb-4 text-lg uppercase tracking-wider">HARGA POKOK PENJUALAN (COGS)</h4>
                                     <LedgerItem label="Pembelian Bahan Baku Karet" value={summary.reports.profit_loss.cogs} isIndent />
                                     <LedgerTotal label="Laba Kotor (Gross Profit)" value={summary.reports.profit_loss.gross_profit} />
-                                    <div className="mt-6"></div>
-                                    <h4 className="font-bold text-slate-800 dark:text-zinc-200 border-b border-slate-200 dark:border-zinc-800 pb-1 mb-2 text-sm uppercase tracking-wider">BEBAN OPERASIONAL (OPEX)</h4>
+                                    <div className="mt-8"></div>
+                                    <h4 className="font-black text-slate-800 dark:text-slate-100 border-b-3 border-rose-500 pb-3 mb-4 text-lg uppercase tracking-wider">BEBAN OPERASIONAL (OPEX)</h4>
                                     <LedgerItem label="Beban Gaji Karyawan" value={summary.reports.profit_loss.opex_gaji} isIndent isMinus />
                                     <LedgerItem label="Beban Upah Penoreh" value={summary.reports.profit_loss.opex_upah_penoreh} isIndent isMinus />
                                     <LedgerItem label="Beban Operasional Lapangan" value={summary.reports.profit_loss.opex_lapangan} isIndent isMinus />
@@ -648,58 +729,109 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     <LedgerItem label="Beban BPJS Ketenagakerjaan" value={summary.reports.profit_loss.opex_bpjs} isIndent isMinus />
                                     <LedgerItem label="Beban Rupa-Rupa Lainnya" value={summary.reports.profit_loss.opex_lainnya} isIndent isMinus />
                                     <LedgerTotal label="Total Beban Operasional" value={summary.reports.profit_loss.opex_total} />
-                                    <div className="mt-8"></div>
+                                    <div className="mt-10"></div>
                                     <LedgerTotal label="LABA BERSIH (NET PROFIT)" value={summary.reports.profit_loss.net_profit} isGrandTotal />
-
-                                    {/* <div className="mt-8 pt-4 border-t border-dashed border-slate-300 dark:border-zinc-700">
-                                        <h4 className="font-bold text-slate-500 text-xs uppercase tracking-wider mb-2">Informasi Tambahan (Non-P&L)</h4>
-                                        <LedgerItem label="Total Uang Kasbon Keluar" value={summary.reports.profit_loss.kasbon_keluar_period} isIndent={false} isMinus={false} />
-                                    </div> */}
                                 </CardContent>
                             </Card>
                         )}
                     </TabsContent>
 
                     {/* NERACA */}
-                    <TabsContent value="neraca" className="animate-in fade-in duration-500">
-                        <Card className="max-w-4xl mx-auto border-t-8 border-t-slate-700">
-                            <CardHeader className="text-center">
-                                <h2 className="text-xl font-black uppercase">PT. Garuda Karya Amanat</h2>
-                                <h3 className="text-base font-semibold">Neraca Keuangan (Balance Sheet)</h3>
-                                <p className="text-xs text-slate-500 uppercase mt-2">Posisi Keuangan Akumulatif</p>
-                            </CardHeader>
-                            <CardContent className="pt-6 px-10 pb-10">
+                    <TabsContent value="neraca" className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <Card className="max-w-5xl mx-auto border-0 shadow-2xl overflow-hidden bg-white dark:bg-slate-950">
+                            <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-10 py-8 text-center">
+                                <h2 className="text-2xl font-black uppercase tracking-widest text-white drop-shadow-lg">PT. Garuda Karya Amanat</h2>
+                                <h3 className="text-lg font-semibold text-slate-200 mt-2">Neraca Keuangan (Balance Sheet)</h3>
+                                <p className="text-sm text-slate-400 uppercase mt-4 font-extrabold tracking-wider">Posisi Keuangan Akumulatif</p>
+                            </div>
+                            <CardContent className="pt-10 px-12 pb-12">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div><h4 className="font-black text-blue-700 border-b-2 pb-2">AKTIVA (ASSETS)</h4><h5 className="font-bold text-xs mt-2">Aktiva Lancar</h5><LedgerItem label="Kas Tunai" value={summary.reports.neraca.assets.kas_period} isIndent /><LedgerItem label="Rekening Bank" value={summary.reports.neraca.assets.bank_period} isIndent /><LedgerItem label="Piutang Karyawan/Penoreh" value={summary.reports.neraca.assets.piutang} isIndent /><LedgerTotal label="TOTAL AKTIVA" value={summary.reports.neraca.assets.total_aktiva} isGrandTotal /></div>
-                                    <div><h4 className="font-black text-rose-700 border-b-2 pb-2">PASIVA (LIABILITIES & EQUITY)</h4><h5 className="font-bold text-xs mt-2">Kewajiban (Liabilities)</h5><LedgerItem label="Hutang Dagang / Lainnya" value={summary.reports.neraca.liabilities.hutang_dagang} isIndent /><h5 className="font-bold text-xs mt-6">Ekuitas (Equity)</h5><LedgerItem label="Modal & Laba Ditahan" value={summary.reports.neraca.liabilities.ekuitas} isIndent /><LedgerTotal label="TOTAL PASIVA" value={summary.reports.neraca.liabilities.total_pasiva} isGrandTotal /></div>
+                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 p-8 rounded-3xl border-2 border-blue-100 dark:border-blue-900">
+                                        <h4 className="font-black text-blue-700 dark:text-blue-300 border-b-3 border-blue-500 pb-3 mb-4 text-xl">AKTIVA (ASSETS)</h4>
+                                        <h5 className="font-bold text-sm mt-3 mb-3 text-blue-800 dark:text-blue-400">Aktiva Lancar</h5>
+                                        <LedgerItem label="Kas Tunai" value={summary.reports.neraca.assets.kas_period} isIndent />
+                                        <LedgerItem label="Rekening Bank" value={summary.reports.neraca.assets.bank_period} isIndent />
+                                        <LedgerItem label="Piutang Karyawan/Penoreh" value={summary.reports.neraca.assets.piutang} isIndent />
+                                        <LedgerTotal label="TOTAL AKTIVA" value={summary.reports.neraca.assets.total_aktiva} isGrandTotal />
+                                    </div>
+                                    <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/50 dark:to-pink-950/50 p-8 rounded-3xl border-2 border-rose-100 dark:border-rose-900">
+                                        <h4 className="font-black text-rose-700 dark:text-rose-300 border-b-3 border-rose-500 pb-3 mb-4 text-xl">PASIVA (LIABILITIES & EQUITY)</h4>
+                                        <h5 className="font-bold text-sm mt-3 mb-3 text-rose-800 dark:text-rose-400">Kewajiban (Liabilities)</h5>
+                                        <LedgerItem label="Hutang Dagang / Lainnya" value={summary.reports.neraca.liabilities.hutang_dagang} isIndent />
+                                        <h5 className="font-bold text-sm mt-6 mb-3 text-rose-800 dark:text-rose-400">Ekuitas (Equity)</h5>
+                                        <LedgerItem label="Modal & Laba Ditahan" value={summary.reports.neraca.liabilities.ekuitas} isIndent />
+                                        <LedgerTotal label="TOTAL PASIVA" value={summary.reports.neraca.liabilities.total_pasiva} isGrandTotal />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
                     </TabsContent>
 
                     {/* CASHFLOW */}
-                    <TabsContent value="cashflow" className="animate-in fade-in duration-500">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card className="border-t-4 border-t-amber-500"><CardHeader><CardTitle className="flex gap-2"><Banknote /> Arus Kas Tunai</CardTitle></CardHeader><CardContent><h4 className="font-bold border-b">UANG MASUK</h4><LedgerItem label="Penarikan dari Bank" value={summary.reports.kas.in_penarikan} /><LedgerTotal label="Total Kas Masuk" value={summary.reports.kas.total_in} /><h4 className="font-bold border-b mt-4">UANG KELUAR</h4><LedgerItem label="Bayar Penoreh Karet" value={summary.reports.kas.out_bayar_penoreh} isMinus /><LedgerItem label="Beli Karet Manual" value={summary.reports.kas.out_belikaret} isMinus /><LedgerItem label="Kasbon Penoreh & Karyawan" value={summary.reports.kas.out_kasbon_pegawai + summary.reports.kas.out_kasbon_penoreh} isMinus /><LedgerItem label="Operasional (Lap & Kantor)" value={summary.reports.kas.out_lapangan + summary.reports.kas.out_kantor} isMinus /><LedgerItem label="Lainnya (BPJS, dll)" value={summary.reports.kas.out_bpjs} isMinus /><LedgerItem label="Uang Makan Mandor" value={summary.reports.kas.out_makan_mandor || 0} isMinus /><LedgerTotal label="Total Kas Keluar" value={summary.reports.kas.total_out} /><LedgerTotal label="SISA KAS PERIODE INI" value={summary.reports.kas.balance} isGrandTotal /></CardContent></Card>
-                            <Card className="border-t-4 border-t-blue-500"><CardHeader><CardTitle className="flex gap-2"><Building2 /> Arus Rekening Bank</CardTitle></CardHeader><CardContent><h4 className="font-bold border-b">UANG MASUK</h4><LedgerItem label="Pencairan Penjualan Karet" value={summary.reports.bank.in_penjualan} /><LedgerItem label="Setoran / Investasi" value={summary.reports.bank.in_lainnya} /><LedgerTotal label="Total Bank Masuk" value={summary.reports.bank.total_in} /><h4 className="font-bold border-b mt-4">UANG KELUAR</h4><LedgerItem label="Transfer ke Kas Tunai" value={summary.reports.bank.out_penarikan} isMinus /><LedgerItem label="Gaji & Payroll Karyawan" value={summary.reports.bank.out_gaji} isMinus /><LedgerItem label="Ekspedisi (Kapal/Truck)" value={summary.reports.bank.out_kapal + summary.reports.bank.out_truck} isMinus /><LedgerItem label="Pelunasan Hutang" value={summary.reports.bank.out_hutang} isMinus /><LedgerTotal label="Total Bank Keluar" value={summary.reports.bank.total_out} /><LedgerTotal label="MUTASI BANK PERIODE INI" value={summary.reports.bank.balance} isGrandTotal /></CardContent></Card>
+                    <TabsContent value="cashflow" className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <Card className="border-0 shadow-2xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-8 py-6">
+                                    <CardTitle className="flex gap-3 text-white text-xl font-extrabold">
+                                        <Banknote className="w-7 h-7" /> Arus Kas Tunai
+                                    </CardTitle>
+                                </div>
+                                <CardContent className="p-8">
+                                    <h4 className="font-black border-b-3 border-amber-500 pb-3 mb-4 text-lg text-slate-800 dark:text-slate-100">UANG MASUK</h4>
+                                    <LedgerItem label="Penarikan dari Bank" value={summary.reports.kas.in_penarikan} />
+                                    <LedgerTotal label="Total Kas Masuk" value={summary.reports.kas.total_in} />
+                                    <h4 className="font-black border-b-3 border-rose-500 pb-3 mb-4 mt-8 text-lg text-slate-800 dark:text-slate-100">UANG KELUAR</h4>
+                                    <LedgerItem label="Bayar Penoreh Karet" value={summary.reports.kas.out_bayar_penoreh} isMinus />
+                                    <LedgerItem label="Beli Karet Manual" value={summary.reports.kas.out_belikaret} isMinus />
+                                    <LedgerItem label="Kasbon Penoreh & Karyawan" value={summary.reports.kas.out_kasbon_pegawai + summary.reports.kas.out_kasbon_penoreh} isMinus />
+                                    <LedgerItem label="Operasional (Lap & Kantor)" value={summary.reports.kas.out_lapangan + summary.reports.kas.out_kantor} isMinus />
+                                    <LedgerItem label="Lainnya (BPJS, dll)" value={summary.reports.kas.out_bpjs} isMinus />
+                                    <LedgerItem label="Uang Makan Mandor" value={summary.reports.kas.out_makan_mandor || 0} isMinus />
+                                    <LedgerTotal label="Total Kas Keluar" value={summary.reports.kas.total_out} />
+                                    <LedgerTotal label="SISA KAS PERIODE INI" value={summary.reports.kas.balance} isGrandTotal />
+                                </CardContent>
+                            </Card>
+                            <Card className="border-0 shadow-2xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+                                    <CardTitle className="flex gap-3 text-white text-xl font-extrabold">
+                                        <Building2 className="w-7 h-7" /> Arus Rekening Bank
+                                    </CardTitle>
+                                </div>
+                                <CardContent className="p-8">
+                                    <h4 className="font-black border-b-3 border-blue-500 pb-3 mb-4 text-lg text-slate-800 dark:text-slate-100">UANG MASUK</h4>
+                                    <LedgerItem label="Pencairan Penjualan Karet" value={summary.reports.bank.in_penjualan} />
+                                    <LedgerItem label="Setoran / Investasi" value={summary.reports.bank.in_lainnya} />
+                                    <LedgerTotal label="Total Bank Masuk" value={summary.reports.bank.total_in} />
+                                    <h4 className="font-black border-b-3 border-rose-500 pb-3 mb-4 mt-8 text-lg text-slate-800 dark:text-slate-100">UANG KELUAR</h4>
+                                    <LedgerItem label="Transfer ke Kas Tunai" value={summary.reports.bank.out_penarikan} isMinus />
+                                    <LedgerItem label="Gaji & Payroll Karyawan" value={summary.reports.bank.out_gaji} isMinus />
+                                    <LedgerItem label="Ekspedisi (Kapal/Truck)" value={summary.reports.bank.out_kapal + summary.reports.bank.out_truck} isMinus />
+                                    <LedgerItem label="Pelunasan Hutang" value={summary.reports.bank.out_hutang} isMinus />
+                                    <LedgerTotal label="Total Bank Keluar" value={summary.reports.bank.total_out} />
+                                    <LedgerTotal label="MUTASI BANK PERIODE INI" value={summary.reports.bank.balance} isGrandTotal />
+                                </CardContent>
+                            </Card>
                         </div>
                     </TabsContent>
 
                     {/* BUKU JURNAL */}
-                    <TabsContent value="expenses" className="animate-in fade-in duration-500">
-                        <Card>
-                            <CardHeader><CardTitle>Buku Jurnal Umum</CardTitle><CardDescription>Riwayat pencatatan transaksi manual</CardDescription></CardHeader>
+                    <TabsContent value="expenses" className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <Card className="border-0 shadow-2xl overflow-hidden">
+                            <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700 pb-6 pt-6 px-8">
+                                <CardTitle className="text-2xl font-extrabold text-slate-800 dark:text-slate-100">Buku Jurnal Umum</CardTitle>
+                                <CardDescription className="text-base mt-2">Riwayat pencatatan transaksi manual</CardDescription>
+                            </CardHeader>
                             <CardContent className="p-0">
                                 <Table>
-                                    <TableHeader>
+                                    <TableHeader className="bg-gradient-to-r from-indigo-500 to-violet-600">
                                         <TableRow>
-                                            <TableHead className="w-28">Tanggal</TableHead>
-                                            <TableHead className="w-24">No. Referensi</TableHead>
-                                            <TableHead>Keterangan</TableHead>
-                                            <TableHead className="w-48">Akun</TableHead>
-                                            <TableHead className="w-32 text-right">Debit</TableHead>
-                                            <TableHead className="w-32 text-right">Kredit</TableHead>
-                                            <TableHead className="w-16 text-center">Aksi</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6">Tanggal</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6">No. Referensi</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6">Keterangan</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6">Akun</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6 text-right">Debit</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6 text-right">Kredit</TableHead>
+                                            <TableHead className="text-white font-black py-5 px-6 text-center">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -713,31 +845,31 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                             return (
                                                 <React.Fragment key={item.id}>
                                                     {/* DEBIT ROW */}
-                                                    <TableRow className="border-b-0 hover:bg-transparent">
-                                                        <TableCell className="align-top py-2" rowSpan={2}>{formatDate(item.transaction_date)}</TableCell>
-                                                        <TableCell className="align-top py-2" rowSpan={2}>
-                                                            <div><span className="font-mono text-xs font-semibold">{item.transaction_code}</span><br/><span className="text-[10px] text-slate-500">{item.transaction_number}</span></div>
+                                                    <TableRow className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+                                                        <TableCell className="align-top py-5 px-6 font-semibold text-slate-700 dark:text-slate-300" rowSpan={2}>{formatDate(item.transaction_date)}</TableCell>
+                                                        <TableCell className="align-top py-5 px-6" rowSpan={2}>
+                                                            <div><span className="font-mono text-sm font-extrabold text-indigo-700 dark:text-indigo-300">{item.transaction_code}</span><br/><span className="text-xs text-slate-500 dark:text-slate-400">{item.transaction_number}</span></div>
                                                         </TableCell>
-                                                        <TableCell className="align-top py-2 max-w-[200px]" rowSpan={2}>{item.description || '-'}</TableCell>
+                                                        <TableCell className="align-top py-5 px-6 max-w-[220px] text-slate-700 dark:text-slate-300" rowSpan={2}>{item.description || '-'}</TableCell>
 
                                                         {/* Akun Debit */}
-                                                        <TableCell className="py-2"><span className="font-semibold text-slate-700">{debitAccount}</span></TableCell>
-                                                        <TableCell className="py-2 text-right font-mono font-medium text-slate-800">{formatCurrency(item.amount)}</TableCell>
-                                                        <TableCell className="py-2 text-right font-mono text-slate-400">-</TableCell>
+                                                        <TableCell className="py-5 px-6"><span className="font-extrabold text-slate-800 dark:text-slate-100">{debitAccount}</span></TableCell>
+                                                        <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-slate-100">{formatCurrency(item.amount)}</TableCell>
+                                                        <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
 
-                                                        <TableCell className="align-top text-center py-2" rowSpan={2}>
-                                                            <div className="flex justify-center flex-col gap-1">
-                                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>handleEditTransaction(item)}><Pencil className="h-3 w-3"/></Button>
-                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={()=>{setTransactionToDelete(item.id); setIsDeleteAlertOpen(true);}}><Trash2 className="h-3 w-3"/></Button>
+                                                        <TableCell className="align-top text-center py-5 px-6" rowSpan={2}>
+                                                            <div className="flex justify-center flex-col gap-2">
+                                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400" onClick={()=>handleEditTransaction(item)}><Pencil className="h-5 w-5"/></Button>
+                                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={()=>{setTransactionToDelete(item.id); setIsDeleteAlertOpen(true);}}><Trash2 className="h-5 w-5"/></Button>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
                                                     {/* KREDIT ROW */}
-                                                    <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                                                    <TableRow className="bg-slate-50/80 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900">
                                                         {/* Indent account name */}
-                                                        <TableCell className="py-2 pl-8"><span className="text-slate-600 italic">{creditAccount}</span></TableCell>
-                                                        <TableCell className="py-2 text-right font-mono text-slate-400">-</TableCell>
-                                                        <TableCell className="py-2 text-right font-mono font-medium text-slate-800">{formatCurrency(item.amount)}</TableCell>
+                                                        <TableCell className="py-5 px-6 pl-12"><span className="text-slate-600 dark:text-slate-400 italic font-medium">{creditAccount}</span></TableCell>
+                                                        <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
+                                                        <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-slate-100">{formatCurrency(item.amount)}</TableCell>
                                                     </TableRow>
                                                 </React.Fragment>
                                             );
@@ -749,32 +881,54 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                     </TabsContent>
 
                 <Dialog open={isTransactionModalOpen} onOpenChange={setIsTransactionModalOpen}>
-                    <DialogContent className="sm:max-w-[500px] p-0">
-                        <DialogHeader className="px-6 py-4 border-b"><DialogTitle>{editingTransactionId ? 'Edit Jurnal Transaksi' : 'Catat Jurnal Manual'}</DialogTitle></DialogHeader>
-                        <form onSubmit={submitTransaction} className="px-6 py-5 space-y-4">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <DialogContent className="sm:max-w-[550px] p-0 border-0 shadow-2xl rounded-3xl overflow-hidden">
+                        <DialogHeader className="px-8 py-6 border-b bg-gradient-to-r from-indigo-500 to-violet-600">
+                            <DialogTitle className="text-white text-xl font-extrabold">{editingTransactionId ? 'Edit Jurnal Transaksi' : 'Catat Jurnal Manual'}</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={submitTransaction} className="px-8 py-8 space-y-6 bg-white dark:bg-slate-950">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 <SourceButton value="kas_out" label="Kas (Keluar)" icon={Banknote} colorClass="rose" />
                                 <SourceButton value="bank_out" label="Bank (Keluar)" icon={Building2} colorClass="blue" />
                                 <SourceButton value="bank_in" label="Bank (Masuk)" icon={Landmark} colorClass="emerald" />
                                 <SourceButton value="kas_in" label="Kas (Masuk)" icon={Banknote} colorClass="emerald" />
                             </div>
-                            {!editingTransactionId && <div className="bg-indigo-50 p-3 rounded-xl text-xs text-indigo-600"><Hash className="inline w-4 h-4 mr-2"/>Nomor & Kode Jurnal dibuat otomatis</div>}
-                            {editingTransactionId && <div className="grid grid-cols-2 gap-4"><div><Label>Kode Jurnal</Label><Input value={trxForm.data.transaction_code} disabled/></div><div><Label>No. Referensi</Label><Input value={trxForm.data.transaction_number} disabled/></div></div>}
-                            <div className="grid grid-cols-2 gap-4"><div><Label>Posisi (Db/Cr)</Label><Select value={trxForm.data.db_cr} onValueChange={(val)=>trxForm.setData('db_cr',val as any)}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="debit">Debit</SelectItem><SelectItem value="credit">Kredit</SelectItem></SelectContent></Select></div><div><Label>Pihak Terkait</Label><Input value={trxForm.data.counterparty} onChange={e=>trxForm.setData('counterparty',e.target.value)}/></div></div>
-                            <div><Label>Akun Perkiraan</Label><Select value={trxForm.data.kategori} onValueChange={(val)=>trxForm.setData('kategori',val)} required><SelectTrigger><SelectValue placeholder={`Pilih kategori...`}/></SelectTrigger><SelectContent>{CATEGORY_OPTIONS[uiSource]?.map(cat=><SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
-                            <div><Label>Keterangan</Label><Textarea value={trxForm.data.deskripsi} onChange={e=>trxForm.setData('deskripsi',e.target.value)}/></div>
-                            <div className="grid grid-cols-2 gap-4"><div><Label>Nominal (Rp)</Label><Input type="number" value={trxForm.data.jumlah} onChange={e=>trxForm.setData('jumlah',e.target.value)} required/></div><div><Label>Tanggal</Label><Input type="date" value={trxForm.data.tanggal} onChange={e=>trxForm.setData('tanggal',e.target.value)} required/></div></div>
-                            <DialogFooter><Button type="button" variant="outline" onClick={()=>setIsTransactionModalOpen(false)}>Batal</Button><Button type="submit" disabled={trxForm.processing}>Simpan Jurnal</Button></DialogFooter>
+                            {!editingTransactionId && <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/50 dark:to-violet-950/50 p-4 rounded-2xl text-sm text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50"><Hash className="inline w-5 h-5 mr-2"/>Nomor & Kode Jurnal dibuat otomatis</div>}
+                            {editingTransactionId && <div className="grid grid-cols-2 gap-4"><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Kode Jurnal</Label><Input value={trxForm.data.transaction_code} disabled className="h-11 rounded-xl bg-slate-50 dark:bg-slate-900"/></div><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">No. Referensi</Label><Input value={trxForm.data.transaction_number} disabled className="h-11 rounded-xl bg-slate-50 dark:bg-slate-900"/></div></div>}
+                            <div className="grid grid-cols-2 gap-5"><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Posisi (Db/Cr)</Label><Select value={trxForm.data.db_cr} onValueChange={(val)=>trxForm.setData('db_cr',val as any)}><SelectTrigger className="h-11 rounded-xl"><SelectValue/></SelectTrigger><SelectContent className="rounded-2xl border-none shadow-2xl"><SelectItem value="debit">Debit</SelectItem><SelectItem value="credit">Kredit</SelectItem></SelectContent></Select></div><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Pihak Terkait</Label><Input value={trxForm.data.counterparty} onChange={e=>trxForm.setData('counterparty',e.target.value)} className="h-11 rounded-xl"/></div></div>
+                            <div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Akun Perkiraan</Label><Select value={trxForm.data.kategori} onValueChange={(val)=>trxForm.setData('kategori',val)} required><SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={`Pilih kategori...`}/></SelectTrigger><SelectContent className="rounded-2xl border-none shadow-2xl">{CATEGORY_OPTIONS[uiSource]?.map(cat=><SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select></div>
+                            <div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Keterangan</Label><Textarea value={trxForm.data.deskripsi} onChange={e=>trxForm.setData('deskripsi',e.target.value)} className="rounded-xl"/></div>
+                            <div className="grid grid-cols-2 gap-5"><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Nominal (Rp)</Label><Input type="number" value={trxForm.data.jumlah} onChange={e=>trxForm.setData('jumlah',e.target.value)} required className="h-11 rounded-xl"/></div><div><Label className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Tanggal</Label><Input type="date" value={trxForm.data.tanggal} onChange={e=>trxForm.setData('tanggal',e.target.value)} required className="h-11 rounded-xl"/></div></div>
+                            <DialogFooter className="pt-4"><Button type="button" variant="outline" onClick={()=>setIsTransactionModalOpen(false)} className="h-11 px-6 rounded-xl border-2 font-semibold">Batal</Button><Button type="submit" disabled={trxForm.processing} className="h-11 px-8 rounded-xl font-bold bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 shadow-lg">Simpan Jurnal</Button></DialogFooter>
                         </form>
                     </DialogContent>
                 </Dialog>
 
                 <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
-                    <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Hapus Jurnal?</AlertDialogTitle><AlertDialogDescription>Tindakan ini permanen dan akan mengubah saldo akhir.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel onClick={()=>setTransactionToDelete(null)}>Batal</AlertDialogCancel><AlertDialogAction onClick={executeDeleteTransaction}>Ya, Hapus</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                    <AlertDialogContent className="border-0 shadow-2xl rounded-3xl overflow-hidden">
+                        <AlertDialogHeader className="px-8 py-6 bg-gradient-to-r from-red-500 to-rose-600">
+                            <AlertDialogTitle className="text-white text-xl font-extrabold">Hapus Jurnal?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-red-100 text-base mt-2">Tindakan ini permanen dan akan mengubah saldo akhir.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="px-8 py-6 bg-white dark:bg-slate-950">
+                            <AlertDialogCancel onClick={()=>setTransactionToDelete(null)} className="h-11 px-6 rounded-xl border-2 font-semibold">Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={executeDeleteTransaction} className="h-11 px-8 rounded-xl font-bold bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">Ya, Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
                 </AlertDialog>
 
                 <Dialog open={notification.show} onOpenChange={closeNotification}>
-                    <DialogContent className="sm:max-w-md"><DialogHeader><DialogTitle className="flex items-center gap-3">{notification.type==='success'?<CheckCircle2 className="w-8 h-8 text-emerald-600"/>:<XCircle className="w-8 h-8 text-red-600"/>}{notification.title}</DialogTitle></DialogHeader><div className="py-4">{notification.message}</div><DialogFooter><Button onClick={closeNotification}>Tutup</Button></DialogFooter></DialogContent>
+                    <DialogContent className="sm:max-w-md border-0 shadow-2xl rounded-3xl overflow-hidden">
+                        <DialogHeader className="px-8 py-6 border-b bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
+                            <DialogTitle className="flex items-center gap-4 text-xl font-extrabold">
+                                {notification.type==='success'?<CheckCircle2 className="w-10 h-10 text-emerald-500"/>:<XCircle className="w-10 h-10 text-red-500"/>}
+                                {notification.title}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="px-8 py-6 text-base text-slate-700 dark:text-slate-300">{notification.message}</div>
+                        <DialogFooter className="px-8 py-6 bg-slate-50 dark:bg-slate-900">
+                            <Button onClick={closeNotification} className="h-11 px-8 rounded-xl font-bold">Tutup</Button>
+                        </DialogFooter>
+                    </DialogContent>
                 </Dialog>
                 </div>
                 </Tabs>
