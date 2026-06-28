@@ -251,6 +251,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('real-estate/site-plan/delete', [SitePlanController::class, 'deleteImage'])
         ->name('site-plan.delete')
         ->middleware('permission:site-plan.delete');
+    Route::put('real-estate/site-plan/kavling/{id}', [SitePlanController::class, 'updateKavling'])
+        ->name('site-plan.kavling.update')
+        ->middleware('permission:site-plan.edit');
 
     // Master Tipe Rumah
     Route::resource('real-estate/tipe-rumah', TipeRumahController::class)
@@ -294,6 +297,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:material-receipts.view');
 
     // Keuangan Properti
+    Route::get('real-estate/transaksi-keuangan/export-excel', [TransaksiKeuanganController::class, 'exportExcel'])
+        ->name('real-estate.transaksi-keuangan.export-excel')
+        ->middleware('permission:transaksi-keuangan.view');
     Route::resource('real-estate/transaksi-keuangan', TransaksiKeuanganController::class)
         ->except(['create', 'show', 'edit'])
         ->middleware('permission:transaksi-keuangan.view');

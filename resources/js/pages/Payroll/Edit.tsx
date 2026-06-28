@@ -51,103 +51,119 @@ export default function Edit({ payroll, uang_makan_harian }: EditPageProps) {
         });
     };
 
+    const formatCurrency = (value: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+
     return (
         <AppLayout breadcrumbs={[{ title: 'Penggajian', href: route('payroll.index') }, { title: 'Edit', href: '#' }]}>
             <Head title="Edit Gaji" />
 
-            <div className="p-4 md:p-8 max-w-2xl mx-auto">
+            <div className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto">
                 {isPaid && (
-                    <Alert className="mb-6">
-                        <Lock className="h-4 w-4" />
-                        <AlertTitle>Data Terkunci</AlertTitle>
-                        <AlertDescription>
+                    <Alert className="mb-6 bg-amber-50 border-amber-200">
+                        <Lock className="h-4 w-4 text-amber-600" />
+                        <AlertTitle className="text-amber-800 font-bold text-sm">Data Terkunci</AlertTitle>
+                        <AlertDescription className="text-amber-700 text-xs">
                             Gaji ini sudah LUNAS. Perubahan sangat dibatasi.
                         </AlertDescription>
                     </Alert>
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <Card>
+                    <Card className="border-gray-200 dark:border-zinc-800">
                         <CardHeader>
-                            <CardTitle>Edit Data Gaji</CardTitle>
+                            <CardTitle className="text-xl">Edit Data Gaji</CardTitle>
                             <CardDescription>
-                                {payroll.employee_name} — Periode {payroll.payroll_period}
+                                {payroll.employee?.name} — Periode {payroll.payroll_period}
                             </CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-6">
                             {/* Status */}
                             <div className="space-y-2">
-                                <Label>Status Pembayaran</Label>
+                                <Label className="text-sm font-medium">Status Pembayaran</Label>
                                 <Select value={data.status} onValueChange={(val) => setData('status', val)}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-10 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="draft">Draft</SelectItem>
-                                        <SelectItem value="final">Final (Siap Bayar)</SelectItem>
-                                        <SelectItem value="paid">Paid (Lunas)</SelectItem>
+                                    <SelectContent className="rounded-xl">
+                                        <SelectItem value="draft" className="py-2.5">Draft</SelectItem>
+                                        <SelectItem value="final" className="py-2.5">Final (Siap Bayar)</SelectItem>
+                                        <SelectItem value="paid" className="py-2.5">Paid (Lunas)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label>Gaji Pokok</Label>
-                                    <Input value={new Intl.NumberFormat('id-ID').format(payroll.gaji_pokok)} disabled />
+                                    <Label className="text-sm font-medium">Gaji Pokok</Label>
+                                    <Input value={new Intl.NumberFormat('id-ID').format(payroll.gaji_pokok)} disabled className="h-10 rounded-xl" />
                                 </div>
                                 <div>
-                                    <Label>Hari Hadir</Label>
+                                    <Label className="text-sm font-medium">Hari Hadir</Label>
                                     <Input
                                         type="number"
                                         value={data.hari_hadir}
                                         onChange={e => setData('hari_hadir', Number(e.target.value))}
                                         disabled={isPaid}
+                                        className="h-10 rounded-xl"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <Label>Insentif / Bonus</Label>
+                                <Label className="text-sm font-medium">Insentif / Bonus</Label>
                                 <Input
                                     type="number"
                                     value={data.insentif}
                                     onChange={e => setData('insentif', Number(e.target.value))}
                                     disabled={isPaid}
+                                    className="h-10 rounded-xl"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-red-600">Potongan Kasbon</Label>
+                                <Label className="text-sm font-medium text-rose-600 font-bold">Potongan Kasbon</Label>
                                 <Input
                                     type="number"
                                     value={data.potongan_kasbon}
                                     onChange={e => setData('potongan_kasbon', Number(e.target.value))}
-                                    className="border-red-300 focus:border-red-500"
+                                    className="border-rose-200 focus:border-rose-500 h-10 rounded-xl"
                                     disabled={isPaid}
                                 />
                             </div>
 
                             {/* Ringkasan */}
-                            <div className="bg-slate-50 p-5 rounded-xl space-y-3 border">
-                                <div className="flex justify-between"><span>Gaji Pokok</span><span>Rp {calculated.totalPendapatan.toLocaleString('id-ID')}</span></div>
-                                <div className="flex justify-between"><span>Uang Makan</span><span>Rp {calculated.uangMakan.toLocaleString('id-ID')}</span></div>
-                                <div className="flex justify-between"><span>Insentif</span><span>Rp {data.insentif.toLocaleString('id-ID')}</span></div>
-                                <div className="flex justify-between text-red-600"><span>Potongan Kasbon</span><span>- Rp {calculated.totalPotongan.toLocaleString('id-ID')}</span></div>
-                                <hr />
+                            <div className="bg-slate-50 p-5 rounded-xl space-y-3 border border-gray-100">
+                                <div className="flex justify-between text-sm">
+                                    <span>Gaji Pokok</span>
+                                    <span>{formatCurrency(calculated.totalPendapatan - calculated.uangMakan - data.insentif)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span>Uang Makan</span>
+                                    <span>{formatCurrency(calculated.uangMakan)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span>Insentif</span>
+                                    <span>{formatCurrency(data.insentif)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm text-rose-600">
+                                    <span>Potongan Kasbon</span>
+                                    <span>- {formatCurrency(calculated.totalPotongan)}</span>
+                                </div>
+                                <hr className="border-gray-200" />
                                 <div className="flex justify-between text-lg font-bold text-indigo-700">
                                     <span>Gaji Bersih</span>
-                                    <span>Rp {calculated.gajiBersih.toLocaleString('id-ID')}</span>
+                                    <span>{formatCurrency(calculated.gajiBersih)}</span>
                                 </div>
                             </div>
                         </CardContent>
 
-                        <CardFooter className="flex justify-between">
+                        <CardFooter className="flex justify-between border-t bg-gray-50/50 p-6">
                             <Link href={route('payroll.index')}>
-                                <Button variant="outline" type="button">Kembali</Button>
+                                <Button variant="outline" className="h-10 rounded-xl">Kembali</Button>
                             </Link>
                             {!isPaid && (
-                                <Button type="submit" disabled={processing} className="bg-indigo-600">
+                                <Button type="submit" disabled={processing} className="bg-indigo-600 hover:bg-indigo-700 h-10 rounded-xl">
                                     <Save className="mr-2 w-4 h-4" />
                                     {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </Button>

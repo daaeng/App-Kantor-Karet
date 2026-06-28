@@ -36,14 +36,14 @@ export default function Create() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mulai Penggajian Baru" />
 
-            <div className="min-h-[80vh] flex items-center justify-center p-4 bg-gray-50/50 dark:bg-black/50">
+            <div className="min-h-[80vh] flex items-center justify-center p-4 md:p-6 bg-gray-50/50 dark:bg-black/50">
                 <div className="w-full max-w-lg space-y-6">
 
                     <div className="text-center space-y-2">
                         <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                             <Wallet className="w-8 h-8" />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Periode Penggajian</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Periode Penggajian</h1>
                         <p className="text-gray-500">Pilih periode bulan dan tahun untuk mulai menghitung gaji karyawan.</p>
                     </div>
 
@@ -68,19 +68,19 @@ export default function Create() {
                                     </AlertDescription>
                                 </Alert>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="period_month">Bulan</Label>
+                                        <Label htmlFor="period_month" className="text-sm font-medium">Bulan</Label>
                                         <Select
                                             value={String(data.period_month)}
                                             onValueChange={(value) => setData('period_month', parseInt(value))}
                                         >
-                                            <SelectTrigger id="period_month" className="h-11">
+                                            <SelectTrigger id="period_month" className="h-10 rounded-xl">
                                                 <SelectValue placeholder="Pilih Bulan" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="rounded-xl">
                                                 {months.map((month) => (
-                                                    <SelectItem key={month.value} value={String(month.value)}>
+                                                    <SelectItem key={month.value} value={String(month.value)} className="py-2.5">
                                                         {month.label}
                                                     </SelectItem>
                                                 ))}
@@ -90,17 +90,17 @@ export default function Create() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="period_year">Tahun</Label>
+                                        <Label htmlFor="period_year" className="text-sm font-medium">Tahun</Label>
                                         <Select
                                             value={String(data.period_year)}
                                             onValueChange={(value) => setData('period_year', parseInt(value))}
                                         >
-                                            <SelectTrigger id="period_year" className="h-11">
+                                            <SelectTrigger id="period_year" className="h-10 rounded-xl">
                                                 <SelectValue placeholder="Pilih Tahun" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="rounded-xl">
                                                 {years.map(year => (
-                                                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                                                    <SelectItem key={year} value={String(year)} className="py-2.5">{year}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -111,12 +111,12 @@ export default function Create() {
 
                             <CardFooter className="flex justify-between border-t bg-gray-50/50 p-6">
                                 <Link href={route('payroll.index')}>
-                                    <Button variant="ghost" type="button">Batal</Button>
+                                    <Button variant="outline" className="rounded-xl h-10">Batal</Button>
                                 </Link>
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-indigo-500/20 transition-all"
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-indigo-500/20 transition-all h-10 rounded-xl"
                                 >
                                     {processing ? 'Memproses...' : 'Lanjut Generate'}
                                     <ArrowRight className="w-4 h-4 ml-2" />

@@ -37,10 +37,10 @@ const getInitials = (name: string) => name.split(' ').map((n) => n[0]).slice(0, 
 
 const getStatusBadge = (status: string) => {
     switch (status) {
-        case 'paid': return <span className="px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 shadow-sm">Lunas</span>;
-        case 'final': return <span className="px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-widest border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400 shadow-sm">Final</span>;
-        case 'draft': return <span className="px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-widest border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400 shadow-sm">Draft</span>;
-        default: return <span className="px-2.5 py-1 rounded-[6px] text-[10px] font-bold uppercase tracking-widest border bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 shadow-sm">{status}</span>;
+        case 'paid': return <span className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 shadow-sm">Lunas</span>;
+        case 'final': return <span className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400 shadow-sm">Final</span>;
+        case 'draft': return <span className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400 shadow-sm">Draft</span>;
+        default: return <span className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest border bg-slate-100 text-slate-600 border-slate-200 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400 shadow-sm">{status}</span>;
     }
 };
 
@@ -50,10 +50,10 @@ const StatCard = ({ title, value, icon: Icon, gradient, iconColor }: { title: st
         <div className="flex items-center justify-between relative z-10">
             <div>
                 <p className="text-white/90 text-sm font-medium mb-1">{title}</p>
-                <h3 className="text-3xl font-bold tracking-tight mb-1">{value}</h3>
+                <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">{value}</h3>
             </div>
-            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-inner flex-shrink-0">
-                <Icon className={`w-7 h-7 ${iconColor}`} />
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center shadow-inner flex-shrink-0">
+                <Icon className={`w-6 h-6 md:w-7 md:h-7 ${iconColor}`} />
             </div>
         </div>
     </div>
@@ -90,7 +90,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
     useEffect(() => {
         if (!isDetailModalOpen && !isEditModalOpen && !isDeleteAlertOpen) {
             const timer = setTimeout(() => {
-                // Menghapus atribut dari Radix UI yang bikin layar beku
+                // Menghapus atribut dari Radix UI yang bikin layar kaku
                 document.body.style.pointerEvents = '';
                 document.body.removeAttribute('data-scroll-locked');
             }, 300); // 300ms mengikuti standar durasi animasi tutup modal shadcn
@@ -151,7 +151,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
 
     const isPaid = selectedPayroll?.status === 'paid';
 
-    // Kalkulasi Real-Time
+    // Kalkulasi Real-time
     const calculatedEdit = useMemo(() => {
         const gp = editForm.data.gaji_pokok || 0;
         const um = (editForm.data.hari_hadir || 0) * (uangMakanHarian || 20000);
@@ -253,25 +253,25 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
             <div className="bg-transparent min-h-screen font-sans pb-24 text-slate-900 dark:text-zinc-100 selection:bg-emerald-100 selection:text-emerald-900">
 
                 {/* --- HEADER --- */}
-                <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-800 pb-32 pt-12">
+                <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-emerald-800 pb-28 md:pb-32 pt-10 md:pt-12">
                     <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-10"></div>
-                    <div className="relative z-10 px-6 w-full">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4 text-white mb-2">
+                    <div className="relative z-10 px-4 md:px-6 lg:px-8 w-full">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4 text-white">
                                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-md">
-                                    <Banknote className="h-8 w-8" />
+                                    <Banknote className="h-7 w-7 md:h-8 md:w-8" />
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl font-bold tracking-tight">Daftar Penggajian</h1>
-                                    <p className="text-teal-100 mt-1">Kelola slip gaji, proses pembayaran, dan histori payroll karyawan.</p>
+                                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Daftar Penggajian</h1>
+                                    <p className="text-teal-100 mt-1.5 text-sm md:text-base">Kelola slip gaji, proses pembayaran, dan histori payroll karyawan.</p>
                                 </div>
                             </div>
                             {can('payroll.create') && (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 sm:gap-3 flex-wrap">
                                     {can('payroll.print') && (
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button className="bg-white/20 hover:bg-white/30 text-white border-0 shadow-sm backdrop-blur-md font-medium flex items-center gap-2">
+                                                <Button className="bg-white/20 hover:bg-white/30 text-white border-0 shadow-sm backdrop-blur-md font-medium flex items-center gap-2 h-10 rounded-xl">
                                                     <Printer className="w-4 h-4" /> Cetak Masal
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -290,7 +290,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                         </DropdownMenu>
                                     )}
                                     <Link href={route('payroll.create')}>
-                                        <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg font-bold flex items-center gap-2">
+                                        <Button className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg font-bold flex items-center gap-2 h-10 rounded-xl">
                                             <PlusCircle className="w-4 h-4" /> Generate Gaji Baru
                                         </Button>
                                     </Link>
@@ -300,12 +300,12 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                     </div>
                 </div>
 
-                <div className="px-4 sm:px-6 lg:px-8 w-full -mt-20 relative z-20 pb-12 space-y-6">
+                <div className="px-4 md:px-6 lg:px-8 w-full -mt-16 md:-mt-20 relative z-20 pb-12 space-y-6">
 
                 {/* --- ALERT BANNER --- */}
                 {alertMsg && (
                     <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                        <Alert className={`relative border shadow-sm rounded-2xl p-4 ${alertMsg.type === 'success' ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50' : 'bg-rose-50/80 border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50'}`}>
+                        <Alert className={`relative border shadow-sm rounded-2xl p-4 md:p-5 ${alertMsg.type === 'success' ? 'bg-emerald-50/80 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50' : 'bg-rose-50/80 border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/50'}`}>
                             <div className="flex items-start gap-3">
                                 <div className={`p-1.5 rounded-full ${alertMsg.type === 'success' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'}`}>
                                     {alertMsg.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
@@ -314,7 +314,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                     <AlertTitle className={`font-bold text-sm ${alertMsg.type === 'success' ? 'text-emerald-800 dark:text-emerald-300' : 'text-rose-800 dark:text-rose-300'}`}>
                                         {alertMsg.type === 'success' ? 'Berhasil!' : 'Perhatian!'}
                                     </AlertTitle>
-                                    <AlertDescription className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
+                                    <AlertDescription className="text-sm text-slate-600 dark:text-zinc-400 mt-1">
                                         {alertMsg.message}
                                     </AlertDescription>
                                 </div>
@@ -327,7 +327,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                 )}
 
                 {/* --- STATS BENTO --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
                     <StatCard icon={Users} title="Pegawai Diproses" value={summary.jumlahKaryawan} gradient="from-blue-500 to-indigo-600" iconColor="text-indigo-500" />
                     <StatCard icon={Wallet} title="Total Beban Gaji" value={formatCurrency(summary.totalGajiPeriod)} gradient="from-indigo-500 to-purple-600" iconColor="text-purple-500" />
                     <StatCard icon={CheckCircle2} title="Selesai / Lunas" value={summary.totalFinal} gradient="from-emerald-400 to-teal-500" iconColor="text-teal-600" />
@@ -336,55 +336,55 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
 
                 {/* --- SELECTION ACTIONS --- */}
                 {selectedIds.length > 0 && (
-                    <div className="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-xl p-3 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="bg-indigo-50 border border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
                         <div className="flex items-center gap-3">
-                            <div className="bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300 font-bold px-3 py-1 rounded-lg text-sm">
+                            <div className="bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300 font-bold px-3 py-1.5 rounded-lg text-sm">
                                 {selectedIds.length} Terpilih
                             </div>
                             <span className="text-sm text-indigo-700/80 dark:text-indigo-300/80 font-medium">Tindakan pada data terpilih:</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <Button asChild size="sm" variant="outline" className="h-9 bg-white dark:bg-zinc-900 border-indigo-200 hover:bg-indigo-100 text-indigo-700">
+                            <Button asChild size="sm" variant="outline" className="h-10 bg-white dark:bg-zinc-900 border-indigo-200 hover:bg-indigo-100 text-indigo-700 rounded-xl">
                                 <a href={route('payroll.bulk_print', { type: 'slip', ids: selectedIds.join(',') })} target="_blank" rel="noopener noreferrer">
                                     <FileText className="w-4 h-4 mr-1.5" /> Cetak Slip Terpilih
                                 </a>
                             </Button>
-                            <Button asChild size="sm" className="h-9 bg-indigo-600 hover:bg-indigo-700 text-white border-0">
+                            <Button asChild size="sm" className="h-10 bg-indigo-600 hover:bg-indigo-700 text-white border-0 rounded-xl">
                                 <a href={route('payroll.bulk_print', { type: 'receipt', ids: selectedIds.join(',') })} target="_blank" rel="noopener noreferrer">
                                     <Users className="w-4 h-4 mr-1.5" /> Cetak Tanda Terima
                                 </a>
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])} className="h-9 text-slate-500">Batal</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])} className="h-10 text-slate-500 rounded-xl">Batal</Button>
                         </div>
                     </div>
                 )}
 
                 {/* --- TABLE MAIN --- */}
-                <div className="glass-panel overflow-hidden">
-                    <div className="bg-white/50 dark:bg-zinc-800/50 border-b border-slate-100 dark:border-zinc-800 p-5">
-                         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+                <div className="glass-panel overflow-hidden rounded-2xl border border-slate-200 dark:border-zinc-800">
+                    <div className="bg-white/50 dark:bg-zinc-800/50 border-b border-slate-100 dark:border-zinc-800 p-4 md:p-5">
+                         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                              <div>
-                                 <h3 className="text-xl font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
+                                 <h3 className="text-lg md:text-xl font-bold text-gray-800 dark:text-zinc-100 flex items-center gap-2">
                                      Daftar Realisasi Gaji
                                  </h3>
-                                 <p className="text-sm font-medium text-slate-500 mt-1">Menampilkan data periode {periodeAktif}</p>
+                                 <p className="text-sm text-slate-500 mt-1">Menampilkan data periode {periodeAktif}</p>
                              </div>
-                             
+
                              {/* --- FILTERS --- */}
-                             <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+                             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full lg:w-auto">
                                 <div className="flex items-center w-full md:w-auto border border-gray-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm">
                                     <div className="pl-3 text-indigo-500"><CalendarDays className="w-4 h-4" /></div>
                                     <Select value={month} onValueChange={handleMonthChange}>
-                                        <SelectTrigger className="w-[120px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="w-full md:w-[120px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
                                         <SelectContent className="rounded-xl">{months.map(m => <SelectItem key={m.value} value={m.value} className="py-2.5">{m.label}</SelectItem>)}</SelectContent>
                                     </Select>
                                     <div className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800" />
                                     <Select value={year} onValueChange={handleYearChange}>
-                                        <SelectTrigger className="w-[90px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="w-full md:w-[90px] border-none shadow-none h-10 font-semibold text-slate-700 dark:text-zinc-300 focus:ring-0"><SelectValue /></SelectTrigger>
                                         <SelectContent className="rounded-xl">{years.map(y => <SelectItem key={y.value} value={y.value} className="py-2.5">{y.label}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
-                                
+
                                 <div className="relative w-full md:w-[250px] group">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     <Input placeholder="Cari nama pegawai..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-10 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white/50 dark:bg-zinc-900/50 text-sm shadow-sm" />
@@ -407,7 +407,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50 dark:bg-zinc-800/50 hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
-                                    <TableHead className="w-12 pl-6">
+                                    <TableHead className="w-12 pl-4 md:pl-6">
                                         <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                             checked={payrolls.data.length > 0 && selectedIds.length === payrolls.data.length}
                                             onChange={toggleAll}
@@ -419,14 +419,14 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                     <TableHead className="text-right font-semibold text-gray-700 dark:text-gray-300">Potongan</TableHead>
                                     <TableHead className="text-right font-semibold text-indigo-600">Total Bersih</TableHead>
                                     <TableHead className="text-center font-semibold text-gray-700 dark:text-gray-300">Status</TableHead>
-                                    <TableHead className="text-center pr-6 font-semibold text-gray-700 dark:text-gray-300">Aksi</TableHead>
+                                    <TableHead className="text-center pr-4 md:pr-6 font-semibold text-gray-700 dark:text-gray-300">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {payrolls.data.length > 0 ? (
                                     payrolls.data.map((payroll: any) => (
                                         <TableRow key={payroll.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <TableCell className="pl-6">
+                                            <TableCell className="pl-4 md:pl-6">
                                                 <input type="checkbox" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                     checked={selectedIds.includes(payroll.id)}
                                                     onChange={() => toggleSelection(payroll.id)}
@@ -448,7 +448,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                             <TableCell className="text-center">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:bg-white shadow-sm border transition-all">
+                                                        <Button variant="ghost" className="h-9 w-9 p-0 rounded-lg text-slate-400 hover:bg-white shadow-sm border transition-all">
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
@@ -505,70 +505,70 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                 </div>
 
             {/* ========================================================================= */}
-            {/* MODAL 1: RINCIAN DETAIL SLIP GAJI INDIVIDU                                */}
+            {/* MODAL 1: RINCIAN DETAIL SLIP GAJI INDIVIDU                            */}
             {/* ========================================================================= */}
             <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailOpen}>
                 <DialogContent className="sm:max-w-[500px] rounded-2xl border-slate-200 dark:border-zinc-800 shadow-2xl p-0 overflow-hidden bg-white dark:bg-zinc-950">
                     <DialogHeader className="bg-slate-50 dark:bg-zinc-900/50 px-6 py-4 border-b border-slate-200 dark:border-zinc-800 flex justify-between items-start flex-row">
                         <div>
                             <DialogTitle className="text-base font-bold flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-500" /> Rincian Slip Gaji Karyawan</DialogTitle>
-                            <DialogDescription className="text-xs mt-0.5">Periode Penggajian: <span className="font-bold text-slate-800 dark:text-zinc-300">{selectedPayroll?.payroll_period}</span></DialogDescription>
+                            <DialogDescription className="text-xs mt-0.5">Periode Penggajian: <span className="font-bold text-slate-800 dark:text-zinc-200">{selectedPayroll?.payroll_period}</span></DialogDescription>
                         </div>
                     </DialogHeader>
 
                     {selectedPayroll && (
                         <div className="p-6 space-y-4 text-sm">
-                            <div className="flex items-center gap-3 bg-slate-50/50 dark:bg-zinc-900/50 border p-3 rounded-xl">
+                            <div className="flex items-center gap-3 bg-slate-50/50 dark:bg-zinc-900/50 border p-4 rounded-xl">
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${getAvatarColor(selectedPayroll.employee?.name || '')}`}>{getInitials(selectedPayroll.employee?.name || '')}</div>
-                                <div>
+                                <div className="flex-1">
                                     <p className="font-bold text-sm text-slate-900 dark:text-zinc-100">{selectedPayroll.employee?.name}</p>
                                     <p className="text-[11px] text-slate-400 font-mono mt-0.5">{selectedPayroll.employee?.position || 'Staff'}</p>
                                 </div>
-                                <div className="ml-auto scale-90">{getStatusBadge(selectedPayroll.status)}</div>
+                                <div className="scale-90">{getStatusBadge(selectedPayroll.status)}</div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2 border rounded-xl p-3 bg-white dark:bg-zinc-950">
-                                    <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider border-b pb-1">Pendapatan (+)</h4>
-                                    <div className="space-y-1.5 min-h-[70px]">
+                                <div className="space-y-2 border rounded-xl p-4 bg-white dark:bg-zinc-950">
+                                    <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-wider border-b pb-2">Pendapatan (+)</h4>
+                                    <div className="space-y-2 min-h-[70px] pt-1">
                                         {selectedPayroll.items?.filter((i: any) => i.tipe === 'pendapatan').map((item: any) => (
-                                            <div key={item.id} className="flex justify-between text-[11px] font-medium text-slate-500">
+                                            <div key={item.id} className="flex justify-between text-sm font-medium text-slate-500">
                                                 <span className="truncate max-w-[120px]" title={item.deskripsi}>{item.deskripsi}</span>
                                                 <span className="font-mono text-slate-800 dark:text-zinc-200">{formatCurrency(item.jumlah)}</span>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="border-t pt-1 flex justify-between font-bold text-xs text-emerald-700">
+                                    <div className="border-t pt-2 flex justify-between font-bold text-sm text-emerald-700 mt-1">
                                         <span>Subtotal</span><span>{formatCurrency(selectedPayroll.total_pendapatan)}</span>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2 border rounded-xl p-3 bg-white dark:bg-zinc-950">
-                                    <h4 className="text-xs font-bold text-rose-600 uppercase tracking-wider border-b pb-1">Potongan (-)</h4>
-                                    <div className="space-y-1.5 min-h-[70px]">
+                                <div className="space-y-2 border rounded-xl p-4 bg-white dark:bg-zinc-950">
+                                    <h4 className="text-xs font-bold text-rose-600 uppercase tracking-wider border-b pb-2">Potongan (-)</h4>
+                                    <div className="space-y-2 min-h-[70px] pt-1">
                                         {selectedPayroll.items?.filter((i: any) => i.tipe === 'potongan').length > 0 ? (
                                             selectedPayroll.items.filter((i: any) => i.tipe === 'potongan').map((item: any) => (
-                                                <div key={item.id} className="flex justify-between text-[11px] font-medium text-slate-500">
+                                                <div key={item.id} className="flex justify-between text-sm font-medium text-slate-500">
                                                     <span className="truncate max-w-[120px]" title={item.deskripsi}>{item.deskripsi}</span>
                                                     <span className="font-mono text-rose-600">({formatCurrency(item.jumlah)})</span>
                                                 </div>
                                             ))
-                                        ) : <p className="text-[11px] text-slate-400 italic py-4 text-center">Tidak ada potongan</p>}
+                                        ) : <p className="text-sm text-slate-400 italic py-4 text-center">Tidak ada potongan</p>}
                                     </div>
-                                    <div className="border-t pt-1 flex justify-between font-bold text-xs text-rose-700">
+                                    <div className="border-t pt-2 flex justify-between font-bold text-sm text-rose-700 mt-1">
                                         <span>Subtotal</span><span>({formatCurrency(selectedPayroll.total_potongan)})</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-indigo-50/50 dark:bg-indigo-500/10 border p-3 rounded-xl text-center">
-                                <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-bold uppercase tracking-wider block mb-0.5">Total Diterima Bersih (Take Home Pay)</span>
-                                <span className="text-xl font-black font-mono text-indigo-700 dark:text-indigo-400">{formatCurrency(selectedPayroll.gaji_bersih)}</span>
+                            <div className="bg-indigo-50/50 dark:bg-indigo-500/20 border p-4 rounded-xl text-center">
+                                <span className="text-xs text-slate-500 dark:text-zinc-400 font-bold uppercase tracking-wider block mb-1">Total Diterima Bersih (Take Home Pay)</span>
+                                <span className="text-xl md:text-2xl font-black font-mono text-indigo-700 dark:text-indigo-400">{formatCurrency(selectedPayroll.gaji_bersih)}</span>
                             </div>
                         </div>
                     )}
                     <DialogFooter className="bg-slate-50 dark:bg-zinc-900/30 px-6 py-4 border-t gap-2">
-                        <Button variant="outline" onClick={() => setIsDetailOpen(false)} className="rounded-lg h-9">Tutup</Button>
+                        <Button variant="outline" onClick={() => setIsDetailOpen(false)} className="rounded-lg h-10">Tutup</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -599,40 +599,42 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                         <form onSubmit={executeEdit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <Label>Jumlah Hari Hadir</Label>
+                                    <Label className="text-sm font-medium">Jumlah Hari Hadir</Label>
                                     <Input
                                         type="number"
                                         value={editForm.data.hari_hadir}
                                         onChange={e => editForm.setData('hari_hadir', Number(e.target.value))}
                                         disabled={isPaid}
+                                        className="h-10 rounded-xl"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label>Insentif (Rp)</Label>
+                                    <Label className="text-sm font-medium">Insentif (Rp)</Label>
                                     <Input
                                         type="number"
                                         value={editForm.data.insentif}
                                         onChange={e => editForm.setData('insentif', Number(e.target.value))}
                                         disabled={isPaid}
+                                        className="h-10 rounded-xl"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-rose-500 font-bold">Potongan Kasbon (Rp)</Label>
+                                    <Label className="text-sm font-medium text-rose-500 font-bold">Potongan Kasbon (Rp)</Label>
                                     <Input
                                         type="number"
                                         value={editForm.data.potongan_kasbon}
                                         onChange={e => editForm.setData('potongan_kasbon', Number(e.target.value))}
                                         disabled={isPaid}
-                                        className="border-rose-200 text-rose-600 font-bold"
+                                        className="border-rose-200 text-rose-600 font-bold h-10 rounded-xl"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label>Status</Label>
+                                    <Label className="text-sm font-medium">Status</Label>
                                     <Select value={editForm.data.status} onValueChange={(val) => editForm.setData('status', val)}>
-                                        <SelectTrigger className="bg-white dark:bg-zinc-900 border shadow-sm">
+                                        <SelectTrigger className="bg-white dark:bg-zinc-900 border shadow-sm h-10 rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="rounded-xl">
                                             <SelectItem value="draft">Draft</SelectItem>
                                             <SelectItem value="final">Final</SelectItem>
                                             <SelectItem value="paid">Paid</SelectItem>
@@ -641,7 +643,7 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                                 </div>
                             </div>
 
-                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl mt-4 space-y-2 text-xs border border-indigo-100">
+                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl mt-4 space-y-2 text-sm border border-indigo-100">
                                 <div className="flex justify-between"><span>Gaji Pokok</span><span className="font-mono">Rp {editForm.data.gaji_pokok.toLocaleString('id-ID')}</span></div>
                                 <div className="flex justify-between"><span>Uang Makan ({editForm.data.hari_hadir} hari)</span><span className="font-mono">Rp {calculatedEdit.uangMakan.toLocaleString('id-ID')}</span></div>
                                 <div className="flex justify-between"><span>Insentif</span><span className="font-mono">Rp {editForm.data.insentif.toLocaleString('id-ID')}</span></div>
@@ -654,8 +656,8 @@ export default function Index({ payrolls, filters, summary, periodeAktif, uangMa
                             </div>
 
                             <DialogFooter className="pt-2">
-                                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} className="rounded-lg h-9">Kembali</Button>
-                                <Button type="submit" disabled={editForm.processing} className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg h-9 border-0">
+                                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)} className="rounded-lg h-10">Kembali</Button>
+                                <Button type="submit" disabled={editForm.processing} className="bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg h-10 border-0">
                                     <Save className="mr-2 w-4 h-4" /> Simpan Perubahan
                                 </Button>
                             </DialogFooter>
