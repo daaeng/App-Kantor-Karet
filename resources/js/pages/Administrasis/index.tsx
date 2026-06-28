@@ -324,7 +324,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                         <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-white/20 blur-3xl"></div>
                         <div className="absolute -bottom-40 -right-40 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
                     </div>
-                    <div className="relative z-10 px-6 w-full max-w-7xl mx-auto">
+                    <div className="relative z-10 px-4 md:px-6 lg:px-8 w-full">
                         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 flex-wrap">
                             <div className="flex items-center gap-5 text-white mb-2">
                                 <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-xl border border-white/30 shadow-lg">
@@ -429,7 +429,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                     </div>
                 </div>
 
-                <div className="px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto -mt-10 relative z-20 pb-16">
+                <div className="px-4 sm:px-6 lg:px-8 w-full max-w-full mx-auto -mt-10 relative z-20 pb-16">
 
 
                     {/* DASHBOARD */}
@@ -506,13 +506,13 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                                         <XAxis dataKey="name" tick={{ fill: '#475569', fontWeight: 600 }} axisLine={false} tickLine={false} />
                                         <YAxis tickFormatter={(val) => `${val/1000}k`} tick={{ fill: '#475569', fontWeight: 600 }} axisLine={false} tickLine={false} />
-                                        <Tooltip 
-                                            contentStyle={{ 
-                                                backgroundColor: 'white', 
-                                                borderRadius: '16px', 
-                                                border: 'none', 
-                                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' 
-                                            }} 
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                borderRadius: '16px',
+                                                border: 'none',
+                                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                                            }}
                                             formatter={(val:number)=>formatCurrency(val)}
                                         />
                                         <Legend wrapperStyle={{ paddingTop: '20px' }} />
