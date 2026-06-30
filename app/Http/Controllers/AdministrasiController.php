@@ -13,6 +13,7 @@ use App\Models\Nota;
 use App\Models\PpbHeader;
 use App\Models\HargaInformasi;
 use App\Models\Incised;
+use App\Models\MaterialReceipt;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -204,8 +205,12 @@ class AdministrasiController extends Controller
         $totalPaymentAll = \App\Models\KasbonPayment::sum('amount');
         $totalPiutangPegawai = $totalKasbonAll - $totalPaymentAll;
 
+        // Calculate total hutang for karet unit
+        $totalHutang = MaterialReceipt::karet()->get()->sum(function ($receipt) {
+            return max(0, $receipt->total_harga - $receipt->total_paid);
+        }) ?? 0;
+
         $totalAktiva = $saldoKasAccumulated + $saldoBankAccumulated + $totalPiutangPegawai;
-        $totalHutang = 0;
         $ekuitasModal = $totalAktiva - $totalHutang;
 
         $neraca = [
@@ -324,6 +329,8 @@ class AdministrasiController extends Controller
                 "pendingCount" => $pendingRequests + $pendingNotas,
                 "hargaSahamKaret" => $hargaSahamKaret ? (float)$hargaSahamKaret->nilai : 0,
                 "hargaDollar" => $hargaDollar ? (float)$hargaDollar->nilai : 0,
+                "saldoKas" => (float) $saldoKasAccumulated,
+                "saldoBerjalan" => (float) ($saldoKasAccumulated + $saldoBankAccumulated),
                 "reports" => [
                     "bank" => [
                         "in_penjualan" => (float) $bankIn_Auto,

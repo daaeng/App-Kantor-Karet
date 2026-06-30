@@ -203,12 +203,12 @@ export default function Index({ suppliers, filters }: Props) {
           supplierCounts={supplierCounts}
         />
 
-        <Card className="shadow-xl border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/95">
-          <CardHeader className="border-b bg-slate-50/50">
+        <Card className="shadow-xl border-0 ring-1 ring-black/5 rounded-2xl overflow-hidden backdrop-blur-sm bg-white/95 dark:bg-slate-800/50">
+          <CardHeader className="border-b ">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl">Daftar Rekanan Supplier</CardTitle>
-              <div className="relative">
-                <Search className="absolute top-2.5 left-2 h-4 w-4 text-gray-500" />
+              <div className="relative mb-1">
+                <Search className="absolute top-2.5 left-2 h-4 w-4 text-gray-500 " />
                 <Input
                   placeholder="Cari nama supplier..."
                   className="w-64 pl-8"

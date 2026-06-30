@@ -295,6 +295,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('real-estate/material-receipt', MaterialReceiptController::class)
         ->except(['create', 'show', 'edit'])
         ->middleware('permission:material-receipts.view');
+    Route::post('real-estate/material-receipt/payment', [MaterialReceiptController::class, 'processPayment'])
+        ->name('material-receipt.payment')
+        ->middleware('permission:material-receipts.edit');
 
     // Keuangan Properti
     Route::get('real-estate/transaksi-keuangan/export-excel', [TransaksiKeuanganController::class, 'exportExcel'])

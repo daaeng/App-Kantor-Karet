@@ -140,16 +140,16 @@ const groupedNavItems: NavGroup[] = [
                 permission: 'kasbons.view',
             },
             {
-                title: 'Administrasi',
-                href: '/administrasis',
-                icon: ChartArea,
-                permission: 'administrasis.view',
-            },
-            {
                 title: 'Payroll / Penggajian',
                 href: '/payroll',
                 icon: Banknote,
                 permission: 'payroll.view',
+            },
+            {
+                title: 'Administrasi',
+                href: '/administrasis',
+                icon: ChartArea,
+                permission: 'administrasis.view',
             },
             {
                 title: 'Keuangan Properti',

@@ -40,7 +40,7 @@ class TransaksiKeuanganController extends Controller
 
         $projects = HousingProject::all();
         $penjualans = PenjualanKavling::with(['konsumen', 'blokKavling.tipeRumah'])->get();
-        $receipts = MaterialReceipt::with(['tokoMaterial'])->where('business_unit', 'properti')->whereIn('status_pembayaran', ['Belum Lunas', 'Sebagian'])->get();
+        $receipts = MaterialReceipt::with(['tokoMaterial'])->properti()->whereIn('status_pembayaran', ['Belum Lunas', 'Sebagian'])->get();
 
         $reports = $this->calculateFinancialReports($transaksiQuery);
         $chartData = $this->calculateChartData(clone $transaksiQuery, $timePeriod);
@@ -69,6 +69,8 @@ class TransaksiKeuanganController extends Controller
             $query->whereMonth('transaction_date', Carbon::now()->month)->whereYear('transaction_date', Carbon::now()->year);
         } elseif ($timePeriod === 'this-year') {
             $query->whereYear('transaction_date', Carbon::now()->year);
+        } elseif ($timePeriod === 'all-years') {
+            // no filter, show all
         } elseif ($timePeriod === 'periodic-years') {
             $query->whereYear('transaction_date', '>=', $startYear)->whereYear('transaction_date', '<=', $endYear);
         } elseif ($timePeriod === 'range-month') {
@@ -104,7 +106,13 @@ class TransaksiKeuanganController extends Controller
         $saldoBankAccumulated = $totalPemasukanBank - $totalPengeluaranBank;
         $saldoKasAccumulated = $totalPemasukanKas - $totalPengeluaranKas;
 
+        // Calculate total hutang for real estate unit
+        $totalHutang = MaterialReceipt::properti()->get()->sum(function ($receipt) {
+            return max(0, $receipt->total_harga - $receipt->total_paid);
+        }) ?? 0;
+
         $totalAktiva = $saldoKasAccumulated + $saldoBankAccumulated;
+        $ekuitasModal = $totalAktiva - $totalHutang;
 
         $labaRugi = [
             'revenue' => $revenue,
@@ -119,6 +127,8 @@ class TransaksiKeuanganController extends Controller
                 'total_aktiva' => $totalAktiva,
             ],
             'liabilities' => [
+                'hutang_dagang' => $totalHutang,
+                'ekuitas' => $ekuitasModal,
                 'total_pasiva' => $totalAktiva,
             ],
         ];
@@ -184,7 +194,7 @@ class TransaksiKeuanganController extends Controller
             ->groupBy('label')
             ->pluck('total', 'label');
 
-        $allLabels = $incManual->keys()->merge($expManual->keys())->unique()->sort();
+        $allLabels = $incManual->keys()->merge($expManual->keys())->unique()->sort()->values(); // values to reindex keys
 
         foreach ($allLabels as $label) {
             $displayLabel = ($timePeriod === 'this-year' || $timePeriod === 'all-years' || $timePeriod === 'periodic-years')
@@ -194,7 +204,11 @@ class TransaksiKeuanganController extends Controller
             $totalInc = $incManual[$label] ?? 0;
             $totalExp = $expManual[$label] ?? 0;
 
-            $chartData[] = ['name' => $displayLabel, 'Pemasukan' => (float)$totalInc, 'Pengeluaran' => (float)$totalExp];
+            $chartData[] = [
+                'name' => $displayLabel,
+                'Pemasukan' => (float) $totalInc,
+                'Pengeluaran' => (float) $totalExp,
+            ];
         }
 
         return $chartData;

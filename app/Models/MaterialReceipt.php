@@ -16,9 +16,16 @@ class MaterialReceipt extends Model
         'nomor_nota',
         'tanggal_penerimaan',
         'total_harga',
+        'total_paid',
         'status_pembayaran',
-        'keterangan'
+        'keterangan',
+        'payment_method'
     ];
+
+    public function getRemainingAttribute()
+    {
+        return max(0, $this->total_harga - $this->total_paid);
+    }
 
     public const UNIT_PROPERTI = 'properti';
     public const UNIT_KARET   = 'karet';
@@ -41,5 +48,10 @@ class MaterialReceipt extends Model
     public function projectPhase()
     {
         return $this->belongsTo(ProjectPhase::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(MaterialReceiptPayment::class);
     }
 }
