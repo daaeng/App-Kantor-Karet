@@ -434,7 +434,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                     {/* DASHBOARD */}
                     <TabsContent value="dashboard" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
                             <Card className="group bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border-0 shadow-2xl hover:shadow-emerald-500/20 transition-all duration-500 hover:-translate-y-2">
                                 <CardHeader className="pb-4 pt-6 px-6">
                                     <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-emerald-700 dark:text-emerald-300 font-extrabold">
@@ -465,7 +465,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="group bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border-0 shadow-2xl hover:shadow-amber-500/20 transition-all duration-500 hover:-translate-y-2">
+                            {/* <Card className="group bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border-0 shadow-2xl hover:shadow-amber-500/20 transition-all duration-500 hover:-translate-y-2">
                                 <CardHeader className="pb-4 pt-6 px-6">
                                     <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-amber-700 dark:text-amber-300 font-extrabold">
                                         Saldo Kas
@@ -479,8 +479,8 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                         {formatCurrency(summary.saldoKas)}
                                     </div>
                                 </CardContent>
-                            </Card>
-                            <Card className="group bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/50 dark:to-purple-950/50 border-0 shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:-translate-y-2">
+                            </Card> */}
+                            {/* <Card className="group bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/50 dark:to-purple-950/50 border-0 shadow-2xl hover:shadow-violet-500/20 transition-all duration-500 hover:-translate-y-2">
                                 <CardHeader className="pb-4 pt-6 px-6">
                                     <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-violet-700 dark:text-violet-300 font-extrabold">
                                         Saldo Berjalan
@@ -494,7 +494,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
                                         {formatCurrency(summary.saldoBerjalan)}
                                     </div>
                                 </CardContent>
-                            </Card>
+                            </Card> */}
                             <Card className="group bg-gradient-to-br from-indigo-50 to-cyan-50 dark:from-indigo-950/50 dark:to-cyan-950/50 border-0 shadow-2xl hover:shadow-indigo-500/20 transition-all duration-500 hover:-translate-y-2">
                                 <CardHeader className="pb-4 pt-6 px-6">
                                     <CardTitle className="text-sm uppercase tracking-wider flex justify-between items-center text-indigo-700 dark:text-indigo-300 font-extrabold">
@@ -802,7 +802,7 @@ export default function AdminPage({ requests, notas, summary, chartData, filter,
 
                     {/* CASHFLOW */}
                     <TabsContent value="cashflow" className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-0">
-                        <div className="grid grid-cols-1 gap-5 md:gap-6 lg:gap-8">
+                        <div className="grid md:grid-cols-2 sm:grid-cols-1 gap-5 md:gap-6 lg:gap-8">
                             <Card className="border-0 shadow-2xl overflow-hidden">
                                 <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-4 md:px-6 lg:px-8 py-3 md:py-4 lg:py-6">
                                     <CardTitle className="flex gap-3 text-white text-base md:text-lg lg:text-xl font-extrabold">

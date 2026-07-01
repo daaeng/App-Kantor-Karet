@@ -77,7 +77,7 @@ export default function Index({ suppliers, filters }: Props) {
   // Handle search dengan debounce sederhana
   const handleSearchChange = (value: string) => {
     setSearch(value)
-    router.get(route('real-estate.toko-material.index'), {
+    router.get(route('toko-material.index'), {
       search: value,
       business_unit: activeTab === 'all' ? undefined : activeTab,
     }, { preserveState: true, replace: true })
@@ -86,7 +86,7 @@ export default function Index({ suppliers, filters }: Props) {
   // Handle tab change
   const handleTabChange = (tab: 'all' | 'properti' | 'karet') => {
     setActiveTab(tab)
-    router.get(route('real-estate.toko-material.index'), {
+    router.get(route('toko-material.index'), {
       search,
       business_unit: tab === 'all' ? undefined : tab,
     }, { preserveState: true, replace: true })
@@ -122,7 +122,7 @@ export default function Index({ suppliers, filters }: Props) {
 
   const confirmDelete = () => {
     if (deletingId) {
-      deleteRequest(route('real-estate.toko-material.destroy', deletingId), {
+      deleteRequest(route('toko-material.destroy', deletingId), {
         onSuccess: () => {
           setIsDeleteAlertOpen(false)
           setDeletingId(null)
@@ -138,7 +138,7 @@ export default function Index({ suppliers, filters }: Props) {
   // Form submissions
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    post(route('real-estate.toko-material.store'), {
+    post(route('toko-material.store'), {
       onSuccess: () => {
         setIsAddOpen(false)
         reset()
@@ -153,7 +153,7 @@ export default function Index({ suppliers, filters }: Props) {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (editingSupplier) {
-      put(route('real-estate.toko-material.update', editingSupplier.id), {
+      put(route('toko-material.update', editingSupplier.id), {
         onSuccess: () => {
           setIsEditOpen(false)
           setEditingSupplier(null)
@@ -251,7 +251,11 @@ export default function Index({ suppliers, filters }: Props) {
         onSubmit={handleAddSubmit}
         isEdit={false}
         formData={data}
-        setFormData={setData}
+        setFormData={(newData) => {
+          Object.entries(newData).forEach(([key, value]) => {
+            setData(key as any, value as any)
+          })
+        }}
         processing={processing}
       />
 
@@ -261,7 +265,11 @@ export default function Index({ suppliers, filters }: Props) {
         onSubmit={handleEditSubmit}
         isEdit={true}
         formData={data}
-        setFormData={setData}
+        setFormData={(newData) => {
+          Object.entries(newData).forEach(([key, value]) => {
+            setData(key as any, value as any)
+          })
+        }}
         processing={processing}
       />
 

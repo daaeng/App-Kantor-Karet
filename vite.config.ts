@@ -23,4 +23,7 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    server: {
+        host: true,
+    },
 });

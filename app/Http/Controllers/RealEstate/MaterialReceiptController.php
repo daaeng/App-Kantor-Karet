@@ -171,7 +171,7 @@ class MaterialReceiptController extends Controller
                     'amount'                   => $amount,
                     'source'                   => $validated['source'],
                     'payment_date'             => $validated['payment_date'],
-                    'notes'                    => $validated['notes'],
+                    'notes'                    => $validated['notes'] ?? null,
                 ]);
 
                 // Update total paid dan status
