@@ -1,5 +1,4 @@
 import React from 'react';
-import { toast } from 'sonner';
 import { NavUser } from '@/components/nav-user';
 import { NavFooter } from '@/components/nav-footer';
 import {
@@ -14,6 +13,7 @@ import {
     SidebarGroupLabel,
     SidebarGroupContent,
     SidebarRail,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,6 +50,7 @@ import {
     Leaf,
 } from 'lucide-react';
 import AppLogo from './app-logo';
+import { cn } from '@/lib/utils';
 
 // 1. Definisikan tipe untuk Item dan Group
 interface NavItem {
@@ -61,6 +62,7 @@ interface NavItem {
 
 interface NavGroup {
     label: string;
+    icon?: any; // ikon ringkas yang tampil saat sidebar diciutkan
     items: NavItem[];
 }
 
@@ -97,6 +99,7 @@ const groupedNavItems: NavGroup[] = [
     },
     {
         label: "SDM & Manajemen User",
+        icon: UserCog2,
         items: [
             {
                 title: 'Data Pegawai',
@@ -123,14 +126,14 @@ const groupedNavItems: NavGroup[] = [
             },
         ]
     },
-
     {
         label: "Keuangan & Administrasi",
+        icon: Banknote,
         items: [
             {
                 title: 'Invoice / Nota',
                 href: '/notas',
-                icon: ReceiptText ,
+                icon: ReceiptText,
                 permission: 'notas.view',
             },
             {
@@ -161,6 +164,7 @@ const groupedNavItems: NavGroup[] = [
     },
     {
         label: "Pemberkasan & Surat",
+        icon: Notebook,
         items: [
             {
                 title: 'Surat Masuk',
@@ -180,13 +184,14 @@ const groupedNavItems: NavGroup[] = [
             {
                 title: 'Permintaan Barang (PPB)',
                 href: '/ppb',
-                icon: BookUp2 ,
+                icon: BookUp2,
                 permission: 'requests.view',
             },
         ]
     },
     {
         label: "Supplier & Pembelian",
+        icon: Store,
         items: [
             {
                 title: 'Supplier',
@@ -204,6 +209,7 @@ const groupedNavItems: NavGroup[] = [
     },
     {
         label: "Perkebunan Karet",
+        icon: Leaf,
         items: [
             {
                 title: 'Product / Barang',
@@ -238,6 +244,7 @@ const groupedNavItems: NavGroup[] = [
     },
     {
         label: "Real Estate (Properti)",
+        icon: Building2,
         items: [
             {
                 title: 'Data Proyek Perumahan',
@@ -284,6 +291,10 @@ export function AppSidebar() {
     const userPermissions = props.auth.permissions || [];
     const currentUrl = window.location.pathname; // Untuk state aktif
     const global_real_estate = props.global_real_estate || { projects: [], active_project_id: null };
+    const { setOpen, state } = useSidebar();
+    const activeProjectName = global_real_estate.projects.find(
+        (p) => p.id === global_real_estate.active_project_id
+    )?.name;
 
     return (
         <Sidebar collapsible="icon" variant="sidebar">
@@ -298,34 +309,65 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                 </SidebarMenu>
 
+                {global_real_estate.projects.length > 0 && (
+                    <div className="px-2 pb-1">
+                        {/* Versi lengkap: hanya tampil saat sidebar terbuka */}
+                        <div className="group-data-[collapsible=icon]:hidden">
+                            <Select
+                                value={global_real_estate.active_project_id?.toString() || ''}
+                                onValueChange={(val) => {
+                                    router.post('/real-estate/housing-project/set-active', {
+                                        housing_project_id: val
+                                    }, { preserveScroll: true, preserveState: false });
+                                }}
+                            >
+                                <SelectTrigger
+                                    className={cn(
+                                        "h-9 w-full rounded-md text-xs font-medium",
+                                        activeProjectName
+                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200'
+                                            : 'border-gray-200 bg-gray-50 text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400'
+                                    )}
+                                >
+                                    <Briefcase className="mr-1 h-3.5 w-3.5 shrink-0" />
+                                    <SelectValue placeholder="Pilih proyek aktif" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-md border-gray-200 dark:border-gray-800">
+                                    {global_real_estate.projects.map((p) => (
+                                        <SelectItem key={p.id} value={p.id.toString()} className="text-xs">
+                                            {p.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
+                        {/* Versi ikon: hanya tampil saat sidebar diciutkan */}
+                        <SidebarMenu className="hidden group-data-[collapsible=icon]:flex">
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    tooltip={activeProjectName ? `Proyek aktif: ${activeProjectName}` : "Pilih proyek aktif"}
+                                    onClick={() => setOpen(true)}
+                                    isActive={!!activeProjectName}
+                                >
+                                    <Briefcase />
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </div>
+                )}
             </SidebarHeader>
 
             <SidebarContent className="custom-scrollbar">
                 {groupedNavItems.map((group, groupIndex) => {
-                    // Filter item dalam grup berdasarkan permission
                     const visibleItems = (group.items || []).filter(item =>
                         !item.permission || userPermissions.includes(item.permission)
                     );
 
-                    // Filter subGroups
-                    let visibleSubGroups: any[] = [];
-                    if (group.subGroups) {
-                        visibleSubGroups = group.subGroups.map(sub => ({
-                            ...sub,
-                            items: sub.items.filter((item: any) => !item.permission || userPermissions.includes(item.permission))
-                        })).filter(sub => sub.items.length > 0);
-                    }
+                    if (visibleItems.length === 0) return null;
 
-                    // Jika grup kosong setelah difilter, jangan tampilkan grup ini
-                    if (visibleItems.length === 0 && visibleSubGroups.length === 0) return null;
-
-                    // Apakah salah satu item di grup ini sedang aktif?
-                    const isGroupActive = visibleItems.some(item => currentUrl.startsWith(item.href)) ||
-                                          visibleSubGroups.some(sub => sub.items.some((item: any) => currentUrl.startsWith(item.href)));
-
-                    // Default terbuka jika grupnya aktif atau Dashboard
-                    const defaultOpen = isGroupActive || group.label === "Platform";
+                    const isGroupActive = visibleItems.some(item => currentUrl.startsWith(item.href));
+                    const GroupIcon = group.icon;
 
                     const renderItem = (item: any) => {
                         const isActive = currentUrl.startsWith(item.href);
@@ -335,10 +377,9 @@ export function AppSidebar() {
                                     asChild
                                     isActive={isActive}
                                     tooltip={item.title}
-                                    className={`transition-all duration-300 rounded-xl mb-1 ${isActive ? 'font-medium text-indigo-700 bg-indigo-500/10 dark:text-indigo-400 dark:bg-indigo-500/20 shadow-sm border border-indigo-500/10' : 'text-slate-800 font-medium hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400'}`}
                                 >
-                                    <Link href={item.href} className="flex items-center gap-3">
-                                        <item.icon className={isActive ? "text-indigo-600 dark:text-indigo-400 drop-shadow-sm" : "text-slate-600 dark:text-slate-400"} strokeWidth={isActive ? 2.5 : 1.5} />
+                                    <Link href={item.href}>
+                                        <item.icon />
                                         <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -346,75 +387,96 @@ export function AppSidebar() {
                         );
                     };
 
-                    return (
-                        <Collapsible
-                            key={groupIndex}
-                            defaultOpen={defaultOpen}
-                            className="group/collapsible"
-                        >
-                            <SidebarGroup>
-                                {group.label === "Real Estate (Properti)" && global_real_estate.projects.length > 0 && (
-                                    <div className="px-2 mb-2 mt-0">
-                                        <Select
-                                            value={global_real_estate.active_project_id?.toString() || ''}
-                                            onValueChange={(val) => {
-                                                router.post('/real-estate/housing-project/set-active', {
-                                                    housing_project_id: val
-                                                }, { preserveScroll: true, preserveState: false });
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full h-9 text-xs font-semibold bg-indigo-50 border-indigo-500/30 shadow-sm text-indigo-900 rounded-lg">
-                                                <SelectValue placeholder="Pilih Proyek Aktif" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {global_real_estate.projects.map((p) => (
-                                                    <SelectItem key={p.id} value={p.id.toString()} className="text-xs">
-                                                        {p.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-                                {/* Label Kategori */}
-                                <SidebarGroupLabel asChild className="mb-1 text-[11px] font-bold text-slate-800 dark:text-slate-300 uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white cursor-pointer rounded-md transition-colors">
-                                    <CollapsibleTrigger onClick={(e) => {
-                                        if (group.label === "Real Estate (Properti)" && (!global_real_estate || !global_real_estate.active_project_id)) {
-                                            e.preventDefault();
-                                            toast.warning("Pemilihan Proyek Belum Aktif", {
-                                                description: "Silakan pilih proyek terlebih dahulu di atas.",
-                                                duration: 3000
-                                            });
-                                        }
-                                    }}>
-                                        {group.label}
-                                        <ChevronDown className="ml-auto w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                                    </CollapsibleTrigger>
-                                </SidebarGroupLabel>
-
-                                <CollapsibleContent>
-                                    <SidebarGroupContent>
-                                        {visibleItems.length > 0 && (
+                    // Grup "Platform" - karena dia harus selalu tampil, tidak collapsible
+                    if (group.label === "Platform") {
+                        return (
+                            <React.Fragment key={groupIndex}>
+                                {/* Tampilkan item lengkap saat sidebar terbuka */}
+                                <div className="group-data-[collapsible=icon]:hidden">
+                                    <SidebarGroup>
+                                        <SidebarGroupLabel className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                                            Platform
+                                        </SidebarGroupLabel>
+                                        <SidebarGroupContent>
                                             <SidebarMenu>
                                                 {visibleItems.map(renderItem)}
                                             </SidebarMenu>
-                                        )}
-                                        {visibleSubGroups.length > 0 && (
-                                            <div className="flex flex-col mt-1">
-                                                {visibleSubGroups.map((subGroup, subIdx) => (
-                                                    <div key={subIdx} className="mb-3">
-                                                        <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 px-2 border-b border-slate-100 dark:border-slate-800 pb-1 mx-2">{subGroup.label}</div>
-                                                        <SidebarMenu>
-                                                            {subGroup.items.map(renderItem)}
-                                                        </SidebarMenu>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </SidebarGroupContent>
-                                </CollapsibleContent>
-                            </SidebarGroup>
-                        </Collapsible>
+                                        </SidebarGroupContent>
+                                    </SidebarGroup>
+                                </div>
+
+                                {/* Tampilkan ikon grup saat sidebar tertutup */}
+                                <div className="hidden group-data-[collapsible=icon]:block">
+                                    <SidebarMenu>
+                                        {visibleItems.map((item) => {
+                                            const isActive = currentUrl.startsWith(item.href);
+                                            return (
+                                                <SidebarMenuItem key={item.title}>
+                                                    <SidebarMenuButton
+                                                        asChild
+                                                        isActive={isActive}
+                                                        tooltip={item.title}
+                                                    >
+                                                        <Link href={item.href}>
+                                                            <item.icon />
+                                                        </Link>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                            );
+                                        })}
+                                    </SidebarMenu>
+                                </div>
+                            </React.Fragment>
+                        );
+                    }
+
+                    const defaultOpen = isGroupActive;
+                    const showRealEstateBadge = group.label === "Real Estate (Properti)" && !global_real_estate.active_project_id;
+
+                    return (
+                        <React.Fragment key={groupIndex}>
+                        {/* Tampilkan accordion saat sidebar terbuka */}
+                        <div className="group-data-[collapsible=icon]:hidden">
+                            <Collapsible defaultOpen={defaultOpen} className="group/collapsible">
+                                <SidebarGroup>
+                                    <SidebarGroupLabel asChild className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-md transition-colors">
+                                        <CollapsibleTrigger className="flex w-full items-center gap-2">
+                                            {GroupIcon && <GroupIcon className="h-4 w-4 shrink-0" />}
+                                            <span className="truncate">{group.label}</span>
+                                            {showRealEstateBadge && (
+                                                <span className="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold normal-case tracking-normal text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                                    pilih proyek
+                                                </span>
+                                            )}
+                                            <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                                        </CollapsibleTrigger>
+                                    </SidebarGroupLabel>
+                                    <CollapsibleContent>
+                                        <SidebarGroupContent>
+                                            <SidebarMenu>
+                                                {visibleItems.map(renderItem)}
+                                            </SidebarMenu>
+                                        </SidebarGroupContent>
+                                    </CollapsibleContent>
+                                </SidebarGroup>
+                            </Collapsible>
+                        </div>
+
+                        {/* Tampilkan ikon grup saat sidebar tertutup */}
+                        <div className="hidden group-data-[collapsible=icon]:block">
+                            <SidebarMenu>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton
+                                        tooltip={group.label}
+                                        isActive={isGroupActive}
+                                        onClick={() => setOpen(true)}
+                                    >
+                                        {GroupIcon && <GroupIcon />}
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </div>
+                    </React.Fragment>
                     );
                 })}
             </SidebarContent>
