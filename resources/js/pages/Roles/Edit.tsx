@@ -26,7 +26,7 @@ const PERMISSION_GROUPS: { label: string; color: string; prefixes: string[] }[] 
     {
         label: 'Keuangan & Administrasi',
         color: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800',
-        prefixes: ['notas', 'kasbons', 'administrasis', 'payroll'],
+        prefixes: ['notas', 'transaction-categories', 'kasbons', 'administrasis', 'payroll'],
     },
     {
         label: 'Pemberkasan & Surat',
@@ -57,6 +57,7 @@ const MODULE_LABELS: Record<string, string> = {
     'usermanagements': 'User Management',
     'roles': 'Role & Permission',
     'notas': 'Invoice / Nota',
+    'transaction-categories': 'Kategori Transaksi',
     'kasbons': 'Kasbon & Piutang',
     'administrasis': 'Administrasi (Karet)',
     'payroll': 'Payroll / Penggajian',

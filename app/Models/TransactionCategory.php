@@ -33,4 +33,11 @@ class TransactionCategory extends Model
     {
         return $query->where('is_active', true);
     }
+
+    // Relationship to financial transactions
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransaction::class, 'category', 'name')
+            ->where('business_unit', $this->business_unit);
+    }
 }

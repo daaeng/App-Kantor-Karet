@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Plus, Search, ListTree, Pencil, Trash2, TrendingUp, TrendingDown, CheckCircle2, XCircle } from 'lucide-react'
+import { Plus, Search, ListTree, Pencil, Trash2, TrendingUp, TrendingDown, CheckCircle2, XCircle, Eye } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -277,15 +277,18 @@ export default function Index({ categories, filters }: Props) {
                       )}
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="default" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={() => openEditModal(category)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(category.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="ghost" size="sm" onClick={() => router.visit(route('transaction-categories.show', category.id))}>
+                                            <Eye className="w-4 h-4" />
+                                        </Button>
+                                        <Button variant="default" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={() => openEditModal(category)}>
+                                            <Pencil className="w-4 h-4" />
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={() => handleDelete(category.id)}>
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -464,17 +467,23 @@ export default function Index({ categories, filters }: Props) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2 mt-6 w-full">
-            <AlertDialogCancel
-              onClick={() => { setIsDeleteAlertOpen(false); setDeletingId(null) }}
-              className="rounded-xl h-11 w-full border-slate-200 dark:border-zinc-800 font-bold text-slate-600 hover:bg-slate-50"
-            >
-              Batal
+            <AlertDialogCancel asChild>
+              <Button
+                variant="default"
+                className="bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl h-11 w-full font-bold"
+                onClick={() => { setIsDeleteAlertOpen(false); setDeletingId(null) }}
+              >
+                Batal
+              </Button>
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-11 w-full border-0 shadow-md font-bold"
-            >
-              Ya, Hapus Data
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-11 w-full font-bold"
+                onClick={confirmDelete}
+              >
+                Ya, Hapus Data
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

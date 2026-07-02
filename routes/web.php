@@ -49,6 +49,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     // Transaction Categories
     Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index')->middleware('permission:transaction-categories.view');
+    Route::get('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'show'])->name('transaction-categories.show')->middleware('permission:transaction-categories.view');
     Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->name('transaction-categories.store')->middleware('permission:transaction-categories.create');
     Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->name('transaction-categories.update')->middleware('permission:transaction-categories.edit');
     Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->name('transaction-categories.destroy')->middleware('permission:transaction-categories.delete');
