@@ -78,7 +78,7 @@ export default function Index({ categories, filters }: Props) {
   }, [flash])
 
   // Form
-  const { data, setData, post, put, destroy: deleteRequest, reset, processing } = useForm({
+  const { data, setData, post, put, reset, processing } = useForm({
     business_unit: 'karet' as 'karet' | 'realestate',
     type: 'expense' as 'income' | 'expense',
     name: '',
@@ -139,7 +139,8 @@ export default function Index({ categories, filters }: Props) {
 
   const confirmDelete = () => {
     if (deletingId) {
-      deleteRequest(route('transaction-categories.destroy', deletingId), {
+      router.delete(route('transaction-categories.destroy', deletingId), {
+        preserveScroll: true,
         onSuccess: () => {
           setIsDeleteAlertOpen(false)
           setDeletingId(null)

@@ -60,7 +60,7 @@ export default function Index({ suppliers, filters }: Props) {
     const [search, setSearch] = useState(filters?.search || '')
 
     // Form
-    const { data, setData, post, put, destroy: deleteRequest, reset, processing } = useForm({
+    const { data, setData, post, put, reset, processing } = useForm({
         business_unit: 'properti' as 'properti' | 'karet',
         nama_toko: '',
         nomor_telepon: '',
@@ -122,7 +122,8 @@ export default function Index({ suppliers, filters }: Props) {
 
     const confirmDelete = () => {
         if (deletingId) {
-        deleteRequest(route('toko-material.destroy', deletingId), {
+        router.delete(route('toko-material.destroy', deletingId), {
+            preserveScroll: true,
             onSuccess: () => {
             setIsDeleteAlertOpen(false)
             setDeletingId(null)

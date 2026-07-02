@@ -147,7 +147,7 @@ export default function NotasIndex({ transactions, categories, stats, filters }:
   }
 
   // Form
-  const { data, setData, post, put, destroy: deleteRequest, reset, processing } = useForm({
+  const { data, setData, post, put, reset, processing } = useForm({
     business_unit: 'karet' as 'karet' | 'realestate',
     source: 'cash' as 'cash' | 'bank',
     category: '',
@@ -195,7 +195,8 @@ export default function NotasIndex({ transactions, categories, stats, filters }:
 
   const confirmDelete = () => {
     if (deletingId) {
-      deleteRequest(route('notas.destroy', deletingId), {
+      router.delete(route('notas.destroy', deletingId), {
+        preserveScroll: true,
         onSuccess: () => {
           setIsDeleteAlertOpen(false)
           setDeletingId(null)
