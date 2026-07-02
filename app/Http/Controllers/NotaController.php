@@ -2,165 +2,255 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Nota;
+use App\Models\FinancialTransaction;
+use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use DB;
 
 class NotaController extends Controller
 {
     public function index(Request $request)
-    {
-        $perPage = 10;
-        $searchTerm = $request->input('search');
+  {
+    $perPage = 20;
+    $searchTerm = $request->input('search');
+    $filterBusinessUnit = $request->input('business_unit');
+    $filterSource = $request->input('source');
+    $timeFilter = $request->input('time_filter', 'this_month');
+    $selectMonth = $request->input('select_month');
+    $selectYear = $request->input('select_year');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
 
-        $notas = Nota::query()
-            ->when($searchTerm, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('devisi', 'like', "%{$search}%")
-                      ->orWhere('mengetahui', 'like', "%{$search}%");
-            })
-            ->orderBy('created_at', 'DESC')
-            ->paginate($perPage)
-            ->withQueryString();
+    $now = now();
 
-        $jml_nota = Nota::count();
-        $totalPendingNotas = Nota::where('status', 'belum ACC')->count();
-        $totalApprovedNotas = Nota::where('status', 'diterima')->count();
-        $sumApprovedNotasAmount = Nota::where('status', 'diterima')->sum('dana');
+    $transactionsQuery = FinancialTransaction::query()
+      ->where('type', 'expense')
+      ->where('db_cr', 'credit')
+      ->when($searchTerm, function ($query, $search) {
+        $query->where('category', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('counterparty', 'like', "%{$search}%");
+      })
+      ->when($filterBusinessUnit, function ($query, $bu) {
+        $query->where('business_unit', $bu);
+      })
+      ->when($filterSource, function ($query, $source) {
+        $query->where('source', $source);
+      })
+      ->when($timeFilter === 'this_month', function ($query) use ($now) {
+        $query->whereMonth('transaction_date', $now->month)
+              ->whereYear('transaction_date', $now->year);
+      })
+      ->when($timeFilter === 'last_month', function ($query) use ($now) {
+        $lastMonth = $now->copy()->subMonth();
+        $query->whereMonth('transaction_date', $lastMonth->month)
+              ->whereYear('transaction_date', $lastMonth->year);
+      })
+      ->when($timeFilter === 'select_month' && $selectMonth, function ($query) use ($selectMonth) {
+        [$year, $month] = explode('-', $selectMonth);
+        $query->whereMonth('transaction_date', $month)
+              ->whereYear('transaction_date', $year);
+      })
+      ->when($timeFilter === 'this_year', function ($query) use ($now) {
+        $query->whereYear('transaction_date', $now->year);
+      })
+      ->when($timeFilter === 'select_year' && $selectYear, function ($query) use ($selectYear) {
+        $query->whereYear('transaction_date', $selectYear);
+      })
+      ->when($timeFilter === 'date_range' && $startDate && $endDate, function ($query) use ($startDate, $endDate) {
+        $query->whereBetween('transaction_date', [$startDate, $endDate]);
+      });
 
-        return Inertia::render("Notas/index", [
-            "notas" => $notas,
-            "filter" => $request->only('search'),
-            "totalPendingNotas" => $totalPendingNotas,
-            "totalApprovedNotas" => $totalApprovedNotas,
-            "sumApprovedNotasAmount" => $sumApprovedNotasAmount,
-            "jml_nota" => $jml_nota,
-        ]);
-    }
+    $transactions = $transactionsQuery
+      ->orderBy('transaction_date', 'DESC')
+      ->orderBy('id', 'DESC')
+      ->paginate($perPage)
+      ->withQueryString();
+
+    $categories = TransactionCategory::active()->get();
+
+    // Clone the base query for stats calculations
+    $statsQuery = clone $transactionsQuery;
+    $karetStatsQuery = (clone $transactionsQuery)->where('business_unit', 'karet');
+    $realestateStatsQuery = (clone $transactionsQuery)->where('business_unit', 'realestate');
+
+    $stats = [
+      'total' => $statsQuery->count(),
+      'total_amount' => $statsQuery->sum('amount'),
+      'karet_amount' => $karetStatsQuery->sum('amount'),
+      'realestate_amount' => $realestateStatsQuery->sum('amount'),
+    ];
+
+    return Inertia::render("Notas/index", [
+      "transactions" => $transactions,
+      "categories" => $categories,
+      "stats" => $stats,
+      "filters" => $request->only(['search', 'business_unit', 'source', 'time_filter', 'select_month', 'select_year', 'start_date', 'end_date']),
+    ]);
+  }
 
     public function up_nota()
     {
-        return Inertia('Notas/up_nota');
+        $categories = TransactionCategory::active()->get();
+        return Inertia('Notas/up_nota', compact('categories'));
     }
 
     public function c_nota(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:250',
-            'date' => 'required|date',
-            'devisi' => 'required|string',
-            'mengetahui' => 'required|string|max:250',
-            'desk' => 'nullable|string',
-            'dana' => 'required|numeric',
-            'file' => 'required|image|mimes:jpeg,png,jpg,pdf|max:2048',
+        $validated = $request->validate([
+            'business_unit' => 'required|in:karet,realestate',
+            'source' => 'required|in:cash,bank',
+            'category' => 'required|string',
+            'transaction_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'counterparty' => 'nullable|string',
         ]);
 
-        $fileHash = md5_file($request->file('file')->getRealPath());
-        $existing = Nota::where('file_hash', $fileHash)->exists();
+        $category = TransactionCategory::where('name', $validated['category'])
+            ->where('business_unit', $validated['business_unit'])
+            ->first();
 
-        if ($existing) {
-            return back()->withErrors(['file' => 'Data dengan file yang sama sudah ada!'])->withInput();
+        $prefix = $category->prefix ?? 'EXP';
+        $date = Carbon::parse($validated['transaction_date']);
+        $monthYear = $date->format('my');
+        $transactionCode = $prefix . '-' . $monthYear;
+
+        $lastTrx = FinancialTransaction::where('business_unit', $validated['business_unit'])
+            ->where('transaction_code', $transactionCode)
+            ->orderByRaw('CAST(transaction_number AS UNSIGNED) DESC')
+            ->first();
+
+        $nextSeq = 1;
+        if ($lastTrx && is_numeric($lastTrx->transaction_number)) {
+            $nextSeq = (int)$lastTrx->transaction_number + 1;
         }
+        $transactionNumber = str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
 
-        $path = null;
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
-            $sluggedName = Str::slug($originalName);
-            $filename = 'nota_' . time() . '_' . $sluggedName . '.' . $extension;
-            $path = $file->storeAs('notas', $filename, 'public');
+        DB::beginTransaction();
+        try {
+            // 1. Debit: Expense category
+            FinancialTransaction::create([
+                ...$validated,
+                'type' => 'expense',
+                'category' => $validated['category'],
+                'source' => null,
+                'transaction_code' => $transactionCode,
+                'transaction_number' => $transactionNumber,
+                'db_cr' => 'debit',
+            ]);
+
+            // 2. Credit: Cash/Bank
+            FinancialTransaction::create([
+                ...$validated,
+                'type' => 'expense',
+                'category' => $validated['source'] === 'cash' ? 'Kas' : 'Bank',
+                'transaction_code' => $transactionCode,
+                'transaction_number' => $transactionNumber,
+                'db_cr' => 'credit',
+            ]);
+
+            DB::commit();
+            return redirect()->route('notas.index')->with('success', 'Pengeluaran berhasil dicatat dan disinkron ke Buku Jurnal.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mencatat pengeluaran: ' . $e->getMessage());
         }
-
-        Nota::create([
-            'name' => $request->name,
-            'date' => $request->date,
-            'devisi' => $request->devisi,
-            'mengetahui' => $request->mengetahui,
-            'desk' => $request->desk,
-            'dana' => $request->dana,
-            'file' => $path,
-            'file_hash' => $fileHash,
-        ]);
-
-        return redirect()->route('notas.index')->with('message', 'Nota berhasil diunggah.');
     }
 
     public function show(string $id)
     {
-        $nota = Nota::findOrFail($id);
+        $transaction = FinancialTransaction::findOrFail($id);
         return Inertia::render("Notas/show", [
-            "nota" => $nota,
+            "transaction" => $transaction,
         ]);
     }
 
     public function edit(string $id)
     {
-        $nota = Nota::findOrFail($id);
+        $transaction = FinancialTransaction::findOrFail($id);
+        $categories = TransactionCategory::active()->get();
         return Inertia::render("Notas/edit", [
-            "nota" => $nota,
+            "transaction" => $transaction,
+            "categories" => $categories,
         ]);
     }
 
-    public function update(Request $request, Nota $nota)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:250',
-            'date' => 'required|date',
-            'devisi' => 'required|string',
-            'mengetahui' => 'required|string|max:250',
-            'desk' => 'nullable|string',
-            'dana' => 'required|numeric',
+        $transaction = FinancialTransaction::findOrFail($id);
+
+        $validated = $request->validate([
+            'business_unit' => 'required|in:karet,realestate',
+            'source' => 'required|in:cash,bank',
+            'category' => 'required|string',
+            'transaction_date' => 'required|date',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'nullable|string',
+            'counterparty' => 'nullable|string',
         ]);
 
-        $nota->update($request->all());
+        DB::beginTransaction();
+        try {
+            // Find both journal entries (debit and credit)
+            if ($transaction->transaction_code && $transaction->transaction_number) {
+                $relatedTransactions = FinancialTransaction::where('transaction_code', $transaction->transaction_code)
+                    ->where('transaction_number', $transaction->transaction_number)
+                    ->get();
 
-        return redirect()->route('notas.index')->with('message', 'Nota berhasil diperbarui.');
-    }
+                foreach ($relatedTransactions as $trx) {
+                    if ($trx->db_cr === 'debit') {
+                        $trx->update([
+                            ...$validated,
+                            'category' => $validated['category'],
+                            'source' => null,
+                            'type' => 'expense',
+                        ]);
+                    } else {
+                        $trx->update([
+                            ...$validated,
+                            'category' => $validated['source'] === 'cash' ? 'Kas' : 'Bank',
+                            'type' => 'expense',
+                        ]);
+                    }
+                }
+            } else {
+                $transaction->update([
+                    ...$validated,
+                    'type' => 'expense',
+                    'db_cr' => 'credit',
+                ]);
+            }
 
-    public function showAct(string $id)
-    {
-        $nota = Nota::findOrFail($id);
-        return Inertia::render("Notas/showAct", [
-            "nota" => $nota,
-        ]);
-    }
-
-    public function editAct(string $id)
-    {
-        $nota = Nota::findOrFail($id);
-        return Inertia::render("Notas/editAct", [
-            "nota" => $nota,
-        ]);
-    }
-
-    public function updateAct(Request $request, Nota $nota)
-    {
-        // PERBAIKAN: Validasi hanya untuk status dan reason.
-        $request->validate([
-            'status' => 'required|string|in:diterima,ditolak,belum ACC',
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        // PERBAIKAN: Update hanya field yang relevan.
-        $nota->update([
-            'status' => $request->input('status'),
-            'reason' => $request->input('reason'),
-        ]);
-
-        return redirect()->route('administrasis.index')->with('message', 'Status nota berhasil diperbarui.');
-    }
-
-    public function destroy(Nota $nota)
-    {
-        if ($nota->file && Storage::disk('public')->exists($nota->file)) {
-            Storage::disk('public')->delete($nota->file);
+            DB::commit();
+            return redirect()->route('notas.index')->with('success', 'Pengeluaran berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memperbarui pengeluaran: ' . $e->getMessage());
         }
-        $nota->delete();
-        return redirect()->route('notas.index')->with('message', 'Nota berhasil dihapus.');
+    }
+
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $transaction = FinancialTransaction::findOrFail($id);
+
+            if ($transaction->transaction_code && $transaction->transaction_number) {
+                FinancialTransaction::where('transaction_code', $transaction->transaction_code)
+                    ->where('transaction_number', $transaction->transaction_number)
+                    ->delete();
+            } else {
+                $transaction->delete();
+            }
+
+            DB::commit();
+            return redirect()->route('notas.index')->with('success', 'Pengeluaran berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menghapus pengeluaran: ' . $e->getMessage());
+        }
     }
 }

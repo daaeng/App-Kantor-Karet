@@ -33,6 +33,9 @@ class PermissionSeeder extends Seeder
             // Invoice / Nota
             'notas.view', 'notas.create', 'notas.edit', 'notas.delete',
 
+            // Kategori Transaksi
+            'transaction-categories.view', 'transaction-categories.create', 'transaction-categories.edit', 'transaction-categories.delete',
+
             // Kasbon & Piutang
             'kasbons.view', 'kasbons.create', 'kasbons.edit', 'kasbons.delete',
 

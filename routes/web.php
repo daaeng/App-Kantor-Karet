@@ -25,6 +25,8 @@ use App\Http\Controllers\OutgoingMailController;
 use App\Http\Controllers\CompanyDocumentController;
 use App\Http\Controllers\RubberEstimationController;
 use App\Http\Controllers\FileDownloadController;
+use App\Http\Controllers\TransactionRecordingController;
+use App\Http\Controllers\TransactionCategoryController;
 
 // [REAL ESTATE MODUL]
 use App\Http\Controllers\RealEstate\TipeRumahController;
@@ -45,6 +47,18 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Transaction Categories
+    Route::get('/transaction-categories', [TransactionCategoryController::class, 'index'])->name('transaction-categories.index')->middleware('permission:transaction-categories.view');
+    Route::post('/transaction-categories', [TransactionCategoryController::class, 'store'])->name('transaction-categories.store')->middleware('permission:transaction-categories.create');
+    Route::put('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'update'])->name('transaction-categories.update')->middleware('permission:transaction-categories.edit');
+    Route::delete('/transaction-categories/{transactionCategory}', [TransactionCategoryController::class, 'destroy'])->name('transaction-categories.destroy')->middleware('permission:transaction-categories.delete');
+
+    // Transaction Recording Page
+    Route::get('/transaction-recording', [TransactionRecordingController::class, 'index'])->name('transaction-recording.index');
+    Route::post('/transaction-recording', [TransactionRecordingController::class, 'store'])->name('transaction-recording.store');
+    Route::put('/transaction-recording/{id}', [TransactionRecordingController::class, 'update'])->name('transaction-recording.update');
+    Route::delete('/transaction-recording/{id}', [TransactionRecordingController::class, 'destroy'])->name('transaction-recording.destroy');
+
 
     // =========================================================================
     //  DASHBOARD

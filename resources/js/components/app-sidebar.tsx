@@ -48,6 +48,8 @@ import {
     ChevronDown,
     Building2,
     Leaf,
+    ListTree,
+    WalletCards,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 import { cn } from '@/lib/utils';
@@ -131,10 +133,16 @@ const groupedNavItems: NavGroup[] = [
         icon: Banknote,
         items: [
             {
-                title: 'Invoice / Nota',
+                title: 'Pencatatan Pengeluaran',
                 href: '/notas',
-                icon: ReceiptText,
+                icon: WalletCards,
                 permission: 'notas.view',
+            },
+            {
+                title: 'Kategori Transaksi',
+                href: '/transaction-categories',
+                icon: ListTree,
+                permission: 'transaction-categories.view',
             },
             {
                 title: 'Kasbon & Piutang',
