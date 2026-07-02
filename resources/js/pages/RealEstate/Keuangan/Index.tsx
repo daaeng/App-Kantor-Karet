@@ -630,49 +630,102 @@ export default function KeuanganProperti({ transaksis = [], projects = [], penju
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {transaksis?.map((item: any) => {
-                                                const sourceAccount = item.source === 'bank' ? 'Kas di Bank' : 'Kas Tunai';
-                                                const categoryAccount = item.category;
+                                        {(() => {
+                                            // Group transactions by transaction_code + transaction_number
+                                            const grouped = transaksis?.reduce((acc: any, item: any) => {
+                                                const key = `${item.transaction_code}-${item.transaction_number}`;
+                                                if (!acc[key]) acc[key] = [];
+                                                acc[key].push(item);
+                                                return acc;
+                                            }, {} as Record<string, any[]>) || {};
 
-                                                const debitAccount = item.type === 'expense' ? categoryAccount : sourceAccount;
-                                                const creditAccount = item.type === 'expense' ? sourceAccount : categoryAccount;
+                                            // Get unique keys sorted by transaction date descending
+                                            const sortedKeys = Object.keys(grouped).sort((a, b) => {
+                                                const dateA = new Date(grouped[a][0].transaction_date);
+                                                const dateB = new Date(grouped[b][0].transaction_date);
+                                                return dateB.getTime() - dateA.getTime();
+                                            });
 
+                                            return sortedKeys.map(key => {
+                                                const items = grouped[key];
+                                                const firstItem = items[0];
+                                                const debitItem = items.find((i: any) => i.db_cr === 'debit');
+                                                const creditItem = items.find((i: any) => i.db_cr === 'credit');
+                                                
+                                                // For single item (old transactions), use the original logic
+                                                if (items.length === 1) {
+                                                    const sourceAccount = firstItem.source === 'bank' ? 'Kas di Bank' : 'Kas Tunai';
+                                                    const categoryAccount = firstItem.category;
+                                                    const debitAccount = firstItem.type === 'expense' ? categoryAccount : sourceAccount;
+                                                    const creditAccount = firstItem.type === 'expense' ? sourceAccount : categoryAccount;
+
+                                                    return (
+                                                        <React.Fragment key={firstItem.id}>
+                                                            {/* DEBIT ROW */}
+                                                            <TableRow className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+                                                                <TableCell className="align-top py-5 px-6 font-semibold text-slate-700 dark:text-slate-300" rowSpan={2}>{formatDate(firstItem.transaction_date)}</TableCell>
+                                                                <TableCell className="align-top py-5 px-6" rowSpan={2}>
+                                                                    <div><span className="font-mono text-sm font-extrabold text-blue-700 dark:text-blue-300">{firstItem.transaction_code}</span><br /><span className="text-xs text-slate-500 dark:text-slate-400">{firstItem.transaction_number}</span></div>
+                                                                </TableCell>
+                                                                <TableCell className="align-top py-5 px-6 max-w-[220px] text-slate-700 dark:text-slate-300" rowSpan={2}>
+                                                                    {firstItem.description || '-'}
+                                                                    {firstItem.housing_project && <div className="text-xs text-slate-500 mt-1">Proyek: {firstItem.housing_project.nama_proyek}</div>}
+                                                                </TableCell>
+
+                                                                {/* Akun Debit */}
+                                                                <TableCell className="py-5 px-6"><span className="font-extrabold text-slate-800 dark:text-white">{debitAccount}</span></TableCell>
+                                                                <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(firstItem.amount)}</TableCell>
+                                                                <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
+
+                                                                <TableCell className="align-top text-center py-5 px-6" rowSpan={2}>
+                                                                    <div className="flex justify-center flex-col gap-2">
+                                                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400" onClick={() => handleEditTransaction(firstItem)}><Pencil className="h-5 h-5" /></Button>
+                                                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={() => { setTransactionToDelete(firstItem.id); setIsDeleteAlertOpen(true); }}><Trash2 className="h-5 h-5" /></Button>
+                                                                    </div>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                            {/* KREDIT ROW */}
+                                                            <TableRow className="bg-slate-50/80 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900">
+                                                                {/* Indent account name */}
+                                                                <TableCell className="py-5 px-6 pl-12"><span className="text-slate-600 dark:text-slate-400 italic font-medium">{creditAccount}</span></TableCell>
+                                                                <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
+                                                                <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(firstItem.amount)}</TableCell>
+                                                            </TableRow>
+                                                        </React.Fragment>
+                                                    );
+                                                }
+
+                                                // For grouped transactions (new entries with debit + credit)
                                                 return (
-                                                    <React.Fragment key={item.id}>
-                                                        {/* DEBIT ROW */}
+                                                    <React.Fragment key={key}>
                                                         <TableRow className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
-                                                            <TableCell className="align-top py-5 px-6 font-semibold text-slate-700 dark:text-slate-300" rowSpan={2}>{formatDate(item.transaction_date)}</TableCell>
+                                                            <TableCell className="align-top py-5 px-6 font-semibold text-slate-700 dark:text-slate-300" rowSpan={2}>{formatDate(firstItem.transaction_date)}</TableCell>
                                                             <TableCell className="align-top py-5 px-6" rowSpan={2}>
-                                                                <div><span className="font-mono text-sm font-extrabold text-blue-700 dark:text-blue-300">{item.transaction_code}</span><br /><span className="text-xs text-slate-500 dark:text-slate-400">{item.transaction_number}</span></div>
+                                                                <div><span className="font-mono text-sm font-extrabold text-blue-700 dark:text-blue-300">{firstItem.transaction_code}</span><br /><span className="text-xs text-slate-500 dark:text-slate-400">{firstItem.transaction_number}</span></div>
                                                             </TableCell>
                                                             <TableCell className="align-top py-5 px-6 max-w-[220px] text-slate-700 dark:text-slate-300" rowSpan={2}>
-                                                                {item.description || '-'}
-                                                                {item.housing_project && <div className="text-xs text-slate-500 mt-1">Proyek: {item.housing_project.nama_proyek}</div>}
+                                                                {firstItem.description || '-'}
+                                                                {firstItem.housing_project && <div className="text-xs text-slate-500 mt-1">Proyek: {firstItem.housing_project.nama_proyek}</div>}
                                                             </TableCell>
-
-                                                            {/* Akun Debit */}
-                                                            <TableCell className="py-5 px-6"><span className="font-extrabold text-slate-800 dark:text-white">{debitAccount}</span></TableCell>
-                                                            <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(item.amount)}</TableCell>
+                                                            <TableCell className="py-5 px-6"><span className="font-extrabold text-slate-800 dark:text-white">{debitItem?.category}</span></TableCell>
+                                                            <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(debitItem?.amount || 0)}</TableCell>
                                                             <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
-
                                                             <TableCell className="align-top text-center py-5 px-6" rowSpan={2}>
                                                                 <div className="flex justify-center flex-col gap-2">
-                                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400" onClick={() => handleEditTransaction(item)}><Pencil className="h-5 h-5" /></Button>
-                                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={() => { setTransactionToDelete(item.id); setIsDeleteAlertOpen(true); }}><Trash2 className="h-5 h-5" /></Button>
+                                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400" onClick={() => { setTransactionToDelete(firstItem.id); setIsDeleteAlertOpen(true); }}><Trash2 className="h-5 h-5" /></Button>
                                                                 </div>
                                                             </TableCell>
                                                         </TableRow>
-                                                        {/* KREDIT ROW */}
                                                         <TableRow className="bg-slate-50/80 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-900">
-                                                            {/* Indent account name */}
-                                                            <TableCell className="py-5 px-6 pl-12"><span className="text-slate-600 dark:text-slate-400 italic font-medium">{creditAccount}</span></TableCell>
+                                                            <TableCell className="py-5 px-6 pl-12"><span className="text-slate-600 dark:text-slate-400 italic font-medium">{creditItem?.category || (creditItem?.source === 'bank' ? 'Kas di Bank' : creditItem?.source === 'cash' ? 'Kas Tunai' : '')}</span></TableCell>
                                                             <TableCell className="py-5 px-6 text-right font-mono text-slate-400 dark:text-slate-500">-</TableCell>
-                                                            <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(item.amount)}</TableCell>
+                                                            <TableCell className="py-5 px-6 text-right font-mono font-bold text-slate-800 dark:text-white">{formatCurrency(creditItem?.amount || 0)}</TableCell>
                                                         </TableRow>
                                                     </React.Fragment>
                                                 );
-                                            })}
-                                        </TableBody>
+                                            });
+                                        })()}
+                                    </TableBody>
                                     </Table>
                                 </CardContent>
                             </Card>

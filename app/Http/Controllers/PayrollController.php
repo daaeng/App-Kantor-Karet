@@ -7,6 +7,7 @@ use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollSetting;
 use App\Models\Kasbon;
+use App\Models\FinancialTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -172,6 +173,9 @@ class PayrollController extends Controller
                     'tanggal_pembayaran' => now(),
                 ]);
 
+                // Create financial transactions for this payroll
+                $this->createPayrollFinancialTransaction($payroll);
+
                 if ($gajiPokok > 0) {
                     PayrollItem::create(['payroll_id' => $payroll->id, 'deskripsi' => 'Gaji Pokok', 'tipe' => 'pendapatan', 'jumlah' => $gajiPokok]);
                 }
@@ -201,6 +205,67 @@ class PayrollController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
         return redirect()->route('payroll.index')->with('success', 'Penggajian berhasil disimpan.');
+    }
+
+    private function generateTransactionNumber(string $date): array
+    {
+        $prefix = 'GJI'; // Gaji
+        $monthYear = Carbon::parse($date)->format('my');
+        $transactionCode = $prefix . '-' . $monthYear;
+        $businessUnit = FinancialTransaction::BUSINESS_KARET;
+
+        $lastTrx = FinancialTransaction::where('business_unit', $businessUnit)
+            ->where('transaction_code', $transactionCode)
+            ->orderByRaw('CAST(transaction_number AS UNSIGNED) DESC')
+            ->first();
+
+        $nextSeq = 1;
+        if ($lastTrx && is_numeric($lastTrx->transaction_number)) {
+            $nextSeq = (int) $lastTrx->transaction_number + 1;
+        }
+
+        return [$transactionCode, str_pad($nextSeq, 3, '0', STR_PAD_LEFT)];
+    }
+
+    private function createPayrollFinancialTransaction(Payroll $payroll): void
+    {
+        // Delete any existing transactions for this payroll first
+        FinancialTransaction::where('payroll_id', $payroll->id)->delete();
+
+        [$code, $number] = $this->generateTransactionNumber($payroll->tanggal_pembayaran);
+        $employeeName = $payroll->employee->name;
+
+        // 1. Debit: Beban Gaji Karyawan
+        FinancialTransaction::create([
+            'business_unit'     => FinancialTransaction::BUSINESS_KARET,
+            'type'              => 'expense',
+            'source'            => null,
+            'category'          => 'Beban Gaji Karyawan',
+            'description'       => "Pembayaran gaji karyawan: {$employeeName} ({$payroll->payroll_period})",
+            'amount'            => $payroll->gaji_bersih,
+            'transaction_date'  => $payroll->tanggal_pembayaran,
+            'transaction_code'  => $code,
+            'transaction_number'=> $number,
+            'db_cr'             => 'debit',
+            'counterparty'      => $employeeName,
+            'payroll_id'        => $payroll->id,
+        ]);
+
+        // 2. Credit: Kas Tunai (default to cash, can be updated later if needed)
+        FinancialTransaction::create([
+            'business_unit'     => FinancialTransaction::BUSINESS_KARET,
+            'type'              => 'expense',
+            'source'            => 'cash',
+            'category'          => 'Pembayaran Gaji',
+            'description'       => "Pembayaran gaji karyawan: {$employeeName} ({$payroll->payroll_period})",
+            'amount'            => $payroll->gaji_bersih,
+            'transaction_date'  => $payroll->tanggal_pembayaran,
+            'transaction_code'  => $code,
+            'transaction_number'=> $number,
+            'db_cr'             => 'credit',
+            'counterparty'      => $employeeName,
+            'payroll_id'        => $payroll->id,
+        ]);
     }
 
     private function processKasbonPayment($employeeId, $amountToPay, $payrollId)
@@ -306,6 +371,14 @@ class PayrollController extends Controller
                 }
             }
 
+            // If status is final or paid, create financial transactions
+            if ($status !== 'draft') {
+                $this->createPayrollFinancialTransaction($payroll);
+            } else {
+                // If status is draft, delete any existing transactions
+                FinancialTransaction::where('payroll_id', $payroll->id)->delete();
+            }
+
             DB::commit();
             return redirect()->route('payroll.index')->with('success', 'Data penggajian berhasil diperbarui.');
 
@@ -333,7 +406,7 @@ class PayrollController extends Controller
         if (!empty($ids)) {
             $idArray = explode(',', $ids);
             $query->whereIn('id', $idArray);
-            
+
             // to get period string for the view
             $firstPayroll = Payroll::whereIn('id', $idArray)->first();
             $periodString = $firstPayroll ? $firstPayroll->payroll_period : Carbon::now()->format('Y-m');

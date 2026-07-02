@@ -146,8 +146,26 @@ class MaterialReceiptController extends Controller
                 // Generate transaction number
                 [$code, $number] = $this->generateTransactionNumber('Pembayaran Hutang Supplier', $validated['payment_date']);
 
-                // Buat financial transaction
-                $financialTrans = FinancialTransaction::create([
+                // 1. Debit: Hutang Dagang
+                $debitTrans = FinancialTransaction::create([
+                    'business_unit'         => $receipt->business_unit === 'properti' ? 'realestate' : 'karet',
+                    'type'                  => 'expense',
+                    'source'                => null,
+                    'category'              => 'Hutang Dagang',
+                    'description'           => "Pembayaran hutang nota {$receipt->nomor_nota} - {$receipt->tokoMaterial->nama_toko}",
+                    'amount'                => $amount,
+                    'transaction_date'      => $validated['payment_date'],
+                    'transaction_code'      => $code,
+                    'transaction_number'    => $number,
+                    'db_cr'                 => 'debit',
+                    'counterparty'          => $receipt->tokoMaterial->nama_toko,
+                    'housing_project_id'    => $receipt->projectPhase?->housing_project_id,
+                    'project_phase_id'      => $receipt->project_phase_id,
+                    'material_receipt_id'   => $receipt->id,
+                ]);
+
+                // 2. Credit: Cash/Bank
+                $creditTrans = FinancialTransaction::create([
                     'business_unit'         => $receipt->business_unit === 'properti' ? 'realestate' : 'karet',
                     'type'                  => 'expense',
                     'source'                => $validated['source'],
@@ -164,10 +182,10 @@ class MaterialReceiptController extends Controller
                     'material_receipt_id'   => $receipt->id,
                 ]);
 
-                // Buat payment record
+                // Buat payment record (link to credit transaction)
                 MaterialReceiptPayment::create([
                     'material_receipt_id'      => $receipt->id,
-                    'financial_transaction_id' => $financialTrans->id,
+                    'financial_transaction_id' => $creditTrans->id,
                     'amount'                   => $amount,
                     'source'                   => $validated['source'],
                     'payment_date'             => $validated['payment_date'],
@@ -199,41 +217,48 @@ class MaterialReceiptController extends Controller
 
     private function createOrUpdateFinancialTransaction(MaterialReceipt $receipt): void
     {
-        // Find existing financial transaction for this receipt
-        $existingTransaction = FinancialTransaction::where('material_receipt_id', $receipt->id)
-            ->where('category', $receipt->business_unit === 'properti' ? 'Material Bangunan' : 'Pembelian Material Supplier')
-            ->first();
+        // Delete all existing transactions for this receipt to recreate them
+        FinancialTransaction::where('material_receipt_id', $receipt->id)->delete();
 
         $businessUnit = $receipt->business_unit === 'properti' ? 'realestate' : 'karet';
         $category = $businessUnit === 'realestate' ? 'Material Bangunan' : 'Pembelian Material Supplier';
         [$code, $number] = $this->generateTransactionNumber($category, $receipt->tanggal_penerimaan);
 
-        $source = $receipt->payment_method === 'credit' ? 'bank' : $receipt->payment_method;
-
-        $transactionData = [
+        // 1. Debit: Material/Expense
+        FinancialTransaction::create([
             'business_unit'         => $businessUnit,
             'type'                  => 'expense',
-            'source'                => $source,
+            'source'                => null, // We don't use source for this side
             'category'              => $category,
             'description'           => "Pembelian material nota {$receipt->nomor_nota} - {$receipt->tokoMaterial->nama_toko}",
             'amount'                => $receipt->total_harga,
             'transaction_date'      => $receipt->tanggal_penerimaan,
+            'transaction_code'      => $code,
+            'transaction_number'    => $number,
             'db_cr'                 => 'debit',
             'counterparty'          => $receipt->tokoMaterial->nama_toko,
             'housing_project_id'    => $receipt->projectPhase?->housing_project_id,
             'project_phase_id'      => $receipt->project_phase_id,
             'material_receipt_id'   => $receipt->id,
-        ];
+        ]);
 
-        if ($existingTransaction) {
-            $transactionData['transaction_code'] = $existingTransaction->transaction_code;
-            $transactionData['transaction_number'] = $existingTransaction->transaction_number;
-            $existingTransaction->update($transactionData);
-        } else {
-            $transactionData['transaction_code'] = $code;
-            $transactionData['transaction_number'] = $number;
-            FinancialTransaction::create($transactionData);
-        }
+        // 2. Credit: Accounts Payable (Hutang Dagang)
+        FinancialTransaction::create([
+            'business_unit'         => $businessUnit,
+            'type'                  => 'expense',
+            'source'                => null,
+            'category'              => 'Hutang Dagang',
+            'description'           => "Pembelian material nota {$receipt->nomor_nota} - {$receipt->tokoMaterial->nama_toko}",
+            'amount'                => $receipt->total_harga,
+            'transaction_date'      => $receipt->tanggal_penerimaan,
+            'transaction_code'      => $code,
+            'transaction_number'    => $number,
+            'db_cr'                 => 'credit',
+            'counterparty'          => $receipt->tokoMaterial->nama_toko,
+            'housing_project_id'    => $receipt->projectPhase?->housing_project_id,
+            'project_phase_id'      => $receipt->project_phase_id,
+            'material_receipt_id'   => $receipt->id,
+        ]);
     }
 
     private function generateTransactionNumber(string $category, string $date): array

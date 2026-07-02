@@ -171,7 +171,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Payroll / Penggajian
     Route::get('/payroll/generate', [PayrollController::class, 'generate'])->name('payroll.generate')->middleware('permission:payroll.create');
-    Route::resource('payroll', PayrollController::class)->except(['destroy'])->middleware('permission:payroll.view');
+    Route::resource('payroll', PayrollController::class)->middleware('permission:payroll.view');
+    Route::delete('/payroll/{payroll}', [PayrollController::class, 'destroy'])->name('payroll.destroy')->middleware('permission:payroll.delete');
     Route::get('/payroll/{payroll}/print', [PayrollController::class, 'printSlip'])->name('payroll.print');
     Route::get('/payroll-bulk-print', [PayrollController::class, 'bulkPrint'])->name('payroll.bulk_print');
 

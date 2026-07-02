@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -50,6 +51,8 @@ export default function Index({
     const [activeTab, setActiveTab] = useState<BusinessUnit>('semua');
     const [search, setSearch] = useState('');
     const [selectedReceiptIds, setSelectedReceiptIds] = useState<number[]>([]);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const { data, setData, post, put, delete: destroy, reset, processing } = useForm({
         business_unit: 'properti' as 'properti' | 'karet',
@@ -146,8 +149,19 @@ export default function Index({
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('Hapus nota ini? Data hutang pada supplier akan ikut dihitung ulang.'))
-            destroy(`/real-estate/material-receipt/${id}`);
+        setDeletingId(id);
+        setIsDeleteAlertOpen(true);
+    };
+
+    const executeDelete = () => {
+        if (deletingId !== null) {
+            destroy(`/real-estate/material-receipt/${deletingId}`, {
+                onSuccess: () => {
+                    setIsDeleteAlertOpen(false);
+                    setDeletingId(null);
+                }
+            });
+        }
     };
 
     const transformFn = (d: typeof data) => ({
@@ -623,6 +637,34 @@ export default function Index({
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={isDeleteAlertOpen} onOpenChange={open => { if (!open) { setIsDeleteAlertOpen(false); setDeletingId(null); } }}>
+                <AlertDialogContent className="border-0 shadow-xl rounded-3xl overflow-hidden">
+                    <AlertDialogHeader className="px-8 py-6 border-b bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/30 dark:to-pink-900/30 dark:border-neutral-800">
+                        <AlertDialogTitle className="text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                            <div className="p-2 bg-rose-100 dark:bg-rose-900/40 rounded-full">
+                                <Trash2 className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+                            </div>
+                            Konfirmasi Hapus Nota
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-600 dark:text-slate-300 mt-2">
+                            Anda yakin ingin menghapus nota ini? Data financial dan hutang supplier akan ikut terhapus/dihitung ulang. Tindakan ini tidak bisa dibatalkan.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="px-8 py-6 gap-3">
+                        <AlertDialogCancel variant="outline" className="rounded-xl border-2 font-semibold">
+                            Batal
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={executeDelete}
+                            disabled={processing}
+                            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold"
+                        >
+                            {processing ? 'Menghapus...' : 'Ya, Hapus Nota'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

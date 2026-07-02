@@ -365,7 +365,7 @@ export default function Index({
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                                                             <DropdownMenuItem onClick={() => openEditModal(receipt)}>Edit Data</DropdownMenuItem>
-                                                            {canSelect && (
+                                                            {/* {canSelect && (
                                                                 <DropdownMenuItem
                                                                     onClick={() => {
                                                                         setSelectedReceiptIds([receipt.id]);
@@ -375,7 +375,7 @@ export default function Index({
                                                                     <CreditCard className="h-4 w-4 mr-2" /> Bayar Nota Ini
                                                                 </DropdownMenuItem>
                                                             )}
-                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuSeparator /> */}
                                                             <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(receipt.id)}>Hapus</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>

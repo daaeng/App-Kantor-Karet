@@ -54,4 +54,9 @@ class MaterialReceipt extends Model
     {
         return $this->hasMany(MaterialReceiptPayment::class);
     }
+
+    public function financialTransactions()
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
 }

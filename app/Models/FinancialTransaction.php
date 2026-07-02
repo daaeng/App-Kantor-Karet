@@ -30,6 +30,7 @@ class FinancialTransaction extends Model
         'housing_project_id',
         'penjualan_kavling_id',
         'material_receipt_id',
+        'payroll_id',
     ];
 
     protected $casts = [
@@ -60,6 +61,11 @@ class FinancialTransaction extends Model
     public function materialReceipt()
     {
         return $this->belongsTo(MaterialReceipt::class);
+    }
+
+    public function payroll()
+    {
+        return $this->belongsTo(Payroll::class);
     }
 
     public function isIncome(): bool

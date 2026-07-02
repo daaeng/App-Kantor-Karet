@@ -271,6 +271,8 @@ class AdministrasiController extends Controller
                 'Penarikan Tunai dari Bank',
                 'Pembayaran Penoreh',
                 'Bayar Hutang',
+                'Pembayaran Hutang Supplier',
+                'Hutang Dagang',
                 'Operasional Lapangan',
                 'Operasional Kantor',
                 'BPJS Ketenagakerjaan',
@@ -279,7 +281,9 @@ class AdministrasiController extends Controller
                 'Uang Makan Mandor',
                 'Kasbon Pegawai',
                 'Kasbon Penoreh',
-                'Pembayaran Kasbon'
+                'Pembayaran Kasbon',
+                'Beban Gaji Karyawan',
+                'Pembayaran Gaji'
             ])->sum('amount') ?? 0;
 
         $opex_upah_penoreh = $trxQuery->clone()->where('category', 'Pembayaran Penoreh')->sum('amount') ?? 0;
@@ -338,7 +342,7 @@ class AdministrasiController extends Controller
                         "out_gaji" => (float) $bankOut_Auto,
                         "out_kapal" => (float) $bankOpsDetails->where('category', 'Pembayaran Kapal')->sum('amount'),
                         "out_truck" => (float) $bankOpsDetails->where('category', 'Pembayaran Truck')->sum('amount'),
-                        "out_hutang" => (float) $bankOpsDetails->where('category', 'Bayar Hutang')->sum('amount'),
+                        "out_hutang" => (float) $bankOpsDetails->whereIn('category', ['Bayar Hutang', 'Pembayaran Hutang Supplier'])->sum('amount'),
                         "out_penarikan" => (float) $penarikanTunaiPeriod,
                         "total_in" => (float) $totalBankIn,
                         "total_out" => (float) $totalBankOut,
@@ -519,7 +523,17 @@ class AdministrasiController extends Controller
 
     public function destroyTransaction($id)
     {
-        FinancialTransaction::karet()->findOrFail($id)->delete();
+        $transaction = FinancialTransaction::karet()->findOrFail($id);
+        
+        // Delete ALL transactions with same transaction_code and transaction_number (if available)
+        if ($transaction->transaction_code && $transaction->transaction_number) {
+            FinancialTransaction::where('transaction_code', $transaction->transaction_code)
+                ->where('transaction_number', $transaction->transaction_number)
+                ->delete();
+        } else {
+            $transaction->delete();
+        }
+        
         return redirect()->back()->with('success', 'Transaksi dihapus!');
     }
 
@@ -587,10 +601,11 @@ class AdministrasiController extends Controller
         $opex_lainnya = FinancialTransaction::karet()->where('type', 'expense')
             ->whereNotIn('category', [
                 'Pembelian Karet', 'Penarikan Bank', 'Penarikan Tunai dari Bank',
-                'Pembayaran Penoreh', 'Bayar Hutang', 'Operasional Lapangan',
+                'Pembayaran Penoreh', 'Bayar Hutang', 'Pembayaran Hutang Supplier',
+                'Hutang Dagang', 'Operasional Lapangan',
                 'Operasional Kantor', 'BPJS Ketenagakerjaan', 'Pembayaran Kapal',
                 'Pembayaran Truck', 'Uang Makan Mandor', 'Kasbon Pegawai',
-                'Kasbon Penoreh', 'Pembayaran Kasbon'
+                'Kasbon Penoreh', 'Pembayaran Kasbon', 'Beban Gaji Karyawan', 'Pembayaran Gaji'
             ])
             ->whereMonth('transaction_date', $month)->whereYear('transaction_date', $year)
             ->sum('amount') ?? 0;

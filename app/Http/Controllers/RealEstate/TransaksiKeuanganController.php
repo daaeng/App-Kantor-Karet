@@ -82,8 +82,11 @@ class TransaksiKeuanganController extends Controller
 
     private function calculateFinancialReports($query)
     {
-        $totalPemasukan = $query->clone()->where('type', 'income')->sum('amount') ?? 0;
-        $totalPengeluaran = $query->clone()->where('type', 'expense')->sum('amount') ?? 0;
+        // Exclude balance sheet items from P&L and total pengeluaran/pemasukan
+        $excludeCategories = ['Hutang Dagang', 'Pembayaran Hutang Supplier'];
+
+        $totalPemasukan = $query->clone()->where('type', 'income')->whereNotIn('category', $excludeCategories)->sum('amount') ?? 0;
+        $totalPengeluaran = $query->clone()->where('type', 'expense')->whereNotIn('category', $excludeCategories)->sum('amount') ?? 0;
         $saldoBerjalan = $totalPemasukan - $totalPengeluaran;
 
         $bankIn = $query->clone()->where('type', 'income')->where('source', 'bank')->sum('amount') ?? 0;
@@ -183,13 +186,14 @@ class TransaksiKeuanganController extends Controller
     {
         $chartData = [];
         $groupBy = ($timePeriod === 'this-year' || $timePeriod === 'all-years' || $timePeriod === 'periodic-years') ? 'month' : 'date';
+        $excludeCategories = ['Hutang Dagang', 'Pembayaran Hutang Supplier'];
 
-        $incManual = $query->clone()->where('type', 'income')
+        $incManual = $query->clone()->where('type', 'income')->whereNotIn('category', $excludeCategories)
             ->selectRaw($groupBy === 'month' ? 'MONTH(transaction_date) as label, SUM(amount) as total' : 'DATE(transaction_date) as label, SUM(amount) as total')
             ->groupBy('label')
             ->pluck('total', 'label');
 
-        $expManual = $query->clone()->where('type', 'expense')
+        $expManual = $query->clone()->where('type', 'expense')->whereNotIn('category', $excludeCategories)
             ->selectRaw($groupBy === 'month' ? 'MONTH(transaction_date) as label, SUM(amount) as total' : 'DATE(transaction_date) as label, SUM(amount) as total')
             ->groupBy('label')
             ->pluck('total', 'label');
@@ -253,7 +257,23 @@ class TransaksiKeuanganController extends Controller
     {
         $transaksi = FinancialTransaction::realEstate()->findOrFail($id);
         $receiptId = $transaksi->material_receipt_id;
-        $transaksi->delete();
+        
+        // Delete all transactions with same transaction code and number
+        if ($transaksi->transaction_code && $transaksi->transaction_number) {
+            $relatedTransactions = FinancialTransaction::realEstate()
+                ->where('transaction_code', $transaksi->transaction_code)
+                ->where('transaction_number', $transaksi->transaction_number)
+                ->get();
+                
+            foreach ($relatedTransactions as $t) {
+                if ($t->material_receipt_id && $t->material_receipt_id != $receiptId) {
+                    $this->recalculateHutang($t->material_receipt_id);
+                }
+                $t->delete();
+            }
+        } else {
+            $transaksi->delete();
+        }
 
         if ($receiptId) {
             $this->recalculateHutang($receiptId);
